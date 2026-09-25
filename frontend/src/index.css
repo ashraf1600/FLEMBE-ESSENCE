@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  --color-burgundy: #4B1D3F;
+  --color-burgundy-light: #6B2D5A;
+  --color-burgundy-dark: #2E1127;
+  --color-nude: #E8D9C1;
+  --color-nude-dark: #D5C4A8;
+  --color-rose-smoke: #D8A7B1;
+  --color-rose-smoke-light: #E8C4CB;
+  --color-off-black: #1B1B1B;
+  --color-off-black-light: #2E2E2E;
+}
+
+/* Register font-display as a Tailwind v4 utility */
+@utility font-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+@utility font-body {
+  font-family: 'Jost', system-ui, sans-serif;
+}
+
+@utility btn-primary {
+  background-color: #4B1D3F;
+  color: #E8D9C1;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: inline-block;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  text-align: center;
+  &:hover {
+    background-color: #6B2D5A;
+  }
+}
+
+@utility btn-outline {
+  border: 1px solid #4B1D3F;
+  color: #4B1D3F;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: inline-block;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+  background-color: transparent;
+  text-decoration: none;
+  text-align: center;
+  &:hover {
+    background-color: #4B1D3F;
+    color: #E8D9C1;
+  }
+}
+
+@utility badge-in-stock {
+  background-color: #ecfdf5;
+  color: #065f46;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  font-family: 'Jost', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+@utility badge-out-of-stock {
+  background-color: #fef2f2;
+  color: #dc2626;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  font-family: 'Jost', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+@utility section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.25rem;
+  color: #4B1D3F;
+  margin-bottom: 0.5rem;
+}
+
+@utility section-subtitle {
+  color: #2E2E2E;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+@utility card-hover {
+  transition: transform 0.3s;
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@utility input-field {
+  width: 100%;
+  border: 1px solid #D5C4A8;
+  background-color: #ffffff;
+  padding: 0.75rem 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.875rem;
+  color: #1B1B1B;
+  transition: border-color 0.2s;
+  &::placeholder {
+    color: rgba(46,46,46,0.5);
+  }
+  &:focus {
+    outline: none;
+    border-color: #4B1D3F;
+  }
+}
+
+@utility label {
+  display: block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(46,46,46,0.7);
+  margin-bottom: 0.375rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #E8D9C1;
+    color: #1B1B1B;
+    font-family: 'Jost', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+}
