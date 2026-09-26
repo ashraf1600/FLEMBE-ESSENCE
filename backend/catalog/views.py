@@ -54,8 +54,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
     def perform_create(self, serializer):
+        name = serializer.validated_data.get('name', '')
+        slug = slugify(name)
         image_url = self.request.data.get('image_url', '').strip()
-        product = serializer.save()
+        product = serializer.save(slug=slug)
         if image_url:
             ProductImage.objects.create(
                 product=product,
@@ -65,7 +67,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'upload_image']:
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
@@ -79,11 +81,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ProductListSerializer
         return ProductSerializer
-
-    def perform_create(self, serializer):
-        name = serializer.validated_data.get('name', '')
-        slug = slugify(name)
-        serializer.save(slug=slug)
 
     @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser],
             permission_classes=[permissions.IsAdminUser])

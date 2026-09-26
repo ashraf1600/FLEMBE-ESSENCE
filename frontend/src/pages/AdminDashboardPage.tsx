@@ -378,7 +378,12 @@ const AdminDashboardPage: React.FC = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // DASHBOARD TAB
 // ─────────────────────────────────────────────────────────────────────────────
-const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = ({ stats, onTabChange }) => {
+const DashboardTab: React.FC<{
+  stats: Stats;
+  onTabChange: (t: Tab) => void;
+  onOpenCreateProduct?: () => void;
+  onRestock?: (p: any) => void;
+}> = ({ stats, onTabChange, onOpenCreateProduct, onRestock }) => {
   const fmt = (n: string | number) => `৳${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
   const maxRevenue = Math.max(...(stats.category_sales || []).map(c => Number(c.revenue)), 1);
   const maxMonthly = Math.max(...(stats.monthly_revenue || []).map(m => Number(m.revenue)), 1);
@@ -567,14 +572,13 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = 
                     }`}>
                       {p.stock_quantity === 0 ? '❌ OUT OF STOCK' : `⚠️ Only ${p.stock_quantity} left`}
                     </span>
-                    <a
-                      href={`${DJANGO_ADMIN_URL}/admin/catalog/product/${p.id}/change/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-body text-burgundy hover:underline"
+                    <button
+                      type="button"
+                      onClick={() => onRestock ? onRestock(p) : onTabChange('products')}
+                      className="text-xs font-body text-burgundy hover:underline cursor-pointer"
                     >
                       Restock →
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -766,7 +770,9 @@ const ProductsTab: React.FC<{
   search: string;
   setSearch: (s: string) => void;
   onSearchSubmit: (q: string) => void;
-}> = ({ products, totalCount, isLoading, search, setSearch, onSearchSubmit }) => (
+  onOpenCreateProduct: () => void;
+  onRestock: (p: any) => void;
+}> = ({ products, totalCount, isLoading, search, setSearch, onSearchSubmit, onOpenCreateProduct, onRestock }) => (
   <div className="space-y-4">
     <div className="flex flex-wrap gap-4 bg-white border border-nude-dark p-5 shadow-sm items-center justify-between">
       <form onSubmit={e => { e.preventDefault(); onSearchSubmit(search); }} className="flex gap-2 flex-1 min-w-[280px] max-w-md">
@@ -783,14 +789,13 @@ const ProductsTab: React.FC<{
 
       <div className="flex items-center gap-3">
         <span className="font-body text-xs text-off-black/60">{totalCount} product(s) registered</span>
-        <a
-          href={`${DJANGO_ADMIN_URL}/admin/catalog/product/add/`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
+        <button
+          type="button"
+          onClick={onOpenCreateProduct}
+          className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3 cursor-pointer"
         >
           <Plus size={14} /> Add New Product
-        </a>
+        </button>
       </div>
     </div>
 
@@ -849,13 +854,22 @@ const ProductsTab: React.FC<{
                     >
                       View Live <ExternalLink size={10} />
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => onRestock(p)}
+                      className="text-burgundy font-bold hover:underline text-[11px] cursor-pointer"
+                    >
+                      Quick Stock
+                    </button>
+                    <span className="text-off-black/20">|</span>
                     <a
                       href={`${DJANGO_ADMIN_URL}/admin/catalog/product/${p.id}/change/`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-burgundy font-bold hover:underline text-[11px]"
+                      className="text-off-black/60 hover:text-burgundy text-[11px]"
+                      title="Open full product editor in Django Admin"
                     >
-                      Edit
+                      Full Edit ↗
                     </a>
                   </div>
                 </td>
@@ -871,21 +885,24 @@ const ProductsTab: React.FC<{
 // ─────────────────────────────────────────────────────────────────────────────
 // CATEGORIES TAB
 // ─────────────────────────────────────────────────────────────────────────────
-const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean }> = ({ categories, isLoading }) => (
+const CategoriesTab: React.FC<{
+  categories: any[];
+  isLoading: boolean;
+  onOpenCreateCategory: () => void;
+}> = ({ categories, isLoading, onOpenCreateCategory }) => (
   <div className="space-y-4">
     <div className="flex items-center justify-between bg-white border border-nude-dark p-5 shadow-sm">
       <div>
         <h2 className="font-display text-lg text-burgundy">Product Categories</h2>
         <p className="font-body text-xs text-off-black/50">Manage the hierarchical taxonomy for your catalogue</p>
       </div>
-      <a
-        href={`${DJANGO_ADMIN_URL}/admin/catalog/category/add/`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
+      <button
+        type="button"
+        onClick={onOpenCreateCategory}
+        className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3 cursor-pointer"
       >
         <Plus size={14} /> Add Category
-      </a>
+      </button>
     </div>
 
     {isLoading ? <LoadingSpinner /> : (
@@ -950,21 +967,24 @@ const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean }> = ({ ca
 // ─────────────────────────────────────────────────────────────────────────────
 // DELIVERY TAB
 // ─────────────────────────────────────────────────────────────────────────────
-const DeliveryTab: React.FC<{ zones: any[]; isLoading: boolean }> = ({ zones, isLoading }) => (
+const DeliveryTab: React.FC<{
+  zones: any[];
+  isLoading: boolean;
+  onOpenCreateDelivery: () => void;
+}> = ({ zones, isLoading, onOpenCreateDelivery }) => (
   <div className="space-y-4">
     <div className="flex items-center justify-between bg-white border border-nude-dark p-5 shadow-sm">
       <div>
         <h2 className="font-display text-lg text-burgundy">Eligible Delivery Zones & Rates</h2>
         <p className="font-body text-xs text-off-black/50">Manage free delivery eligibility and regional delivery charges</p>
       </div>
-      <a
-        href={`${DJANGO_ADMIN_URL}/admin/delivery/deliveryzone/add/`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
+      <button
+        type="button"
+        onClick={onOpenCreateDelivery}
+        className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3 cursor-pointer"
       >
         <Plus size={14} /> Add Delivery Zone
-      </a>
+      </button>
     </div>
 
     {isLoading ? <LoadingSpinner /> : (
