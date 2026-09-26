@@ -1,3 +1,4 @@
+// src/pages/HomePage.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -5,6 +6,7 @@ import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Phone, Sparkles, CheckC
 import { fetchCategories, fetchProducts } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner } from '../components/UI';
+import Testimonials from '../components/Testimonials';
 
 // Inline social SVGs
 const FacebookIcon = ({ size = 16 }: { size?: number }) => (
@@ -35,18 +37,14 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      {/* SEO */}
       <title>Flembe Essence — Affordable Style, Made for You</title>
 
-      {/* ─── Hero Section ─────────────────────────────────────────────────── */}
       <section className="relative bg-gradient-to-b from-burgundy-dark via-burgundy to-burgundy text-nude overflow-hidden py-12 md:py-20">
-        {/* Soft background glow spheres */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-rose-smoke/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-nude/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-center">
-            {/* Left Column: Brand Copy & CTAs */}
             <div className="md:col-span-7 space-y-6 text-center md:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-smoke/15 border border-rose-smoke/30 text-rose-smoke text-xs font-body uppercase tracking-[0.18em]">
                 <Sparkles size={12} className="animate-pulse" />
@@ -63,7 +61,6 @@ const HomePage: React.FC = () => {
                 Real products, honest service, and genuine satisfaction.
               </p>
 
-              {/* Action Buttons */}
               <div className="flex flex-wrap justify-center md:justify-start gap-3.5 pt-2">
                 <Link
                   to="/shop"
@@ -80,7 +77,6 @@ const HomePage: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Key Highlights Strip */}
               <div className="pt-6 border-t border-nude/15 grid grid-cols-3 gap-4 max-w-md mx-auto md:mx-0">
                 <div>
                   <p className="font-display text-2xl sm:text-3xl text-nude font-semibold">50+</p>
@@ -97,13 +93,10 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Column: Hero Visual Showcase */}
             <div className="md:col-span-5 flex justify-center">
               <div className="relative w-full max-w-sm sm:max-w-md aspect-square">
-                {/* Decorative border frame */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-rose-smoke/30 to-nude/20 transform rotate-2 scale-[1.02] border border-rose-smoke/30" />
-                
-                {/* Main Image Container */}
+
                 <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-nude/30 bg-off-black">
                   <img
                     src="/images/hero-jewellery.jpg"
@@ -111,17 +104,14 @@ const HomePage: React.FC = () => {
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 ease-out"
                     loading="eager"
                   />
-                  
-                  {/* Subtle Gradient Overlay */}
+
                   <div className="absolute inset-0 bg-gradient-to-t from-off-black/60 via-transparent to-transparent pointer-events-none" />
 
-                  {/* Floating Badge 1 - Top Left */}
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/40 flex items-center gap-1.5 animate-bounce-slow">
                     <Star size={13} className="text-amber-500 fill-amber-500" />
                     <span className="font-body text-[11px] font-semibold text-off-black tracking-wide">100% Handpicked</span>
                   </div>
 
-                  {/* Floating Badge 2 - Bottom Right */}
                   <div className="absolute bottom-4 right-4 bg-burgundy/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-rose-smoke/30 flex items-center gap-1.5">
                     <Truck size={13} className="text-rose-smoke" />
                     <span className="font-body text-[11px] font-medium text-nude tracking-wide">Fast COD Dispatch</span>
@@ -133,7 +123,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Trust Pillars Strip ──────────────────────────────────────────── */}
       <section className="bg-white border-b border-nude-dark/40 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
@@ -180,8 +169,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Shop by Category ─────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-nude/40">
+      <section className="py-16 sm:py-20 bg-nude/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-12">
             <p className="section-subtitle">Curated Collections</p>
@@ -191,31 +179,40 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-            {subCategories.length > 0 ? subCategories.map(cat => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {subCategories.length > 0 ? subCategories.slice(0, 4).map(cat => (
               <Link
                 key={cat.id}
                 to={`/categories/${cat.slug}`}
-                className="group bg-white p-5 text-center rounded-sm border border-nude-dark/50 hover:border-burgundy hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center"
+                className="group relative aspect-[3/4] rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-burgundy/20 transition-all duration-500"
               >
-                <div className="w-14 h-14 bg-nude/60 rounded-full mb-3 flex items-center justify-center group-hover:bg-burgundy group-hover:text-nude transition-colors duration-300">
-                  <span className="font-display text-xl text-burgundy group-hover:text-nude font-bold">
-                    {cat.name.charAt(0)}
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-burgundy via-burgundy-light to-rose-smoke/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
+                    <span className="font-display text-nude/25 text-7xl select-none">{cat.name.charAt(0)}</span>
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-off-black/85 via-off-black/15 to-transparent group-hover:from-off-black/95 transition-all duration-500" />
+
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                  <h3 className="font-display text-lg sm:text-xl text-nude leading-tight mb-1">
+                    {cat.name}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-widest text-rose-smoke opacity-70 group-hover:opacity-100 group-hover:gap-2 transition-all duration-300">
+                    Explore Collection <ArrowRight size={11} />
                   </span>
                 </div>
-                <h3 className="font-body text-xs font-semibold tracking-wider uppercase text-off-black group-hover:text-burgundy transition-colors">
-                  {cat.name}
-                </h3>
-                <span className="text-[10px] text-off-black/40 font-body mt-1 group-hover:text-rose-smoke transition-colors">
-                  Explore &rarr;
-                </span>
               </Link>
             )) : (
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white p-6 text-center animate-pulse rounded border border-nude-dark/30">
-                  <div className="w-12 h-12 bg-nude rounded-full mx-auto mb-3" />
-                  <div className="h-3 bg-nude rounded mx-auto w-16" />
-                </div>
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[3/4] bg-white/60 rounded-2xl animate-pulse" />
               ))
             )}
           </div>
@@ -232,7 +229,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Featured Products ────────────────────────────────────────────── */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-10 pb-4 border-b border-nude-dark/30">
@@ -275,7 +271,8 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Story & Brand Promise ────────────────────────────────────────── */}
+      <Testimonials />
+
       <section className="py-16 sm:py-20 bg-gradient-to-b from-nude/30 to-nude/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg p-8 sm:p-12 shadow-sm border border-nude-dark/40 grid md:grid-cols-12 gap-8 items-center">
@@ -288,7 +285,7 @@ const HomePage: React.FC = () => {
               </h3>
               <p className="font-body text-sm text-off-black/70 leading-relaxed">
                 Flembe Essence was born with a passion to bring chic, premium-feeling jewellery and accessories to students and fashion lovers without the luxury markup.
-                From pop-up stalls at Daffodil International University to deliveries across Dhaka and Cox’s Bazar, every order is packed with love and genuine care.
+                From pop-up stalls at Daffodil International University to deliveries across Dhaka and Cox's Bazar, every order is packed with love and genuine care.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div className="flex items-center gap-2 font-body text-xs text-off-black/80">
@@ -314,7 +311,7 @@ const HomePage: React.FC = () => {
               <Truck size={32} className="mx-auto text-rose-smoke" />
               <h4 className="font-display text-2xl text-nude">Cash on Delivery Available</h4>
               <p className="font-body text-xs text-nude/80 leading-relaxed">
-                We deliver throughout Dhaka and Cox’s Bazar. Check out our free delivery locations or calculate your zone rates instantly.
+                We deliver throughout Dhaka and Cox's Bazar. Check out our free delivery locations or calculate your zone rates instantly.
               </p>
               <Link
                 to="/delivery"
@@ -327,7 +324,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Social Media & Contact ───────────────────────────────────────── */}
       <section className="py-16 bg-white border-t border-nude-dark/30">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
           <p className="font-body text-xs uppercase tracking-[0.2em] text-rose-smoke font-semibold">
@@ -347,7 +343,8 @@ const HomePage: React.FC = () => {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
             >
-              <FacebookIcon size={16} /> Facebook Page
+              <FacebookIcon size={16} />
+              <span>Facebook Page</span>
             </a>
             <a
               href="https://www.instagram.com/_flembe_._essence_?stkn=MmI4OG8yem9mZ2hn"
@@ -355,13 +352,15 @@ const HomePage: React.FC = () => {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 hover:opacity-95 text-white font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
             >
-              <InstagramIcon size={16} /> Instagram Feed
+              <InstagramIcon size={16} />
+              <span>Instagram Feed</span>
             </a>
             <a
               href="tel:01865330801"
               className="flex items-center gap-2 bg-off-black text-nude hover:bg-off-black-light font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
             >
-              <Phone size={14} className="text-rose-smoke" /> 01865330801
+              <Phone size={14} className="text-rose-smoke" />
+              <span>01865330801</span>
             </a>
           </div>
         </div>
