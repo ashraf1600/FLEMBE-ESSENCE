@@ -53,6 +53,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
     lookup_field = 'slug'
 
+    def perform_create(self, serializer):
+        image_url = self.request.data.get('image_url', '').strip()
+        product = serializer.save()
+        if image_url:
+            ProductImage.objects.create(
+                product=product,
+                image_url=image_url,
+                alt_text=product.name,
+                is_primary=True,
+            )
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [permissions.IsAdminUser()]

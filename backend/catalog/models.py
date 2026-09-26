@@ -76,6 +76,9 @@ class Product(models.Model):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = slug
+        if not self.sku:
+            import uuid
+            self.sku = f"FE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
 
