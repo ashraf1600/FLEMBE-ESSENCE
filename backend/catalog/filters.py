@@ -7,10 +7,17 @@ class ProductFilter(django_filters.FilterSet):
     max_price = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
     category = django_filters.CharFilter(field_name='category__slug', lookup_expr='iexact')
     in_stock = django_filters.BooleanFilter(method='filter_in_stock')
+    ids = django_filters.CharFilter(method='filter_ids')
 
     class Meta:
         model = Product
-        fields = ['category', 'min_price', 'max_price', 'is_active']
+        fields = ['category', 'min_price', 'max_price', 'is_active', 'ids']
+
+    def filter_ids(self, queryset, name, value):
+        if not value:
+            return queryset
+        id_list = [int(i.strip()) for i in value.split(',') if i.strip().isdigit()]
+        return queryset.filter(id__in=id_list)
 
     def filter_in_stock(self, queryset, name, value):
         if value:

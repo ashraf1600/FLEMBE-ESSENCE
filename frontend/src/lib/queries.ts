@@ -26,6 +26,7 @@ export interface ProductQueryParams {
   ordering?: string;
   in_stock?: boolean;
   page?: number;
+  ids?: string;
 }
 
 export const fetchProducts = async (params?: ProductQueryParams): Promise<PaginatedResponse<ProductListItem>> => {
