@@ -5,46 +5,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Check, Heart, Eye, X } from 'lucide-react';
 import type { ProductListItem } from '../types';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import toast from 'react-hot-toast';
 
 interface Props {
   product: ProductListItem;
 }
 
-const WISHLIST_KEY = 'flembe_wishlist_ids';
-
-function getWishlist(): number[] {
-  try {
-    const raw = localStorage.getItem(WISHLIST_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function toggleWishlist(id: number): boolean {
-  const current = getWishlist();
-  const exists = current.includes(id);
-  const updated = exists ? current.filter(x => x !== id) : [...current, id];
-  localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
-  window.dispatchEvent(new Event('wishlist-updated'));
-  return !exists; // returns new "isWishlisted" state
-}
-
 const ProductCard: React.FC<Props> = ({ product }) => {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
   const [justAdded, setJustAdded] = React.useState(false);
   const [imgError, setImgError] = React.useState(false);
-  const [isWishlisted, setIsWishlisted] = React.useState(false);
   const [quickViewOpen, setQuickViewOpen] = React.useState(false);
 
+  const isWishlisted = isInWishlist(product.id);
   const isInStock = product.stock_status === 'IN_STOCK';
   const imageUrl = product.primary_image?.url || product.primary_image?.image_url || '';
-
-  React.useEffect(() => {
-    setIsWishlisted(getWishlist().includes(product.id));
-  }, [product.id]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -68,17 +46,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const nowWishlisted = toggleWishlist(product.id);
-    setIsWishlisted(nowWishlisted);
-    toast(nowWishlisted ? 'Added to wishlist' : 'Removed from wishlist', {
-      icon: nowWishlisted ? '❤️' : '💔',
-      style: {
-        background: '#1B1B1B',
-        color: '#E8D9C1',
-        fontSize: '12px',
-        fontFamily: 'Jost, sans-serif',
-      },
-    });
+    toggleWishlist(product.id);
   };
 
   const handleQuickView = (e: React.MouseEvent) => {

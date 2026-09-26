@@ -1,40 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Heart, ShoppingBag, ArrowLeft, Sparkles, Trash2 } from 'lucide-react';
 import { fetchProducts } from '../lib/queries';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner } from '../components/UI';
 import toast from 'react-hot-toast';
 
-const WISHLIST_KEY = 'flembe_wishlist_ids';
-
-function getWishlistIds(): number[] {
-  try {
-    const raw = localStorage.getItem(WISHLIST_KEY);
-    return raw ? (JSON.parse(raw) as number[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 const WishlistPage: React.FC = () => {
-  const [wishlistIds, setWishlistIds] = useState<number[]>(getWishlistIds());
+  const { wishlistIds, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
-
-  const syncWishlist = useCallback(() => {
-    setWishlistIds(getWishlistIds());
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('wishlist-updated', syncWishlist);
-    window.addEventListener('storage', syncWishlist);
-    return () => {
-      window.removeEventListener('wishlist-updated', syncWishlist);
-      window.removeEventListener('storage', syncWishlist);
-    };
-  }, [syncWishlist]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['wishlist-products', wishlistIds],
@@ -46,10 +23,7 @@ const WishlistPage: React.FC = () => {
 
   const handleClearWishlist = () => {
     if (window.confirm('Clear all saved items from your wishlist?')) {
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify([]));
-      window.dispatchEvent(new Event('wishlist-updated'));
-      setWishlistIds([]);
-      toast('Wishlist cleared', { icon: '💔' });
+      clearWishlist();
     }
   };
 

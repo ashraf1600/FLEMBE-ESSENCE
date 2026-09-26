@@ -1,5 +1,5 @@
 // src/components/Navbar.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Menu, X, Search, LayoutDashboard, Package, LogOut, User, Phone, Sparkles, Heart, ChevronDown, ArrowRight } from 'lucide-react';
