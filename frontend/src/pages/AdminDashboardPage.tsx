@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart2, ShoppingBag, Package, TrendingUp,
   Truck, LogOut, ChevronRight, RefreshCw, Search, Filter,
-  ExternalLink, Plus, CheckCircle, ArrowUpRight
+  ExternalLink, Plus, CheckCircle, ArrowUpRight, X, Edit2, AlertTriangle
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -40,7 +40,7 @@ interface Stats {
 }
 
 // ── Backend Admin URL helper ──────────────────────────────────────────────────
-const DJANGO_ADMIN_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(/\/api\/v1\/?$/, '');
+const DJANGO_ADMIN_URL = '/admin';
 
 // ── Data fetchers ──────────────────────────────────────────────────────────────
 const fetchStats = async (): Promise<Stats> => (await api.get('/admin/stats/')).data;
@@ -99,6 +99,12 @@ const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('dashboard');
+
+  // In-dashboard modal states
+  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+  const [isCreateDeliveryOpen, setIsCreateDeliveryOpen] = useState(false);
+  const [restockProduct, setRestockProduct] = useState<{ id: number; slug: string; name: string; stock_quantity: number } | null>(null);
 
   // Orders tab state
   const [search, setSearch] = useState('');
@@ -201,7 +207,7 @@ const AdminDashboardPage: React.FC = () => {
           <div className="px-5 mt-6 pt-5 border-t border-white/10">
             <p className="font-body text-[10px] uppercase tracking-widest text-nude/40 mb-2">Advanced</p>
             <a
-              href={`${DJANGO_ADMIN_URL}/admin/`}
+              href={`${DJANGO_ADMIN_URL}/`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between text-nude/60 hover:text-nude text-xs font-body py-1.5 transition-colors"
@@ -267,7 +273,14 @@ const AdminDashboardPage: React.FC = () => {
           {tab === 'dashboard' && (
             statsLoading ? <LoadingSpinner /> :
             statsError   ? <ErrorState onRetry={refetchStats} /> :
-            stats        ? <DashboardTab stats={stats} onTabChange={setTab} /> : null
+            stats        ? (
+              <DashboardTab
+                stats={stats}
+                onTabChange={setTab}
+                onOpenCreateProduct={() => setIsCreateProductOpen(true)}
+                onRestock={(p) => setRestockProduct(p)}
+              />
+            ) : null
           )}
 
           {/* ── ORDERS TAB ────────────────────────────────────────────────── */}
@@ -294,6 +307,8 @@ const AdminDashboardPage: React.FC = () => {
               search={prodSearch}
               setSearch={setProdSearch}
               onSearchSubmit={(q) => setProdSearchQuery(q)}
+              onOpenCreateProduct={() => setIsCreateProductOpen(true)}
+              onRestock={(p) => setRestockProduct(p)}
             />
           )}
 
@@ -302,6 +317,7 @@ const AdminDashboardPage: React.FC = () => {
             <CategoriesTab
               categories={categoriesData?.results || categoriesData || []}
               isLoading={catsLoading}
+              onOpenCreateCategory={() => setIsCreateCategoryOpen(true)}
             />
           )}
 
@@ -310,9 +326,50 @@ const AdminDashboardPage: React.FC = () => {
             <DeliveryTab
               zones={deliveryData?.results || deliveryData || []}
               isLoading={deliveryLoading}
+              onOpenCreateDelivery={() => setIsCreateDeliveryOpen(true)}
             />
           )}
         </div>
+
+        {/* ── In-Dashboard Modals (No extra logins required) ── */}
+        <CreateProductModal
+          isOpen={isCreateProductOpen}
+          onClose={() => setIsCreateProductOpen(false)}
+          categories={categoriesData?.results || categoriesData || []}
+          onSuccess={() => {
+            qc.invalidateQueries({ queryKey: ['admin-products-list'] });
+            qc.invalidateQueries({ queryKey: ['admin-stats'] });
+            qc.invalidateQueries({ queryKey: ['products'] });
+          }}
+        />
+
+        <CreateCategoryModal
+          isOpen={isCreateCategoryOpen}
+          onClose={() => setIsCreateCategoryOpen(false)}
+          categories={categoriesData?.results || categoriesData || []}
+          onSuccess={() => {
+            qc.invalidateQueries({ queryKey: ['admin-categories-list'] });
+            qc.invalidateQueries({ queryKey: ['categories'] });
+          }}
+        />
+
+        <CreateDeliveryZoneModal
+          isOpen={isCreateDeliveryOpen}
+          onClose={() => setIsCreateDeliveryOpen(false)}
+          onSuccess={() => {
+            qc.invalidateQueries({ queryKey: ['admin-delivery-list'] });
+            qc.invalidateQueries({ queryKey: ['delivery-zones'] });
+          }}
+        />
+
+        <QuickRestockModal
+          product={restockProduct}
+          onClose={() => setRestockProduct(null)}
+          onSuccess={() => {
+            qc.invalidateQueries({ queryKey: ['admin-products-list'] });
+            qc.invalidateQueries({ queryKey: ['admin-stats'] });
+          }}
+        />
       </main>
     </div>
   );
