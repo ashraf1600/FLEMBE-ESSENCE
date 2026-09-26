@@ -53,6 +53,12 @@ class ProductImageSerializer(serializers.ModelSerializer):
             return url
         return obj.image_url
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not data.get('image_url') and data.get('url'):
+            data['image_url'] = data['url']
+        return data
+
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)

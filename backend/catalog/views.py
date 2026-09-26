@@ -47,6 +47,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filterset_class = ProductFilter
     search_fields = ['name', 'description', 'material', 'sku']
     ordering_fields = ['price', 'created_at', 'name', 'stock_quantity']
@@ -56,9 +57,25 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         name = serializer.validated_data.get('name', '')
         slug = slugify(name)
-        image_url = self.request.data.get('image_url', '').strip()
         product = serializer.save(slug=slug)
-        if image_url:
+
+        # Handle multiple uploaded image files
+        uploaded_files = self.request.FILES.getlist('images')
+        if not uploaded_files and 'image' in self.request.FILES:
+            uploaded_files = self.request.FILES.getlist('image')
+
+        for idx, file_obj in enumerate(uploaded_files):
+            ProductImage.objects.create(
+                product=product,
+                image_file=file_obj,
+                alt_text=f"{product.name} - {idx + 1}",
+                is_primary=(idx == 0),
+                display_order=idx,
+            )
+
+        # Fallback to image_url if provided and no files uploaded
+        image_url = self.request.data.get('image_url', '').strip()
+        if image_url and not uploaded_files:
             ProductImage.objects.create(
                 product=product,
                 image_url=image_url,
@@ -67,7 +84,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'upload_image']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'upload_image', 'delete_image']:
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
@@ -86,24 +103,36 @@ class ProductViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAdminUser])
     def upload_image(self, request, slug=None):
         product = self.get_object()
-        image_file = request.FILES.get('image')
-        if not image_file:
-            return Response({'error': 'No image provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        image_files = request.FILES.getlist('images') or request.FILES.getlist('image')
+        if not image_files:
+            return Response({'error': 'No image file provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        is_primary = request.data.get('is_primary', 'false').lower() == 'true'
-        alt_text = request.data.get('alt_text', product.name)
-        display_order = int(request.data.get('display_order', 0))
+        created_images = []
+        is_first = not product.images.filter(is_primary=True).exists()
+        current_max = product.images.count()
 
-        # If setting as primary, clear other primaries
-        if is_primary:
-            product.images.update(is_primary=False)
+        for idx, file_obj in enumerate(image_files):
+            img = ProductImage.objects.create(
+                product=product,
+                image_file=file_obj,
+                alt_text=f"{product.name} - {current_max + idx + 1}",
+                is_primary=True if (is_first and idx == 0) else False,
+                display_order=current_max + idx,
+            )
+            created_images.append(img)
 
-        img = ProductImage.objects.create(
-            product=product,
-            image_file=image_file,
-            alt_text=alt_text,
-            is_primary=is_primary,
-            display_order=display_order,
+        return Response(
+            ProductImageSerializer(created_images, many=True, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
         )
-        return Response(ProductImageSerializer(img, context={'request': request}).data,
-                        status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='images/(?P<image_id>[^/.]+)',
+            permission_classes=[permissions.IsAdminUser])
+    def delete_image(self, request, slug=None, image_id=None):
+        product = self.get_object()
+        try:
+            img = product.images.get(pk=image_id)
+            img.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProductImage.DoesNotExist:
+            return Response({'error': 'Image not found.'}, status=status.HTTP_404_NOT_FOUND)

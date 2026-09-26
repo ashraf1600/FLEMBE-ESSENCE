@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart2, ShoppingBag, Package, TrendingUp,
   Truck, LogOut, ChevronRight, RefreshCw, Search, Filter,
-  ExternalLink, Plus, CheckCircle, ArrowUpRight, X
+  ExternalLink, Plus, CheckCircle, ArrowUpRight, X,
+  Upload, Image as ImageIcon, Trash2
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -828,11 +829,14 @@ const ProductsTab: React.FC<{
               <tr key={p.id} className="hover:bg-nude/20 transition-colors">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    {p.primary_image?.image_url ? (
-                      <img src={p.primary_image.image_url} alt={p.name} className="w-10 h-10 object-cover border border-nude-dark" />
-                    ) : (
-                      <div className="w-10 h-10 bg-nude flex items-center justify-center text-burgundy font-bold">F</div>
-                    )}
+                    {(() => {
+                      const img = p.primary_image?.url || p.primary_image?.image_url || p.images?.[0]?.url || p.images?.[0]?.image_url;
+                      return img ? (
+                        <img src={img} alt={p.name} className="w-10 h-10 object-cover border border-nude-dark rounded" />
+                      ) : (
+                        <div className="w-10 h-10 bg-nude flex items-center justify-center text-burgundy font-bold rounded">F</div>
+                      );
+                    })()}
                     <div>
                       <p className="font-semibold text-off-black">{p.name}</p>
                       <p className="text-[10px] text-off-black/40">{p.material || 'Standard'}</p>
@@ -1094,9 +1098,28 @@ const CreateProductModal: React.FC<{
   const [stock, setStock] = useState('10');
   const [material, setMaterial] = useState('');
   const [description, setDescription] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [showUrlFallback, setShowUrlFallback] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const selected = Array.from(e.target.files);
+    const newFiles = [...files, ...selected];
+    setFiles(newFiles);
+    const newPreviews = newFiles.map(f => URL.createObjectURL(f));
+    setPreviews(newPreviews);
+  };
+
+  const removeFile = (index: number) => {
+    const updatedFiles = files.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
+    const updatedPreviews = updatedFiles.map(f => URL.createObjectURL(f));
+    setPreviews(updatedPreviews);
+  };
 
   if (!isOpen) return null;
 
@@ -1110,24 +1133,39 @@ const CreateProductModal: React.FC<{
     setLoading(true);
     setError('');
     try {
-      await api.post('/api/v1/products/', {
-        name: name.trim(),
-        category_id: Number(categoryId),
-        price: Number(price),
-        stock_quantity: Number(stock) || 0,
-        material: material.trim(),
-        description: description.trim(),
-        image_url: imageUrl.trim() || undefined,
-        is_active: true,
+      const formData = new FormData();
+      formData.append('name', name.trim());
+      formData.append('category_id', String(categoryId));
+      formData.append('price', String(price));
+      formData.append('stock_quantity', String(stock || 0));
+      if (material.trim()) formData.append('material', material.trim());
+      formData.append('description', description.trim());
+      formData.append('is_active', 'true');
+
+      // Append local image files
+      files.forEach(file => {
+        formData.append('images', file);
       });
-      toast.success('Product added successfully!');
+
+      if (imageUrl.trim()) {
+        formData.append('image_url', imageUrl.trim());
+      }
+
+      await api.post('/api/v1/products/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success(`Product "${name.trim()}" published successfully!`);
       setName('');
       setCategoryId('');
       setPrice('');
       setStock('10');
       setMaterial('');
       setDescription('');
+      setFiles([]);
+      setPreviews([]);
       setImageUrl('');
+      setShowUrlFallback(false);
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -1148,7 +1186,7 @@ const CreateProductModal: React.FC<{
           <X size={20} />
         </button>
         <h3 className="font-display text-xl text-burgundy mb-1">Add New Product</h3>
-        <p className="font-body text-xs text-off-black/50 mb-5">Instantly list a new jewellery item without leaving the dashboard</p>
+        <p className="font-body text-xs text-off-black/50 mb-5">Instantly list a new jewellery item with direct photos from your computer</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-body">
@@ -1223,15 +1261,82 @@ const CreateProductModal: React.FC<{
             </div>
           </div>
 
+          {/* Multiple Local Images Upload */}
           <div>
-            <label className="block font-semibold text-off-black mb-1">Product Image URL</label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={e => setImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/... or direct image link"
-              className="input-field text-sm"
-            />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="font-semibold text-off-black">
+                Upload Product Photos (Multiple Local Images)
+              </label>
+              {files.length > 0 && (
+                <span className="text-[11px] font-bold text-burgundy">
+                  {files.length} image{files.length > 1 ? 's' : ''} chosen
+                </span>
+              )}
+            </div>
+
+            <label className="border-2 border-dashed border-rose-smoke hover:border-burgundy bg-nude/20 hover:bg-nude/35 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all group">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFilesSelected}
+                className="hidden"
+              />
+              <Upload size={26} className="text-burgundy/60 group-hover:text-burgundy group-hover:-translate-y-0.5 transition-transform mb-1.5" />
+              <p className="font-body text-xs font-bold text-burgundy">
+                Choose Local Images / Photos
+              </p>
+              <p className="font-body text-[10px] text-off-black/50 mt-0.5">
+                Click to browse files (select multiple JPG, PNG, WEBP)
+              </p>
+            </label>
+
+            {/* Thumbnail Previews */}
+            {previews.length > 0 && (
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-3 p-2 bg-nude/30 rounded-lg border border-nude-dark">
+                {previews.map((src, idx) => (
+                  <div key={idx} className="relative group aspect-square rounded-md overflow-hidden border border-nude-dark bg-white shadow-xs">
+                    <img src={src} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                    {idx === 0 && (
+                      <span className="absolute bottom-0 inset-x-0 bg-burgundy/90 text-white text-[8px] font-bold py-0.5 text-center uppercase tracking-wider">
+                        ★ Primary
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-1 right-1 bg-off-black/80 hover:bg-red-600 text-white rounded-full p-0.5 transition-colors cursor-pointer"
+                      title="Remove image"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Secondary URL toggle */}
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowUrlFallback(!showUrlFallback)}
+                className="text-[11px] text-off-black/50 hover:text-burgundy underline cursor-pointer"
+              >
+                {showUrlFallback ? 'Hide URL link field' : '+ Add via web image URL instead'}
+              </button>
+            </div>
+
+            {showUrlFallback && (
+              <div className="mt-1.5">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={e => setImageUrl(e.target.value)}
+                  placeholder="https://... (external image URL)"
+                  className="input-field text-sm"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -1537,6 +1642,8 @@ const QuickRestockModal: React.FC<{
   const [stock, setStock] = useState(product ? String(product.stock_quantity) : '0');
   const [price, setPrice] = useState(product ? String(product.price) : '0');
   const [isActive, setIsActive] = useState(product ? Boolean(product.is_active) : true);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -1545,11 +1652,38 @@ const QuickRestockModal: React.FC<{
       setStock(String(product.stock_quantity));
       setPrice(String(product.price));
       setIsActive(Boolean(product.is_active));
+      setNewFiles([]);
+      setNewPreviews([]);
       setError('');
     }
   }, [product]);
 
   if (!product) return null;
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const selected = Array.from(e.target.files);
+    const updated = [...newFiles, ...selected];
+    setNewFiles(updated);
+    setNewPreviews(updated.map(f => URL.createObjectURL(f)));
+  };
+
+  const removeNewFile = (idx: number) => {
+    const updated = newFiles.filter((_, i) => i !== idx);
+    setNewFiles(updated);
+    setNewPreviews(updated.map(f => URL.createObjectURL(f)));
+  };
+
+  const handleDeleteExistingImage = async (imageId: number) => {
+    if (!confirm('Are you sure you want to delete this photo from the product?')) return;
+    try {
+      await api.delete(`/api/v1/products/${product.slug}/images/${imageId}/`);
+      toast.success('Photo removed.');
+      onSuccess();
+    } catch {
+      toast.error('Could not remove photo.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1561,6 +1695,16 @@ const QuickRestockModal: React.FC<{
         price: Number(price),
         is_active: isActive,
       });
+
+      // If new images chosen, upload them now
+      if (newFiles.length > 0) {
+        const formData = new FormData();
+        newFiles.forEach(f => formData.append('images', f));
+        await api.post(`/api/v1/products/${product.slug}/upload_image/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
       toast.success(`Updated "${product.name}" successfully!`);
       onSuccess();
       onClose();
@@ -1572,9 +1716,11 @@ const QuickRestockModal: React.FC<{
     }
   };
 
+  const existingImages = product.images || [];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-sm w-full p-6 relative">
+      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-off-black/40 hover:text-burgundy p-1"
@@ -1582,7 +1728,7 @@ const QuickRestockModal: React.FC<{
           <X size={20} />
         </button>
         <h3 className="font-display text-xl text-burgundy mb-1">Quick Restock / Edit</h3>
-        <p className="font-body text-xs text-off-black/60 font-semibold mb-1 truncate">{product.name}</p>
+        <p className="font-body text-xs text-off-black/60 font-semibold mb-0.5 truncate">{product.name}</p>
         <p className="font-body text-[11px] font-mono text-off-black/40 mb-4">SKU: {product.sku}</p>
 
         {error && (
@@ -1592,35 +1738,37 @@ const QuickRestockModal: React.FC<{
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
-          <div>
-            <label className="block font-semibold text-off-black mb-1">Stock Quantity (Units) *</label>
-            <input
-              type="number"
-              min="0"
-              value={stock}
-              onChange={e => setStock(e.target.value)}
-              className="input-field text-sm"
-              required
-            />
-            <span className="text-[10px] text-off-black/40 mt-1 block">
-              Setting to 0 will immediately mark item as Out of Stock
-            </span>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Stock Quantity *</label>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={e => setStock(e.target.value)}
+                className="input-field text-sm"
+                required
+              />
+              <span className="text-[10px] text-off-black/40 mt-1 block">
+                0 = Out of Stock
+              </span>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Price (৳ BDT) *</label>
+              <input
+                type="number"
+                min="1"
+                step="any"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                className="input-field text-sm"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block font-semibold text-off-black mb-1">Price (৳ BDT) *</label>
-            <input
-              type="number"
-              min="1"
-              step="any"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              className="input-field text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-2 p-3 bg-nude/30 border border-nude-dark rounded">
+          <div className="flex items-center gap-2 p-2.5 bg-nude/30 border border-nude-dark rounded">
             <input
               type="checkbox"
               id="product_is_active"
@@ -1631,6 +1779,69 @@ const QuickRestockModal: React.FC<{
             <label htmlFor="product_is_active" className="font-semibold text-off-black cursor-pointer select-none">
               Visible & Purchasable in Store
             </label>
+          </div>
+
+          {/* Current Images */}
+          <div>
+            <label className="block font-semibold text-off-black mb-1.5">
+              Current Product Photos ({existingImages.length})
+            </label>
+            {existingImages.length === 0 ? (
+              <p className="text-off-black/40 italic py-1">No photos attached yet.</p>
+            ) : (
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {existingImages.map((img: any) => (
+                  <div key={img.id} className="relative group aspect-square rounded border border-nude-dark bg-white overflow-hidden">
+                    <img src={img.url || img.image_url} alt={img.alt_text || 'Product'} className="w-full h-full object-cover" />
+                    {img.is_primary && (
+                      <span className="absolute bottom-0 inset-x-0 bg-burgundy/90 text-white text-[8px] font-bold py-0.5 text-center uppercase tracking-wider">
+                        ★ Main
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteExistingImage(img.id)}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                      title="Delete this image"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add More Photos */}
+            <label className="border border-dashed border-rose-smoke hover:border-burgundy bg-nude/15 hover:bg-nude/30 rounded-lg p-3 flex items-center justify-center gap-2 cursor-pointer transition-all">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFilesSelected}
+                className="hidden"
+              />
+              <Upload size={16} className="text-burgundy" />
+              <span className="font-semibold text-burgundy text-xs">
+                Upload More Photos From Computer
+              </span>
+            </label>
+
+            {newPreviews.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-2 p-2 bg-nude/25 rounded border border-nude-dark">
+                {newPreviews.map((src, idx) => (
+                  <div key={idx} className="relative aspect-square rounded border border-emerald-500 overflow-hidden bg-white">
+                    <img src={src} alt={`New upload ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeNewFile(idx)}
+                      className="absolute top-1 right-1 bg-off-black/80 hover:bg-red-600 text-white rounded-full p-0.5 cursor-pointer"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-nude-dark">
@@ -1648,7 +1859,7 @@ const QuickRestockModal: React.FC<{
               className="btn-primary text-xs py-2 px-5 inline-flex items-center gap-2"
             >
               {loading ? <RefreshCw size={14} className="animate-spin" /> : null}
-              Update Product
+              Save Changes
             </button>
           </div>
         </form>
