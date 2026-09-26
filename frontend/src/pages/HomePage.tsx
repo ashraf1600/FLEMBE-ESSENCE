@@ -6,6 +6,7 @@ import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Phone, Sparkles, CheckC
 import { fetchCategories, fetchProducts } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner } from '../components/UI';
+import Testimonials from '../components/Testimonials';
 
 // Inline social SVGs
 const FacebookIcon = ({ size = 16 }: { size?: number }) => (
@@ -269,6 +270,8 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <Testimonials />
 
       <section className="py-16 sm:py-20 bg-gradient-to-b from-nude/30 to-nude/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
