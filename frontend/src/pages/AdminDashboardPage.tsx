@@ -40,7 +40,7 @@ interface Stats {
 }
 
 // ── Backend Admin URL helper ──────────────────────────────────────────────────
-const DJANGO_ADMIN_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1').replace(/\/api\/v1\/?$/, '');
+const DJANGO_ADMIN_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(/\/api\/v1\/?$/, '');
 
 // ── Data fetchers ──────────────────────────────────────────────────────────────
 const fetchStats = async (): Promise<Stats> => (await api.get('/admin/stats/')).data;
@@ -168,10 +168,10 @@ const AdminDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-nude flex">
+    <div className="min-h-screen bg-[#f4f5f7] flex">
       {/* Sidebar */}
-      <aside className="w-60 bg-off-black flex-shrink-0 flex flex-col">
-        <div className="p-5 border-b border-white/10">
+      <aside className="w-64 bg-[#17151a] flex-shrink-0 flex flex-col shadow-2xl shadow-black/10">
+        <div className="p-6 border-b border-white/10">
           <Link to="/" className="block">
             <span className="font-display text-lg text-nude tracking-widest">FLEMBE</span>
             <span className="font-display text-lg text-rose-smoke tracking-widest ml-1">ESSENCE</span>
@@ -187,9 +187,9 @@ const AdminDashboardPage: React.FC = () => {
             <button
               key={n.id}
               onClick={() => setTab(n.id)}
-              className={`w-full flex items-center gap-3 px-5 py-3 text-left font-body text-xs tracking-wide uppercase transition-all ${
+              className={`w-full flex items-center gap-3 px-6 py-3.5 text-left font-body text-xs tracking-wide uppercase transition-all ${
                 tab === n.id
-                  ? 'bg-burgundy text-nude font-bold'
+                  ? 'bg-burgundy text-nude font-bold shadow-[inset_3px_0_0_#e8c4cb]'
                   : 'text-nude/60 hover:text-nude hover:bg-white/5'
               }`}
             >
@@ -235,7 +235,7 @@ const AdminDashboardPage: React.FC = () => {
       {/* Main content */}
       <main className="flex-1 overflow-auto flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="bg-white border-b border-nude-dark px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-white/95 backdrop-blur border-b border-slate-200 px-6 lg:px-8 py-5 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h1 className="font-display text-2xl text-burgundy">
               {NAV.find(n => n.id === tab)?.label ?? 'Dashboard'}
@@ -248,7 +248,7 @@ const AdminDashboardPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-nude/50 hover:bg-nude text-off-black text-xs font-body transition-colors rounded"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-body transition-colors rounded-lg"
               title="Refresh Data"
             >
               <RefreshCw size={13} />
@@ -262,7 +262,7 @@ const AdminDashboardPage: React.FC = () => {
           </div>
         </header>
 
-        <div className="p-8 flex-1">
+        <div className="p-6 lg:p-8 flex-1">
           {/* ── DASHBOARD TAB ─────────────────────────────────────────────── */}
           {tab === 'dashboard' && (
             statsLoading ? <LoadingSpinner /> :
@@ -358,7 +358,7 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = 
 
       {/* Order Status Breakdown & Monthly Trend */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-nude-dark p-6 shadow-sm">
+        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm shadow-slate-200/60">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg text-burgundy">Order Pipeline Breakdown</h2>
             <span className="font-body text-xs text-off-black/40">Total {stats.total_orders} orders</span>
@@ -388,7 +388,7 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = 
         </div>
 
         {/* Monthly Revenue Chart */}
-        <div className="bg-white border border-nude-dark p-6 shadow-sm flex flex-col justify-between">
+        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm shadow-slate-200/60 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-display text-lg text-burgundy">Revenue Trends (Recent Months)</h2>
@@ -420,7 +420,7 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = 
       </div>
 
       {/* Category-wise Sales Distribution */}
-      <div className="bg-white border border-nude-dark p-6 shadow-sm">
+      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm shadow-slate-200/60">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="font-display text-lg text-burgundy">Category-Wise Sales Performance</h2>
@@ -973,11 +973,11 @@ const KPICard: React.FC<{
 }> = ({ label, value, sub, color, urgent, onClick }) => (
   <div
     onClick={onClick}
-    className={`bg-white border p-5 flex flex-col gap-1 transition-all shadow-sm ${
+    className={`bg-white border p-5 flex flex-col gap-1 rounded-2xl transition-all shadow-sm shadow-slate-200/60 ${
       urgent ? 'border-amber-400 border-t-4' :
       color === 'green' ? 'border-emerald-500 border-t-4' :
       color === 'burgundy' ? 'border-burgundy border-t-4' : 'border-nude-dark'
-    } ${onClick ? 'cursor-pointer hover:shadow-md hover:border-burgundy/60' : ''}`}
+    } ${onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-burgundy/60' : ''}`}
   >
     <span className={`font-display text-3xl font-bold ${
       urgent ? 'text-amber-600' :

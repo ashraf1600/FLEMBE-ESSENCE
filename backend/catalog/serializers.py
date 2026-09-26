@@ -4,6 +4,7 @@ from .models import Category, Product, ProductImage
 
 class CategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -13,6 +14,21 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_children(self, obj):
         children = obj.children.filter(is_active=True)
         return CategorySerializer(children, many=True, context=self.context).data
+
+    def get_image(self, obj):
+        image = obj.image
+        if image:
+            url = image.url
+            request = self.context.get('request')
+            return request.build_absolute_uri(url) if request else url
+
+        # Keep category cards visual even when a category image has not been uploaded.
+        product = obj.products.filter(is_active=True).prefetch_related('images').first()
+        if product:
+            product_image = product.images.filter(is_primary=True).first() or product.images.first()
+            if product_image:
+                return ProductImageSerializer(product_image, context=self.context).data['url']
+        return None
 
 
 class CategoryMinSerializer(serializers.ModelSerializer):

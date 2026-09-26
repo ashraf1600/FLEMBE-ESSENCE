@@ -112,13 +112,7 @@ function App() {
                 <Route path="/products/:slug" element={<StorefrontLayout><ProductDetailPage /></StorefrontLayout>} />
                 <Route
                   path="/checkout"
-                  element={
-                    <StorefrontLayout>
-                      <ProtectedRoute>
-                        <CheckoutPage />
-                      </ProtectedRoute>
-                    </StorefrontLayout>
-                  }
+                  element={<StorefrontLayout><CheckoutPage /></StorefrontLayout>}
                 />
                 <Route path="/order-success" element={<StorefrontLayout><OrderSuccessPage /></StorefrontLayout>} />
                 <Route path="/about" element={<StorefrontLayout><AboutPage /></StorefrontLayout>} />

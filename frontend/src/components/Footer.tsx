@@ -18,9 +18,10 @@ const InstagramIcon = () => (
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-off-black text-nude border-t border-rose-smoke/20 mt-20">
+    <footer className="bg-off-black text-nude border-t border-rose-smoke/20 mt-20 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_10%_0%,rgba(216,167,177,0.12),transparent_28%),radial-gradient(circle_at_90%_100%,rgba(75,29,63,0.55),transparent_34%)]" />
       {/* Top Value Banner */}
-      <div className="border-b border-white/10 bg-off-black-light/50 py-6">
+      <div className="relative border-b border-white/10 bg-off-black-light/50 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-3">
             <Truck size={22} className="text-rose-smoke flex-shrink-0" />
@@ -46,7 +47,7 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           {/* Brand & Story */}
           <div className="md:col-span-4 space-y-4">

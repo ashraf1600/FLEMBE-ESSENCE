@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+:root {
+  --page: #f7f2eb;
+  --ink: #20191c;
+  --plum: #4b1d3f;
+  --rose: #d8a7b1;
+  --pearl: #fdfbf8;
+  --line: rgba(75, 29, 63, 0.14);
+}
+
 @theme {
   --color-burgundy: #4B1D3F;
   --color-burgundy-light: #6B2D5A;
@@ -39,11 +48,11 @@
   border: 1px solid transparent;
   text-decoration: none;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(75, 29, 63, 0.15);
+  box-shadow: 0 8px 20px rgba(75, 29, 63, 0.16);
   &:hover {
     background-color: #6B2D5A;
     box-shadow: 0 4px 12px rgba(75, 29, 63, 0.25);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
   &:active {
     transform: translateY(0);
@@ -177,11 +186,27 @@
   }
 
   body {
-    background-color: #E8D9C1;
-    color: #1B1B1B;
+    background-color: var(--page);
+    background-image: radial-gradient(rgba(75, 29, 63, 0.035) 0.7px, transparent 0.7px);
+    background-size: 7px 7px;
+    color: var(--ink);
     font-family: 'Jost', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: #d8a7b1;
+    color: #2e1127;
+  }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid #d8a7b1;
+    outline-offset: 3px;
   }
 
   /* Custom subtle scrollbar */

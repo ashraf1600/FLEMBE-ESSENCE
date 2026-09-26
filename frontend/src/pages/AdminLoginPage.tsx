@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../lib/api';
 import toast from 'react-hot-toast';
 
 const AdminLoginPage: React.FC = () => {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/admin-dashboard';
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,8 +20,9 @@ const AdminLoginPage: React.FC = () => {
     if (!username.trim() || !password) { setError('Please fill in all fields.'); return; }
     try {
       await login(username.trim(), password);
+      await api.post('/auth/admin-session/', { username: username.trim(), password });
       toast.success('Welcome back!');
-      navigate(from, { replace: true });
+      navigate('/admin-dashboard', { replace: true });
     } catch (err: any) {
       const msg = err?.response?.data?.detail || err?.message || 'Invalid username or password. Please try again.';
       setError(msg);

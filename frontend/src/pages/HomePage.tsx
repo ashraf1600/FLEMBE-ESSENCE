@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Phone, Sparkles, CheckCircle2, Star } from 'lucide-react';
+import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Phone, Sparkles, CheckCircle2 } from 'lucide-react';
 import { fetchCategories, fetchProducts } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner } from '../components/UI';
@@ -34,16 +34,40 @@ const HomePage: React.FC = () => {
   });
 
   const subCategories = categories?.flatMap(c => c.children || []).filter(c => c.is_active).slice(0, 6) || [];
+  const heroImages = [
+    '/images/hero-jewellery.jpg',
+    ...(categories?.flatMap(category => [category, ...(category.children || [])]) || [])
+      .map(category => category.image || '')
+      .filter(Boolean),
+  ];
+  const [heroSlide, setHeroSlide] = React.useState(0);
+
+  React.useEffect(() => {
+    if (heroImages.length < 2) return;
+    const timer = window.setInterval(() => {
+      setHeroSlide(current => (current + 1) % heroImages.length);
+    }, 5500);
+    return () => window.clearInterval(timer);
+  }, [heroImages.length]);
 
   return (
     <>
       <title>Flembe Essence — Affordable Style, Made for You</title>
 
-      <section className="relative bg-gradient-to-b from-burgundy-dark via-burgundy to-burgundy text-nude overflow-hidden py-12 md:py-20">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-rose-smoke/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-nude/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative isolate min-h-[calc(100svh-114px)] flex items-center bg-burgundy-dark text-nude overflow-hidden">
+        {heroImages.map((image, index) => (
+          <img
+            key={`${image}-${index}`}
+            src={image}
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1400ms] ease-in-out ${index === heroSlide % heroImages.length ? 'opacity-100' : 'opacity-0'}`}
+          />
+        ))}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(46,17,39,0.94)_0%,rgba(46,17,39,0.75)_38%,rgba(46,17,39,0.32)_72%,rgba(46,17,39,0.58)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-burgundy-dark/80 via-transparent to-burgundy-dark/20" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
           <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-center">
             <div className="md:col-span-7 space-y-6 text-center md:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-smoke/15 border border-rose-smoke/30 text-rose-smoke text-xs font-body uppercase tracking-[0.18em]">
@@ -93,29 +117,23 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="md:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-sm sm:max-w-md aspect-square">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-rose-smoke/30 to-nude/20 transform rotate-2 scale-[1.02] border border-rose-smoke/30" />
-
-                <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-nude/30 bg-off-black">
-                  <img
-                    src="/images/hero-jewellery.jpg"
-                    alt="Flembe Essence Jewellery Showcase"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 ease-out"
-                    loading="eager"
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-off-black/60 via-transparent to-transparent pointer-events-none" />
-
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/40 flex items-center gap-1.5 animate-bounce-slow">
-                    <Star size={13} className="text-amber-500 fill-amber-500" />
-                    <span className="font-body text-[11px] font-semibold text-off-black tracking-wide">100% Handpicked</span>
+            <div className="md:col-span-5 flex justify-center md:justify-end">
+              <div className="relative w-full max-w-xs sm:max-w-sm animate-float-slow">
+                <div className="ml-auto max-w-[250px] bg-off-black/35 backdrop-blur-xl border border-nude/25 p-5 sm:p-6 shadow-2xl">
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className="w-2 h-2 rounded-full bg-rose-smoke shadow-[0_0_12px_rgba(216,167,177,0.8)]" />
+                    <span className="font-body text-[10px] uppercase tracking-[0.2em] text-nude/80">The Flembe edit</span>
                   </div>
-
-                  <div className="absolute bottom-4 right-4 bg-burgundy/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-rose-smoke/30 flex items-center gap-1.5">
-                    <Truck size={13} className="text-rose-smoke" />
-                    <span className="font-body text-[11px] font-medium text-nude tracking-wide">Fast COD Dispatch</span>
-                  </div>
+                  <p className="font-display text-2xl sm:text-3xl text-nude leading-tight">Little details.<br /><em className="text-rose-smoke">Big feeling.</em></p>
+                  <p className="font-body text-xs text-nude/70 leading-relaxed mt-4">Everyday jewellery, thoughtfully chosen for your next chapter.</p>
+                  <Link to="/shop" className="inline-flex items-center gap-2 mt-6 font-body text-[10px] uppercase tracking-[0.18em] text-nude border-b border-rose-smoke pb-1 hover:text-rose-smoke transition-colors">
+                    Explore the edit <ArrowRight size={13} />
+                  </Link>
+                </div>
+                <div className="flex items-center justify-end gap-2 mt-6" aria-label="Hero slides">
+                  {heroImages.slice(0, 5).map((_, index) => (
+                    <span key={index} className={`h-1 rounded-full transition-all duration-500 ${index === heroSlide % Math.min(heroImages.length, 5) ? 'w-8 bg-rose-smoke' : 'w-2 bg-nude/50'}`} />
+                  ))}
                 </div>
               </div>
             </div>
@@ -123,7 +141,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-white border-b border-nude-dark/40 py-8">
+      <section className="relative bg-white border-b border-nude-dark/40 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-3 p-3">
@@ -169,13 +187,75 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-16 sm:py-20 bg-nude/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <p className="section-subtitle">Curated Collections</p>
-            <h2 className="section-title">Shop by Category</h2>
-            <p className="font-body text-xs sm:text-sm text-off-black/60 mt-2">
-              From everyday minimalist rings to timeless pearl necklaces, explore accessories designed to complement your personality.
+      <section className="relative py-10 sm:py-12 bg-nude/30 overflow-hidden">
+        <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-8">
+            <div>
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">Just landed</p>
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">New arrivals</h2>
+              <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">Fresh pieces. Ready to glow.</p>
+            </div>
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.2em] text-burgundy font-bold border-b-2 border-burgundy/40 pb-2 hover:text-burgundy-light hover:border-burgundy transition-colors self-start md:self-auto"
+            >
+              Shop all <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <LoadingSpinner message="Curating the latest pieces..." />
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {featuredData?.results.slice(0, 4).map(product => {
+                const imageUrl = product.primary_image?.url || product.primary_image?.image_url || '';
+                return (
+                  <Link
+                    key={product.id}
+                    to={`/products/${product.slug}`}
+                    className="group relative overflow-hidden bg-white border border-nude-dark/30 shadow-sm hover:shadow-2xl hover:shadow-burgundy/15 transition-all duration-500 hover:-translate-y-2"
+                  >
+                    <div className="aspect-[3/4] overflow-hidden bg-nude/30">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={product.primary_image?.alt_text || product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-nude/40 to-nude/80">
+                          <span className="font-display text-5xl text-burgundy/25">FE</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-off-black/75 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                        <p className="font-body text-[9px] uppercase tracking-[0.18em] text-rose-smoke mb-1">
+                          {product.category?.name || 'New piece'}
+                        </p>
+                        <h3 className="font-display text-lg sm:text-xl text-nude leading-tight line-clamp-2">{product.name}</h3>
+                        <p className="font-body text-sm text-nude/90 mt-1">৳{parseFloat(product.price).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="py-10 sm:py-12 bg-nude/30">
+        <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="mb-7 sm:mb-8">
+            <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">
+              Curated collections
+            </p>
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">
+              Shop by Category
+            </h2>
+            <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">
+              Find your signature style.
             </p>
           </div>
 
@@ -184,7 +264,7 @@ const HomePage: React.FC = () => {
               <Link
                 key={cat.id}
                 to={`/categories/${cat.slug}`}
-                className="group relative aspect-[3/4] rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-burgundy/20 transition-all duration-500"
+                className="group relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-burgundy/20 transition-all duration-500"
               >
                 {cat.image ? (
                   <img
@@ -202,12 +282,9 @@ const HomePage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-off-black/85 via-off-black/15 to-transparent group-hover:from-off-black/95 transition-all duration-500" />
 
                 <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                  <h3 className="font-display text-lg sm:text-xl text-nude leading-tight mb-1">
+                  <h3 className="font-display text-xl sm:text-2xl text-nude leading-tight">
                     {cat.name}
                   </h3>
-                  <span className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-widest text-rose-smoke opacity-70 group-hover:opacity-100 group-hover:gap-2 transition-all duration-300">
-                    Explore Collection <ArrowRight size={11} />
-                  </span>
                 </div>
               </Link>
             )) : (
@@ -217,32 +294,26 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
-          <div className="text-center mt-10">
-            <Link
-              to="/categories"
-              className="btn-outline border-burgundy text-burgundy hover:bg-burgundy hover:text-nude text-xs tracking-widest px-6 py-2.5 rounded-xs"
-            >
-              <span>View All Categories</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
         </div>
       </section>
 
-      <section className="py-16 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-10 pb-4 border-b border-nude-dark/30">
+      <section className="py-10 sm:py-12 bg-white">
+        <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-8">
             <div>
-              <p className="font-body text-xs uppercase tracking-[0.2em] text-rose-smoke font-semibold mb-1">
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">
                 Handpicked Selection
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl text-burgundy">
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">
                 Featured Products
               </h2>
+              <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">
+                Curated pieces. Made to stand out.
+              </p>
             </div>
             <Link
               to="/shop"
-              className="mt-4 sm:mt-0 font-body text-xs uppercase tracking-wider text-burgundy font-semibold hover:text-burgundy-light flex items-center gap-1.5 transition-colors"
+              className="inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.2em] text-burgundy font-bold border-b-2 border-burgundy/40 pb-2 hover:text-burgundy-light hover:border-burgundy transition-colors self-start md:self-auto"
             >
               <span>View Full Catalog</span>
               <ArrowRight size={14} />
@@ -259,15 +330,6 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-          <div className="text-center mt-12">
-            <Link
-              to="/shop"
-              className="btn-primary px-8 py-3.5 text-xs tracking-widest shadow-md rounded-xs"
-            >
-              <span>Browse All Jewellery</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
         </div>
       </section>
 

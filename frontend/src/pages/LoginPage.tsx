@@ -55,8 +55,20 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <title>Sign In — Flembe Essence</title>
-      <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-nude/30">
-        <div className="w-full max-w-md">
+      <div className="min-h-[calc(100svh-5rem)] bg-nude/30 px-4 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto grid min-h-[680px] max-w-6xl overflow-hidden bg-off-black shadow-2xl lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative hidden min-h-[680px] overflow-hidden lg:block">
+            <img src="/images/hero-jewellery.jpg" alt="Flembe Essence jewellery" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-burgundy-dark via-burgundy/40 to-off-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-10 xl:p-14 text-nude">
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.28em] text-rose-smoke">Your everyday edit</p>
+              <h2 className="mt-4 max-w-md font-display text-5xl font-semibold leading-[0.95]">Wear the little things that feel like you.</h2>
+              <p className="mt-5 max-w-sm font-body text-sm leading-relaxed text-nude/75">Save your favourites, track every order and keep your next piece close.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center bg-nude px-6 py-10 sm:px-12 lg:px-14">
+            <div className="w-full max-w-md">
           {/* Registration success notice */}
           {registrationSuccess && (
             <div className="mb-6 bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
@@ -77,16 +89,17 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <div className="bg-white border border-nude-dark shadow-sm p-8 sm:p-10">
+          <div className="bg-transparent">
             {/* Header */}
-            <div className="text-center mb-8">
-              <span className="font-display text-2xl text-burgundy tracking-widest block">FLEMBE</span>
+            <div className="mb-8">
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke">Welcome back</p>
+              <span className="font-display text-3xl text-burgundy tracking-[0.12em] block mt-3">FLEMBE</span>
               <span className="font-display text-xs tracking-[0.25em] text-rose-smoke uppercase block mt-0.5">
                 ESSENCE
               </span>
-              <h1 className="font-display text-2xl text-off-black mt-4">Welcome Back</h1>
-              <p className="font-body text-xs text-off-black/60 mt-1">
-                Sign in to manage your orders and checkout quickly
+              <h1 className="font-display text-4xl text-burgundy mt-4 leading-none">Sign in to your edit.</h1>
+              <p className="font-body text-sm text-off-black/60 mt-3 leading-relaxed">
+                Keep your favourites close and checkout with ease.
               </p>
             </div>
 
@@ -112,7 +125,7 @@ const LoginPage: React.FC = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full pl-9 pr-3 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-3 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                 </div>
               </div>
@@ -132,7 +145,7 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-10 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-10 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                   <button
                     type="button"
@@ -147,7 +160,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-burgundy hover:bg-burgundy/90 text-nude py-3 px-4 font-body text-xs uppercase tracking-widest transition-all duration-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full bg-burgundy hover:bg-burgundy-light text-nude py-3.5 px-4 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-200 shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5"
               >
                 {isLoading ? 'Signing In…' : 'Sign In'}
                 {!isLoading && <ArrowRight size={14} />}
@@ -168,7 +181,9 @@ const LoginPage: React.FC = () => {
               </p>
             </div>
           </div>
+          </div>
         </div>
+      </div>
       </div>
     </>
   );

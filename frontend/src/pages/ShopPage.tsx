@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { SlidersHorizontal, X, Search, Sparkles } from 'lucide-react';
+import { SlidersHorizontal, X, Search, Sparkles, ArrowDownUp } from 'lucide-react';
 import { fetchProducts, fetchCategories } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner, EmptyState, ErrorState } from '../components/UI';
@@ -89,19 +89,19 @@ const ShopPage: React.FC = () => {
     <>
       <title>Shop Jewellery & Accessories — Flembe Essence</title>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12 py-5 sm:py-7">
         {/* Page Title & Breadcrumb header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-nude-dark/40">
+        <div className="mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-nude-dark/40">
             <div>
-              <p className="font-body text-xs uppercase tracking-[0.2em] text-rose-smoke font-semibold mb-1">
+              <p className="font-body text-[11px] uppercase tracking-[0.22em] text-rose-smoke font-bold mb-1">
                 Handpicked Boutique
               </p>
-              <h1 className="font-display text-4xl sm:text-5xl text-burgundy">
+              <h1 className="font-display text-5xl sm:text-6xl font-semibold leading-none text-burgundy">
                 {category ? subCategories.find(c => c.slug === category)?.name || 'Collection' : 'All Jewellery'}
               </h1>
               {data && (
-                <p className="font-body text-xs sm:text-sm text-off-black/60 mt-1">
+                <p className="font-body text-sm text-off-black/60 mt-2">
                   Showing <strong className="text-off-black font-semibold">{data.count}</strong> handcrafted pieces
                 </p>
               )}
@@ -109,12 +109,14 @@ const ShopPage: React.FC = () => {
 
             {/* Quick Sort & Mobile Filter Toggle */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-body text-xs text-off-black/60 hidden sm:inline uppercase tracking-wider">Sort:</span>
+              <div className="flex items-center gap-2 rounded-full border border-nude-dark/60 bg-white/70 px-3 py-1.5 shadow-sm">
+                <ArrowDownUp size={13} className="text-burgundy" />
+                <span className="font-body text-[10px] text-off-black/55 hidden sm:inline uppercase tracking-[0.16em] font-semibold">Sort by</span>
                 <select
                   value={ordering}
                   onChange={e => setParam('ordering', e.target.value)}
-                  className="bg-white border border-nude-dark/60 rounded-xs text-xs font-body py-2 px-3 text-off-black focus:outline-none focus:border-burgundy"
+                  aria-label="Sort products"
+                  className="bg-transparent border-0 text-xs font-body font-semibold py-1 px-1 text-burgundy focus:outline-none focus:ring-0 cursor-pointer"
                 >
                   <option value="-created_at">Newest First</option>
                   <option value="price">Price: Low to High</option>
@@ -138,7 +140,7 @@ const ShopPage: React.FC = () => {
           </div>
 
           {/* ─── Horizontal Category Pill Bar ─── */}
-          <div className="flex items-center gap-2 overflow-x-auto py-4 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto py-3 scrollbar-none">
             <button
               onClick={() => setParam('category', '')}
               className={`flex-shrink-0 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all duration-200 border ${
@@ -167,7 +169,7 @@ const ShopPage: React.FC = () => {
           {/* ─── Active Filter Tags ─── */}
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-2 pt-2">
-              <span className="font-body text-xs text-off-black/50 uppercase tracking-wider">Active:</span>
+              <span className="font-body text-[11px] text-off-black/50 uppercase tracking-wider font-semibold">Active:</span>
               {search && (
                 <span className="inline-flex items-center gap-1 bg-burgundy/10 text-burgundy text-xs px-2.5 py-1 rounded-full font-body">
                   <span>Search: "{search}"</span>
@@ -203,13 +205,13 @@ const ShopPage: React.FC = () => {
         </div>
 
         {/* ─── Main Shop Content ─── */}
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-5 lg:gap-7">
           {/* Sidebar Filters */}
-          <aside className={`w-full md:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
-            <div className="bg-white p-5 rounded-sm border border-nude-dark/50 shadow-xs space-y-6">
+          <aside className={`w-full md:w-56 lg:w-60 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
+            <div className="bg-white p-5 lg:p-6 rounded-xl border border-nude-dark/50 shadow-sm space-y-5 sticky top-28 h-auto md:h-[calc(100svh-8rem)] md:min-h-[560px] overflow-y-auto">
               {/* Search input */}
               <div>
-                <p className="label flex items-center gap-1">
+                <p className="label flex items-center gap-1 text-[11px]">
                   <Search size={12} />
                   <span>Search Keyword</span>
                 </p>
@@ -218,7 +220,7 @@ const ShopPage: React.FC = () => {
                     type="search"
                     placeholder="E.g. pearl, gold ring..."
                     value={localSearch}
-                    className="input-field text-xs pl-3 pr-8"
+                    className="input-field text-sm pl-3 pr-8 py-3"
                     onChange={e => setLocalSearch(e.target.value)}
                     onKeyDown={e => {
                       if (e.key === 'Enter') setParam('search', localSearch.trim() || undefined);
@@ -237,23 +239,23 @@ const ShopPage: React.FC = () => {
 
               {/* Price Presets & Range */}
               <div>
-                <p className="label">Price Range (৳)</p>
+                <p className="label text-[11px]">Price Range (৳)</p>
                 <div className="grid grid-cols-3 gap-1.5 mb-3">
                   <button
                     onClick={() => applyPricePreset(undefined, 300)}
-                    className="font-body text-[10px] uppercase tracking-wider py-1.5 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
+                    className="font-body text-[11px] uppercase tracking-wider py-2 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
                   >
                     &lt; ৳300
                   </button>
                   <button
                     onClick={() => applyPricePreset(300, 600)}
-                    className="font-body text-[10px] uppercase tracking-wider py-1.5 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
+                    className="font-body text-[11px] uppercase tracking-wider py-2 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
                   >
                     ৳300-600
                   </button>
                   <button
                     onClick={() => applyPricePreset(600, undefined)}
-                    className="font-body text-[10px] uppercase tracking-wider py-1.5 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
+                    className="font-body text-[11px] uppercase tracking-wider py-2 px-2 bg-nude/30 hover:bg-burgundy hover:text-nude rounded-xs transition-colors border border-nude-dark/40 text-center"
                   >
                     &gt; ৳600
                   </button>
@@ -265,7 +267,7 @@ const ShopPage: React.FC = () => {
                     placeholder="Min"
                     value={localMin}
                     onChange={e => setLocalMin(e.target.value)}
-                    className="input-field text-xs text-center"
+                    className="input-field text-sm text-center py-3"
                   />
                   <span className="text-off-black/40 text-xs">—</span>
                   <input
@@ -273,12 +275,12 @@ const ShopPage: React.FC = () => {
                     placeholder="Max"
                     value={localMax}
                     onChange={e => setLocalMax(e.target.value)}
-                    className="input-field text-xs text-center"
+                    className="input-field text-sm text-center py-3"
                   />
                 </div>
                 <button
                   onClick={applyPriceFilter}
-                  className="w-full btn-primary py-2 text-[11px] rounded-xs"
+                  className="w-full btn-primary py-2.5 text-xs rounded-xs"
                 >
                   Apply Price
                 </button>
@@ -287,7 +289,7 @@ const ShopPage: React.FC = () => {
               {/* Stock Filter Switch */}
               <div className="pt-2 border-t border-nude-dark/30">
                 <label className="flex items-center justify-between cursor-pointer select-none">
-                  <span className="font-body text-xs text-off-black font-medium">In Stock Only</span>
+                  <span className="font-body text-sm text-off-black font-medium">In Stock Only</span>
                   <input
                     type="checkbox"
                     checked={inStock === true}
@@ -298,10 +300,10 @@ const ShopPage: React.FC = () => {
               </div>
 
               {/* Campus Delivery Reminder Box */}
-              <div className="bg-nude/30 p-3.5 rounded border border-rose-smoke/30 text-center space-y-1.5">
-                <Sparkles size={16} className="mx-auto text-burgundy" />
-                <p className="font-body text-xs font-semibold text-burgundy">Free Campus Delivery</p>
-                <p className="font-body text-[11px] text-off-black/60 leading-normal">
+              <div className="bg-nude/30 p-4 rounded border border-rose-smoke/30 text-center space-y-2">
+                <Sparkles size={18} className="mx-auto text-burgundy" />
+                <p className="font-body text-sm font-semibold text-burgundy">Free Campus Delivery</p>
+                <p className="font-body text-xs text-off-black/60 leading-relaxed">
                   DIU Main Campus, Prime University & Mirpur 1 get 100% free delivery on Cash on Delivery.
                 </p>
               </div>
@@ -318,7 +320,7 @@ const ShopPage: React.FC = () => {
               <EmptyState message="No jewellery found matching your filter criteria. Try clearing some filters." />
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
                   {data?.results.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}

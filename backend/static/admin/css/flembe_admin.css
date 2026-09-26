@@ -69,6 +69,31 @@ a:hover {
 #branding {
   display: flex;
   align-items: center;
+  gap: 22px;
+}
+
+#fe-dashboard-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--fe-nude) !important;
+  border: 1px solid rgba(232, 196, 203, 0.45);
+  border-radius: 7px;
+  padding: 7px 11px;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 160ms ease;
+}
+
+#fe-dashboard-link:hover {
+  color: var(--fe-off-black) !important;
+  background: var(--fe-rose-smoke);
+  border-color: var(--fe-rose-smoke);
+  text-decoration: none !important;
+  transform: translateX(-2px);
 }
 
 #site-name {
@@ -207,10 +232,84 @@ div.breadcrumbs a:hover {
   text-decoration: none !important;
 }
 
+/* Keep navigation readable on Django's dark app rows and section headers. */
+#nav-sidebar .module,
+#nav-sidebar .module caption,
+#nav-sidebar .module caption a,
+#nav-sidebar .app-label,
+#nav-sidebar .section,
+#nav-sidebar .section a,
+#nav-sidebar .current-app .section,
+#nav-sidebar .current-app .section a {
+  color: var(--fe-white) !important;
+}
+
+#nav-sidebar .module caption,
+#nav-sidebar .app-label {
+  background: var(--fe-burgundy) !important;
+}
+
+#nav-sidebar .module table,
+#nav-sidebar .module tr,
+#nav-sidebar .module td,
+#nav-sidebar .module .model,
+#nav-sidebar .module .model a {
+  background: #ffffff !important;
+  color: #344054 !important;
+}
+
+#nav-sidebar .module .model a:link,
+#nav-sidebar .module .model a:visited,
+#nav-sidebar .module td a:link,
+#nav-sidebar .module td a:visited {
+  color: #344054 !important;
+  font-weight: 500 !important;
+}
+
+#nav-sidebar .module .model a:hover,
+#nav-sidebar .module td a:hover,
+#nav-sidebar .module td.current-model a,
+#nav-sidebar .module td.current-model > a {
+  color: var(--fe-burgundy) !important;
+  background: #f8eef5 !important;
+}
+
+#nav-sidebar .module .addlink,
+#nav-sidebar .module .changelink,
+#nav-sidebar .module .deletelink,
+#nav-sidebar .module .viewlink,
+#nav-sidebar .module td a.addlink,
+#nav-sidebar .module td a.changelink {
+  color: var(--fe-burgundy) !important;
+  background: transparent !important;
+  font-weight: 700 !important;
+}
+
+#nav-sidebar .module .addlink:hover,
+#nav-sidebar .module .changelink:hover,
+#nav-sidebar .module .viewlink:hover {
+  color: var(--fe-burgundy-light) !important;
+  background: #f8eef5 !important;
+}
+
+#nav-sidebar .module td,
+#nav-sidebar .module .model {
+  border-bottom: 1px solid #edf0f3 !important;
+}
+
+#container {
+  min-width: 0 !important;
+}
+
+#content {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
 /* ── Content / Main ──────────────────────────────────────────────────────── */
 #content {
-  background: var(--fe-nude) !important;
-  padding: 24px !important;
+  background: #f4f5f7 !important;
+  padding: 32px clamp(20px, 4vw, 56px) !important;
 }
 
 #content-main {
@@ -686,13 +785,204 @@ ul.messagelist li {
   border-left: 4px solid var(--fe-burgundy) !important;
   background: rgba(232,217,193,0.6) !important;
   color: var(--fe-off-black) !important;
-  margin-bottom: 4px;
-  border-radius: 0;
+  margin: 0 0 24px;
+  border-bottom: none;
+  padding-bottom: 0;
+
+
+/* ── Modern add/change forms ────────────────────────────────────────────── */
+#content-main > form,
+ul.messagelist li.success {
+  max-width: 1180px;
 }
 
-ul.messagelist li.success {
+.change-form .module,
   border-left-color: #059669 !important;
   background: rgba(236,253,245,0.8) !important;
+  border: 1px solid #e2e5ea !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px rgba(27, 27, 27, 0.06) !important;
+  margin-bottom: 20px !important;
+}
+
+.change-form .module h2,
+.add-form .module h2,
+#content-main > form .module h2 {
+  background: linear-gradient(110deg, var(--fe-burgundy), var(--fe-burgundy-light)) !important;
+  color: var(--fe-white) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 15px 22px !important;
+}
+
+.change-form .module p,
+.add-form .module p,
+#content-main > form .module p {
+  color: #667085 !important;
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+
+.change-form .form-row,
+.add-form .form-row,
+#content-main > form .form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 20px 22px !important;
+  border-bottom: 1px solid #edf0f3 !important;
+  background: var(--fe-white) !important;
+}
+
+.change-form .form-row > div,
+.add-form .form-row > div,
+#content-main > form .form-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.change-form .form-row label,
+.add-form .form-row label,
+#content-main > form .form-row label {
+  flex: 0 0 150px;
+  padding-top: 11px;
+  color: #344054 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em;
+}
+
+.change-form input[type="text"],
+.change-form input[type="url"],
+.change-form input[type="number"],
+.change-form textarea,
+.change-form select,
+.add-form input[type="text"],
+.add-form input[type="url"],
+.add-form input[type="number"],
+.add-form textarea,
+.add-form select,
+#content-main > form input[type="text"],
+#content-main > form input[type="url"],
+#content-main > form input[type="number"],
+#content-main > form textarea,
+#content-main > form select {
+  width: 100% !important;
+  max-width: 720px;
+  min-height: 44px;
+  border: 1px solid #d0d5dd !important;
+  border-radius: 9px !important;
+  padding: 11px 13px !important;
+  background: #fbfcfd !important;
+  font-size: 14px !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease !important;
+}
+
+.change-form textarea,
+.add-form textarea,
+#content-main > form textarea {
+  min-height: 128px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.change-form input:focus,
+.change-form textarea:focus,
+.change-form select:focus,
+.add-form input:focus,
+.add-form textarea:focus,
+.add-form select:focus,
+#content-main > form input:focus,
+#content-main > form textarea:focus,
+#content-main > form select:focus {
+  border-color: var(--fe-burgundy) !important;
+  background: var(--fe-white) !important;
+  box-shadow: 0 0 0 4px rgba(75, 29, 63, 0.1) !important;
+}
+
+.change-form .help,
+.add-form .help,
+#content-main > form .help {
+  color: #667085 !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.change-form .submit-row,
+.add-form .submit-row,
+#content-main > form .submit-row {
+  margin-top: 20px;
+  border: 1px solid #e2e5ea !important;
+  border-radius: 14px;
+  background: var(--fe-white) !important;
+  padding: 18px 22px !important;
+  box-shadow: 0 8px 24px rgba(27, 27, 27, 0.05);
+}
+
+.change-form .submit-row input,
+.add-form .submit-row input,
+#content-main > form .submit-row input {
+  border-radius: 9px !important;
+  padding: 12px 22px !important;
+}
+
+.change-form .submit-row input.default,
+.add-form .submit-row input.default,
+#content-main > form .submit-row input.default {
+  background: var(--fe-burgundy) !important;
+  box-shadow: 0 6px 16px rgba(75, 29, 63, 0.2) !important;
+}
+
+@media (max-width: 700px) {
+  #header {
+    height: auto;
+    min-height: 64px;
+    padding: 12px 16px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #branding {
+    gap: 10px;
+  }
+
+  .brand-flembe,
+  .brand-essence {
+    font-size: 17px !important;
+  }
+
+  #fe-dashboard-link {
+    font-size: 9px !important;
+    padding: 6px 8px;
+  }
+
+  #user-tools {
+    width: 100%;
+    text-align: left;
+  }
+
+  #content {
+    padding: 20px 14px !important;
+    overflow-x: auto;
+  }
+
+  .change-form .form-row,
+  .add-form .form-row,
+  #content-main > form .form-row {
+    display: block;
+  }
+
+  .change-form .form-row label,
+  .add-form .form-row label,
+  #content-main > form .form-row label {
+    display: block;
+    padding: 0 0 8px;
+  }
+}
 }
 
 ul.messagelist li.warning {
