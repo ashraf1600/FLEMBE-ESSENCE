@@ -4,16 +4,18 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { fetchDeliveryZones, createOrder } from '../lib/queries';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { LoadingSpinner } from '../components/UI';
 import toast from 'react-hot-toast';
 
 const CheckoutPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, subtotal } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: '',
-    phone: '',
+    name: user?.name || user?.first_name || '',
+    phone: user?.phone || '',
     address: '',
     delivery_zone_id: '',
     customer_note: '',
@@ -38,11 +40,24 @@ const CheckoutPage: React.FC = () => {
     },
     onError: (err: any) => {
       const detail = err?.response?.data;
-      if (detail?.items) toast.error(String(detail.items));
+      if (err?.response?.status === 401) {
+        toast.error('Authentication required to place an order.');
+        navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      } else if (detail?.items) toast.error(String(detail.items));
       else if (detail?.non_field_errors) toast.error(String(detail.non_field_errors));
       else toast.error('Failed to place order. Please try again.');
     },
   });
+
+  React.useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || user.name || user.first_name || '',
+        phone: prev.phone || user.phone || '',
+      }));
+    }
+  }, [user]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -93,7 +108,35 @@ const CheckoutPage: React.FC = () => {
     <>
       <title>Checkout — Flembe Essence</title>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="font-display text-4xl text-burgundy mb-8">Checkout</h1>
+        <h1 className="font-display text-4xl text-burgundy mb-6">Checkout</h1>
+
+        {/* Authenticated user banner */}
+        {user ? (
+          <div className="mb-8 p-3.5 bg-white border border-nude-dark flex flex-wrap items-center justify-between gap-3 text-xs font-body shadow-xs">
+            <div className="flex items-center gap-2 text-off-black">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>
+                Signed in as <strong className="text-burgundy">{user.name || user.username}</strong> ({user.email})
+              </span>
+            </div>
+            <Link to="/my-orders" className="text-burgundy hover:underline text-[11px] font-medium">
+              View My Order History →
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-8 p-4 bg-burgundy/10 border border-burgundy/20 flex flex-wrap items-center justify-between gap-3 text-xs font-body">
+            <span className="text-burgundy font-medium">
+              Please sign in to confirm and place your Cash on Delivery order.
+            </span>
+            <Link
+              to="/login"
+              state={{ from: { pathname: '/checkout' } }}
+              className="bg-burgundy text-nude px-3 py-1.5 font-bold uppercase tracking-wider text-[10px]"
+            >
+              Sign In Now
+            </Link>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">

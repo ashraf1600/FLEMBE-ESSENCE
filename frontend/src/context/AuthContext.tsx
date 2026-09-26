@@ -1,89 +1,169 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import api from '../lib/api';
 
-interface AdminUser {
+export interface User {
+  id: number;
   username: string;
+  email: string;
+  name: string;
+  first_name?: string;
+  last_name?: string;
+  is_staff: boolean;
+  phone?: string;
+  orders_count?: number;
+  date_joined?: string;
+}
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  name?: string;
+  phone?: string;
+}
+
+export interface ProfileUpdateData {
+  name?: string;
   email?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
-  admin: AdminUser | null;
+  user: User | null;
+  admin: User | null; // Backward-compatibility alias for admin dashboard & components
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
+  register: (data: RegisterData) => Promise<User>;
+  updateProfile: (data: ProfileUpdateData) => Promise<User>;
+  changePassword: (current_password: string, new_password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY   = 'access_token';
 const REFRESH_KEY = 'refresh_token';
-const USER_KEY    = 'admin_user';
+const USER_KEY    = 'current_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [admin, setAdmin] = useState<AdminUser | null>(() => {
+  const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem(USER_KEY);
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // On mount, verify the stored token is still valid
-  useEffect(() => {
+  const refreshUser = useCallback(async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) { setAdmin(null); return; }
-    // Lightweight check — just see if /admin/stats/ responds 200
-    api.get('/admin/stats/').catch(() => {
-      // Token invalid/expired — clear everything
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const { data } = await api.get<User>('/auth/me/');
+      setUser(data);
+      localStorage.setItem(USER_KEY, JSON.stringify(data));
+    } catch {
+      // If fetching profile fails (token expired), clear credentials
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(REFRESH_KEY);
       localStorage.removeItem(USER_KEY);
-      setAdmin(null);
-    });
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
+  // On mount, verify and hydrate the user profile
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
+
+  const login = useCallback(async (username: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
-      const { data } = await api.post<{ access: string; refresh: string }>(
+      const { data } = await api.post<{ access: string; refresh: string; user?: User }>(
         '/auth/login/',
         { username, password },
       );
       localStorage.setItem(TOKEN_KEY, data.access);
       localStorage.setItem(REFRESH_KEY, data.refresh);
 
-      // Verify that this user has staff/admin permissions
-      try {
-        await api.get('/admin/stats/', {
+      let loggedInUser = data.user;
+      if (!loggedInUser) {
+        const meRes = await api.get<User>('/auth/me/', {
           headers: { Authorization: `Bearer ${data.access}` },
         });
-      } catch (checkErr: any) {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(REFRESH_KEY);
-        if (checkErr.response?.status === 403) {
-          throw new Error('Access denied: Admin privileges (staff status) are required.');
-        }
-        throw checkErr;
+        loggedInUser = meRes.data;
       }
 
-      const user: AdminUser = { username };
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-      setAdmin(user);
+      localStorage.setItem(USER_KEY, JSON.stringify(loggedInUser));
+      setUser(loggedInUser);
+      return loggedInUser;
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  const register = useCallback(async (regData: RegisterData): Promise<User> => {
+    setIsLoading(true);
+    try {
+      const { data } = await api.post<{ access?: string; refresh?: string; user: User }>(
+        '/auth/register/',
+        regData,
+      );
+      return data.user;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateProfile = useCallback(async (updateData: ProfileUpdateData): Promise<User> => {
+    setIsLoading(true);
+    try {
+      const { data } = await api.patch<User>('/auth/me/', updateData);
+      localStorage.setItem(USER_KEY, JSON.stringify(data));
+      setUser(data);
+      return data;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const changePassword = useCallback(async (current_password: string, new_password: string): Promise<void> => {
+    await api.post('/auth/change-password/', { current_password, new_password });
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
-    setAdmin(null);
+    setUser(null);
   }, []);
 
+  const isAdmin = Boolean(user?.is_staff);
+
   return (
-    <AuthContext.Provider value={{ admin, isAuthenticated: !!admin, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        admin: user, // Alias for legacy code
+        isAuthenticated: !!user,
+        isAdmin,
+        isLoading,
+        login,
+        register,
+        updateProfile,
+        changePassword,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -125,6 +125,8 @@ class ProductAPITest(TestCase):
 class OrderAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.user = User.objects.create_user(username='customer_user', password='password123')
+        self.client.force_authenticate(user=self.user)
         self.product = make_product(price=500, stock=10)
         self.zone = make_zone(charge=60)
 
@@ -137,6 +139,11 @@ class OrderAPITest(TestCase):
             'customer_note': 'Test note',
             'policy_accepted': policy,
         }
+
+    def test_unauthenticated_cannot_place_order(self):
+        anon_client = APIClient()
+        resp = anon_client.post('/api/v1/orders/', self._order_payload(), format='json')
+        self.assertEqual(resp.status_code, 401)
 
     def test_valid_order_creation(self):
         resp = self.client.post('/api/v1/orders/', self._order_payload(), format='json')
@@ -229,8 +236,12 @@ class AdminOrderAPITest(TestCase):
             'items': [{'product_id': self.product.id, 'quantity': 1}],
             'policy_accepted': True,
         }
+        # Authenticate customer to place the initial order
+        cust_user = User.objects.create_user(username='admin_cust_user', password='password123')
+        self.client.force_authenticate(user=cust_user)
         resp = self.client.post('/api/v1/orders/', payload, format='json')
         self.order_number = resp.data['order_number']
+        self.client.force_authenticate(user=None)
 
     def _login_admin(self):
         resp = self.client.post('/api/v1/auth/login/', {'username': 'admin_test', 'password': 'admin123'}, format='json')
@@ -272,4 +283,80 @@ class AdminOrderAPITest(TestCase):
         self.assertIn('recent_orders', resp.data)
         self.assertIn('low_stock_products', resp.data)
         self.assertEqual(resp.data['total_orders'], 1)
+
+
+# ─── Auth & Customer Protection Tests ─────────────────────────────────────────
+
+class AuthAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_user_registration(self):
+        resp = self.client.post('/api/v1/auth/register/', {
+            'username': 'newcustomer',
+            'email': 'customer@example.com',
+            'password': 'SecurePassword123!',
+            'name': 'Jane Doe',
+            'phone': '01812345678',
+        }, format='json')
+        self.assertEqual(resp.status_code, 201)
+        self.assertIn('access', resp.data)
+        self.assertIn('refresh', resp.data)
+        self.assertEqual(resp.data['user']['username'], 'newcustomer')
+        self.assertEqual(resp.data['user']['name'], 'Jane Doe')
+
+    def test_user_login_returns_profile(self):
+        u = User.objects.create_user(username='loginuser', email='login@example.com', password='mypassword')
+        u.first_name = 'Login'
+        u.last_name = 'User'
+        u.save()
+
+        resp = self.client.post('/api/v1/auth/login/', {
+            'username': 'loginuser',
+            'password': 'mypassword',
+        }, format='json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('access', resp.data)
+        self.assertEqual(resp.data['user']['username'], 'loginuser')
+        self.assertEqual(resp.data['user']['email'], 'login@example.com')
+
+    def test_current_user_me_unauthorized(self):
+        resp = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(resp.status_code, 401)
+
+    def test_current_user_me_authorized(self):
+        u = User.objects.create_user(username='meuser', email='me@example.com', password='mypassword')
+        self.client.force_authenticate(user=u)
+        resp = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['username'], 'meuser')
+
+    def test_my_orders_requires_authentication(self):
+        resp = self.client.get('/api/v1/orders/my-orders/')
+        self.assertEqual(resp.status_code, 401)
+
+    def test_my_orders_returns_user_orders(self):
+        u = User.objects.create_user(username='order_owner', password='password123')
+        self.client.force_authenticate(user=u)
+
+        product = make_product(sku='AUTH-001')
+        zone = make_zone('Auth Zone')
+        customer = Customer.objects.create(name='Owner', phone='01899999999')
+
+        order = Order.objects.create(
+            order_number='FE-20260926-999',
+            user=u,
+            customer=customer,
+            delivery_zone=zone,
+            address='Dhaka',
+            subtotal=500,
+            delivery_charge=60,
+            total_amount=560,
+            policy_accepted=True,
+        )
+
+        resp = self.client.get('/api/v1/orders/my-orders/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.data['results'] if 'results' in resp.data else resp.data), 1)
+
 

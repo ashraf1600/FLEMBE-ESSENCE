@@ -21,6 +21,10 @@ const AboutPage          = lazy(() => import('./pages/AboutPage'));
 const DeliveryPage       = lazy(() => import('./pages/DeliveryPage'));
 const ReturnExchangePage = lazy(() => import('./pages/ReturnExchangePage'));
 const ContactPage        = lazy(() => import('./pages/ContactPage'));
+const LoginPage          = lazy(() => import('./pages/LoginPage'));
+const RegisterPage       = lazy(() => import('./pages/RegisterPage'));
+const MyOrdersPage       = lazy(() => import('./pages/MyOrdersPage'));
+const ProfilePage        = lazy(() => import('./pages/ProfilePage'));
 // Admin pages
 const AdminLoginPage     = lazy(() => import('./pages/AdminLoginPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
@@ -70,9 +74,33 @@ function App() {
                 <Route
                   path="/admin-dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true}>
                       <AdminDashboardPage />
                     </ProtectedRoute>
+                  }
+                />
+
+                {/* ── Customer Auth routes ──────────────────────── */}
+                <Route path="/login" element={<StorefrontLayout><LoginPage /></StorefrontLayout>} />
+                <Route path="/register" element={<StorefrontLayout><RegisterPage /></StorefrontLayout>} />
+                <Route
+                  path="/my-orders"
+                  element={
+                    <StorefrontLayout>
+                      <ProtectedRoute>
+                        <MyOrdersPage />
+                      </ProtectedRoute>
+                    </StorefrontLayout>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <StorefrontLayout>
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    </StorefrontLayout>
                   }
                 />
 
@@ -82,7 +110,16 @@ function App() {
                 <Route path="/categories" element={<StorefrontLayout><CategoriesPage /></StorefrontLayout>} />
                 <Route path="/categories/:slug" element={<StorefrontLayout><CategoryPage /></StorefrontLayout>} />
                 <Route path="/products/:slug" element={<StorefrontLayout><ProductDetailPage /></StorefrontLayout>} />
-                <Route path="/checkout" element={<StorefrontLayout><CheckoutPage /></StorefrontLayout>} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <StorefrontLayout>
+                      <ProtectedRoute>
+                        <CheckoutPage />
+                      </ProtectedRoute>
+                    </StorefrontLayout>
+                  }
+                />
                 <Route path="/order-success" element={<StorefrontLayout><OrderSuccessPage /></StorefrontLayout>} />
                 <Route path="/about" element={<StorefrontLayout><AboutPage /></StorefrontLayout>} />
                 <Route path="/delivery" element={<StorefrontLayout><DeliveryPage /></StorefrontLayout>} />

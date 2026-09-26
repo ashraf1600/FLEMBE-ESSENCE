@@ -5,10 +5,11 @@ import { LoadingSpinner } from './UI';
 
 interface Props {
   children: React.ReactNode;
+  requireAdmin?: boolean;
 }
 
-const ProtectedRoute: React.FC<Props> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute: React.FC<Props> = ({ children, requireAdmin = false }) => {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -20,7 +21,12 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin-login" state={{ from: location }} replace />;
+    const redirectPath = requireAdmin ? '/admin-login' : '/login';
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
+  }
+
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
