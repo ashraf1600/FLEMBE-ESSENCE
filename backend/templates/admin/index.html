@@ -1,0 +1,197 @@
+{% extends "admin/base_site.html" %}
+{% load i18n flembe_tags %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+{% get_store_stats as s %}
+
+<div class="fe-db">
+
+  {# ── Welcome Banner ──────────────────────────────────────────────────────── #}
+  <div class="fe-db-banner">
+    <div>
+      <h1 class="fe-db-title">Store Management</h1>
+      <p class="fe-db-sub">Welcome back! Here's your Flembe Essence store at a glance.</p>
+    </div>
+    <a href="{% url 'admin:catalog_product_add' %}" class="fe-db-cta">+ Add New Product</a>
+  </div>
+
+  {# ── KPI Stats Row ───────────────────────────────────────────────────────── #}
+  <div class="fe-kpi-row">
+
+    <div class="fe-kpi {% if s.pending_orders > 0 %}fe-kpi-urgent{% endif %}">
+      <div class="fe-kpi-num">{{ s.pending_orders }}</div>
+      <div class="fe-kpi-label">Pending Orders</div>
+      <div class="fe-kpi-hint">Waiting for confirmation</div>
+      <a href="{% url 'admin:orders_order_changelist' %}?order_status__exact=PENDING" class="fe-kpi-link">View →</a>
+    </div>
+
+    <div class="fe-kpi">
+      <div class="fe-kpi-num">{{ s.total_orders }}</div>
+      <div class="fe-kpi-label">Total Orders</div>
+      <div class="fe-kpi-hint">All time</div>
+      <a href="{% url 'admin:orders_order_changelist' %}" class="fe-kpi-link">View all →</a>
+    </div>
+
+    <div class="fe-kpi">
+      <div class="fe-kpi-num">{{ s.active_products }}</div>
+      <div class="fe-kpi-label">Products Listed</div>
+      <div class="fe-kpi-hint">Visible to customers</div>
+      <a href="{% url 'admin:catalog_product_changelist' %}" class="fe-kpi-link">Manage →</a>
+    </div>
+
+    <div class="fe-kpi {% if s.out_of_stock > 0 %}fe-kpi-warn{% endif %}">
+      <div class="fe-kpi-num">{{ s.out_of_stock }}</div>
+      <div class="fe-kpi-label">Out of Stock</div>
+      <div class="fe-kpi-hint">Need restocking</div>
+      {% if s.out_of_stock > 0 %}<a href="{% url 'admin:catalog_product_changelist' %}" class="fe-kpi-link">Fix →</a>{% endif %}
+    </div>
+
+    <div class="fe-kpi fe-kpi-revenue">
+      <div class="fe-kpi-num fe-kpi-num-sm">৳{{ s.total_revenue|floatformat:0 }}</div>
+      <div class="fe-kpi-label">Total Revenue</div>
+      <div class="fe-kpi-hint">Confirmed + Delivered</div>
+    </div>
+
+  </div>
+
+  {# ── Quick Actions ────────────────────────────────────────────────────────── #}
+  <div class="fe-section">
+    <h2 class="fe-section-h">Quick Actions</h2>
+    <div class="fe-actions">
+
+      <a href="{% url 'admin:orders_order_changelist' %}?order_status__exact=PENDING" class="fe-action fe-action-hot">
+        <span class="fe-action-ico">📦</span>
+        <span class="fe-action-t">Pending Orders</span>
+        <span class="fe-action-d">{{ s.pending_orders }} order{{ s.pending_orders|pluralize }} need attention</span>
+      </a>
+
+      <a href="{% url 'admin:catalog_product_add' %}" class="fe-action fe-action-add">
+        <span class="fe-action-ico">✨</span>
+        <span class="fe-action-t">Add New Product</span>
+        <span class="fe-action-d">Upload photos, set price & stock</span>
+      </a>
+
+      <a href="{% url 'admin:catalog_product_changelist' %}" class="fe-action">
+        <span class="fe-action-ico">🛍️</span>
+        <span class="fe-action-t">All Products</span>
+        <span class="fe-action-d">Edit, hide or restock items</span>
+      </a>
+
+      <a href="{% url 'admin:orders_order_changelist' %}" class="fe-action">
+        <span class="fe-action-ico">📋</span>
+        <span class="fe-action-t">All Orders</span>
+        <span class="fe-action-d">Search, filter & update status</span>
+      </a>
+
+      <a href="{% url 'admin:catalog_category_changelist' %}" class="fe-action">
+        <span class="fe-action-ico">🏷️</span>
+        <span class="fe-action-t">Categories</span>
+        <span class="fe-action-d">Rings, Earrings, Necklaces…</span>
+      </a>
+
+      <a href="{% url 'admin:delivery_deliveryzone_changelist' %}" class="fe-action">
+        <span class="fe-action-ico">🚚</span>
+        <span class="fe-action-t">Delivery Areas</span>
+        <span class="fe-action-d">Manage zones & charges</span>
+      </a>
+
+    </div>
+  </div>
+
+  {# ── Low-Stock Alert ──────────────────────────────────────────────────────── #}
+  {% if s.low_stock_products %}
+  <div class="fe-section fe-section-alert">
+    <h2 class="fe-section-h">⚠️  Low Stock — Restock Soon</h2>
+    <p class="fe-alert-hint">These products are almost sold out. Update stock in the Products section.</p>
+    <div class="fe-low-stock-list">
+      {% for p in s.low_stock_products %}
+      <a href="{% url 'admin:catalog_product_change' p.pk %}" class="fe-ls-item">
+        <span class="fe-ls-name">{{ p.name }}</span>
+        <span class="fe-ls-qty {% if p.stock_quantity == 0 %}fe-ls-zero{% else %}fe-ls-low{% endif %}">
+          {% if p.stock_quantity == 0 %}❌ Out of stock{% else %}⚠️ {{ p.stock_quantity }} left{% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Recent Orders Table ──────────────────────────────────────────────────── #}
+  <div class="fe-section">
+    <div class="fe-section-hdr">
+      <h2 class="fe-section-h">Recent Orders</h2>
+      <a href="{% url 'admin:orders_order_changelist' %}" class="fe-view-all">View all orders →</a>
+    </div>
+
+    {% if s.recent_orders %}
+    <div class="fe-tbl-wrap">
+      <table class="fe-tbl">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Delivery Area</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in s.recent_orders %}
+          <tr>
+            <td><span class="fe-order-num">{{ o.order_number }}</span></td>
+            <td><strong>{{ o.customer.name }}</strong></td>
+            <td>
+              <a href="tel:{{ o.customer.phone }}" style="color:#4B1D3F;font-weight:500;">
+                {{ o.customer.phone }}
+              </a>
+            </td>
+            <td>{{ o.delivery_zone.name }}</td>
+            <td><strong style="color:#4B1D3F;">৳{{ o.total_amount|floatformat:0 }}</strong></td>
+            <td>
+              {% if o.order_status == 'PENDING' %}
+                <span class="fe-badge fe-b-pending">🕐 Pending</span>
+              {% elif o.order_status == 'CONFIRMED' %}
+                <span class="fe-badge fe-b-confirmed">✅ Confirmed</span>
+              {% elif o.order_status == 'PROCESSING' %}
+                <span class="fe-badge fe-b-processing">⚙️ Processing</span>
+              {% elif o.order_status == 'SHIPPED' %}
+                <span class="fe-badge fe-b-shipped">🚚 Shipped</span>
+              {% elif o.order_status == 'DELIVERED' %}
+                <span class="fe-badge fe-b-delivered">📦 Delivered</span>
+              {% elif o.order_status == 'CANCELLED' %}
+                <span class="fe-badge fe-b-cancelled">❌ Cancelled</span>
+              {% else %}
+                <span class="fe-badge">{{ o.get_order_status_display }}</span>
+              {% endif %}
+            </td>
+            <td class="fe-tbl-date">{{ o.created_at|date:"d M Y, g:i A" }}</td>
+            <td>
+              <a href="{% url 'admin:orders_order_change' o.pk %}" class="fe-tbl-edit">Edit →</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="fe-empty-state">
+      <p>🛒  No orders yet.</p>
+      <p style="font-size:13px;color:#9ca3af;">Share your store link to start receiving orders!</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Help Note ────────────────────────────────────────────────────────────── #}
+  <div class="fe-help-note">
+    <strong>Need help?</strong>
+    Call <a href="tel:01865330801">01865330801</a> or use the links above to manage your store.
+    The "System Info" and "Technical Details" sections in forms can always be ignored.
+  </div>
+
+</div>
+{% endblock %}

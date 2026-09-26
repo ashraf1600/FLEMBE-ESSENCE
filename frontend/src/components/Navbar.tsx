@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, LayoutDashboard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { totalItems } = useCart();
+  const { isAuthenticated, admin, logout } = useAuth();
   const navigate = useNavigate();
 
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/shop', label: 'Shop' },
-    { to: '/categories', label: 'Categories' },
-    { to: '/about', label: 'About' },
-    { to: '/delivery', label: 'Delivery' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/',          label: 'Home' },
+    { to: '/shop',      label: 'Shop' },
+    { to: '/categories',label: 'Categories' },
+    { to: '/about',     label: 'About' },
+    { to: '/delivery',  label: 'Delivery' },
+    { to: '/contact',   label: 'Contact' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -81,6 +83,35 @@ const Navbar: React.FC = () => {
               )}
             </Link>
 
+            {/* Admin indicator (desktop) */}
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  to="/admin-dashboard"
+                  className="flex items-center gap-1.5 bg-burgundy text-nude font-body text-[10px] uppercase tracking-widest px-3 py-1.5 hover:bg-burgundy/80 transition-colors"
+                >
+                  <LayoutDashboard size={12} />
+                  Admin
+                </Link>
+                <button
+                  onClick={logout}
+                  className="font-body text-[10px] uppercase tracking-widest text-nude/40 hover:text-nude/80 transition-colors"
+                  title={`Logged in as ${admin?.username}`}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/admin-login"
+                className="hidden md:flex items-center gap-1.5 font-body text-[10px] uppercase tracking-widest text-nude/30 hover:text-nude/60 transition-colors"
+                title="Admin login"
+              >
+                <LayoutDashboard size={12} />
+                Admin
+              </Link>
+            )}
+
             {/* Mobile menu toggle */}
             <button
               onClick={() => setOpen(!open)}
@@ -124,6 +155,35 @@ const Navbar: React.FC = () => {
                 {link.label}
               </NavLink>
             ))}
+
+            {/* Mobile admin link */}
+            <div className="border-t border-nude/10 pt-3 mt-1">
+              {isAuthenticated ? (
+                <div className="flex items-center justify-between">
+                  <Link
+                    to="/admin-dashboard"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 font-body text-sm uppercase tracking-widest text-rose-smoke"
+                  >
+                    <LayoutDashboard size={14} /> Admin Dashboard
+                  </Link>
+                  <button
+                    onClick={() => { logout(); setOpen(false); }}
+                    className="font-body text-xs uppercase tracking-widest text-nude/40"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/admin-login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 font-body text-sm uppercase tracking-widest text-nude/30"
+                >
+                  <LayoutDashboard size={14} /> Admin Login
+                </Link>
+              )}
+            </div>
           </nav>
         </div>
       )}

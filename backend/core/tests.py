@@ -256,3 +256,20 @@ class AdminOrderAPITest(TestCase):
         self.assertEqual(resp.status_code, 200)
         order = Order.objects.get(order_number=self.order_number)
         self.assertEqual(order.order_status, 'CONFIRMED')
+
+    def test_admin_stats_unauthorized(self):
+        resp = self.client.get('/api/v1/admin/stats/')
+        self.assertIn(resp.status_code, [401, 403])
+
+    def test_admin_stats_authorized(self):
+        self._login_admin()
+        resp = self.client.get('/api/v1/admin/stats/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('kpis', resp.data)
+        self.assertIn('category_sales', resp.data)
+        self.assertIn('orders_by_status', resp.data)
+        self.assertIn('top_products', resp.data)
+        self.assertIn('recent_orders', resp.data)
+        self.assertIn('low_stock_products', resp.data)
+        self.assertEqual(resp.data['kpis']['total_orders'], 1)
+

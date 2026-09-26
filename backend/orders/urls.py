@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     OrderCreateView, OrderDetailView,
     AdminOrderListView, AdminOrderDetailView,
-    AdminOrderStatusUpdateView,
+    AdminOrderStatusUpdateView, AdminStatsView,
 )
 
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('admin/orders/', AdminOrderListView.as_view(), name='admin-order-list'),
     path('admin/orders/<str:order_number>/', AdminOrderDetailView.as_view(), name='admin-order-detail'),
     path('admin/orders/<str:order_number>/status/', AdminOrderStatusUpdateView.as_view(), name='admin-order-status'),
+    path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
 ]

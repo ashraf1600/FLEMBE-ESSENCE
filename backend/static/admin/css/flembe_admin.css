@@ -911,3 +911,398 @@ tr.selected {
 ::-webkit-scrollbar-track { background: var(--fe-nude); }
 ::-webkit-scrollbar-thumb { background: var(--fe-nude-dark); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--fe-rose-smoke); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CUSTOM DASHBOARD  (templates/admin/index.html)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Outer container ─────────────────────────────────────────────────────── */
+.fe-db {
+  font-family: 'Jost', sans-serif;
+  max-width: 1200px;
+}
+
+/* ── Welcome banner ──────────────────────────────────────────────────────── */
+.fe-db-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--fe-white);
+  border: 1px solid var(--fe-nude-dark);
+  border-left: 5px solid var(--fe-burgundy);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+
+.fe-db-title {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 2rem !important;
+  color: var(--fe-burgundy) !important;
+  margin: 0 0 4px !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.fe-db-sub {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  color: rgba(27,27,27,0.55);
+  margin: 0;
+}
+
+.fe-db-cta {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 12px 24px !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: background 0.2s;
+  display: inline-block;
+}
+.fe-db-cta:hover {
+  background: var(--fe-burgundy-light) !important;
+  color: var(--fe-nude) !important;
+}
+
+/* ── KPI Stats Row ───────────────────────────────────────────────────────── */
+.fe-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 1100px) {
+  .fe-kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .fe-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.fe-kpi {
+  background: var(--fe-white);
+  border: 1px solid var(--fe-nude-dark);
+  padding: 20px 18px 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: box-shadow 0.2s;
+}
+.fe-kpi:hover { box-shadow: 0 4px 16px rgba(75,29,63,0.08); }
+
+.fe-kpi-urgent {
+  border-top: 4px solid #f59e0b !important;
+  background: #fffdf5 !important;
+}
+.fe-kpi-warn {
+  border-top: 4px solid #ef4444 !important;
+  background: #fff9f9 !important;
+}
+.fe-kpi-revenue {
+  border-top: 4px solid var(--fe-burgundy) !important;
+  background: #fdfafc !important;
+}
+
+.fe-kpi-num {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--fe-burgundy);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.fe-kpi-num-sm {
+  font-size: 1.7rem;
+}
+
+.fe-kpi-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fe-off-black);
+}
+
+.fe-kpi-hint {
+  font-size: 11px;
+  color: rgba(27,27,27,0.45);
+  margin-top: 2px;
+}
+
+.fe-kpi-link {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  color: var(--fe-burgundy) !important;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+  text-decoration: none !important;
+}
+.fe-kpi-link:hover { text-decoration: underline !important; }
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.fe-section {
+  background: var(--fe-white);
+  border: 1px solid var(--fe-nude-dark);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.fe-section-alert {
+  border-top: 4px solid #f59e0b;
+  background: #fffdf0;
+}
+
+.fe-section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+
+.fe-section-h {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 1.25rem !important;
+  color: var(--fe-burgundy) !important;
+  font-weight: 600 !important;
+  padding: 16px 20px 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.fe-section-hdr .fe-section-h { padding: 0 !important; }
+
+.fe-view-all {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--fe-burgundy) !important;
+  text-decoration: none !important;
+  padding-right: 20px;
+}
+.fe-view-all:hover { text-decoration: underline !important; }
+
+/* ── Quick Actions Grid ──────────────────────────────────────────────────── */
+.fe-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 20px 20px;
+}
+
+@media (max-width: 900px) {
+  .fe-actions { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .fe-actions { grid-template-columns: 1fr; }
+}
+
+.fe-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 16px;
+  background: var(--fe-nude);
+  border: 1px solid var(--fe-nude-dark);
+  text-decoration: none !important;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.fe-action:hover {
+  background: var(--fe-burgundy) !important;
+  border-color: var(--fe-burgundy) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75,29,63,0.2);
+}
+.fe-action:hover .fe-action-t,
+.fe-action:hover .fe-action-d { color: var(--fe-nude) !important; }
+
+.fe-action-hot {
+  border-left: 4px solid #f59e0b !important;
+  background: #fffdf0 !important;
+}
+.fe-action-add {
+  border-left: 4px solid var(--fe-burgundy) !important;
+}
+
+.fe-action-ico {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.fe-action-t {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--fe-off-black) !important;
+  letter-spacing: 0.02em;
+}
+
+.fe-action-d {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  color: rgba(27,27,27,0.5) !important;
+}
+
+/* ── Orders Table ────────────────────────────────────────────────────────── */
+.fe-tbl-wrap {
+  overflow-x: auto;
+  padding: 12px 20px 20px;
+}
+
+.fe-tbl {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-family: 'Jost', sans-serif;
+}
+
+.fe-tbl thead th {
+  background: var(--fe-off-black) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  padding: 10px 14px !important;
+  border-bottom: 2px solid var(--fe-burgundy) !important;
+  text-align: left;
+}
+
+.fe-tbl tbody tr {
+  border-bottom: 1px solid var(--fe-nude) !important;
+  transition: background 0.1s;
+}
+.fe-tbl tbody tr:nth-child(even) { background: rgba(232,217,193,0.2); }
+.fe-tbl tbody tr:hover { background: rgba(216,167,177,0.15) !important; }
+
+.fe-tbl td {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  color: var(--fe-off-black) !important;
+  padding: 10px 14px !important;
+  border: none !important;
+  vertical-align: middle;
+}
+
+.fe-order-num {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fe-burgundy);
+}
+
+.fe-tbl-date {
+  font-size: 11px !important;
+  color: rgba(27,27,27,0.45) !important;
+  white-space: nowrap;
+}
+
+.fe-tbl-edit {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  color: var(--fe-burgundy) !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+.fe-tbl-edit:hover { text-decoration: underline !important; }
+
+/* ── Order Status Badges ─────────────────────────────────────────────────── */
+.fe-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.fe-b-pending    { background: #fffbeb; color: #b45309; }
+.fe-b-confirmed  { background: #eff6ff; color: #1d4ed8; }
+.fe-b-processing { background: #f5f3ff; color: #7c3aed; }
+.fe-b-shipped    { background: #e0f2fe; color: #0369a1; }
+.fe-b-delivered  { background: #ecfdf5; color: #059669; }
+.fe-b-cancelled  { background: #f3f4f6; color: #6b7280; }
+
+/* ── Low Stock Alert ─────────────────────────────────────────────────────── */
+.fe-alert-hint {
+  font-size: 12px;
+  color: #92400e;
+  padding: 0 20px 8px;
+  margin: 0;
+}
+
+.fe-low-stock-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 20px 20px;
+}
+
+.fe-ls-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--fe-white);
+  border: 1px solid #fcd34d;
+  padding: 10px 14px;
+  min-width: 220px;
+  text-decoration: none !important;
+  transition: box-shadow 0.15s;
+}
+.fe-ls-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+.fe-ls-name {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--fe-off-black) !important;
+}
+
+.fe-ls-qty {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.fe-ls-low  { color: #b45309; }
+.fe-ls-zero { color: #dc2626; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.fe-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 18px;
+  color: rgba(27,27,27,0.5);
+}
+
+/* ── Help note ───────────────────────────────────────────────────────────── */
+.fe-help-note {
+  background: rgba(216,167,177,0.15);
+  border: 1px solid var(--fe-rose-smoke);
+  border-left: 4px solid var(--fe-rose-smoke);
+  padding: 14px 20px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  color: rgba(27,27,27,0.65);
+  margin-top: 8px;
+}
+.fe-help-note a {
+  color: var(--fe-burgundy) !important;
+  font-weight: 600;
+}
+
