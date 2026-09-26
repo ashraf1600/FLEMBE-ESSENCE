@@ -18,8 +18,20 @@ const ShopPage: React.FC = () => {
   const page = Number(searchParams.get('page') || 1);
   const inStock = searchParams.get('in_stock') === 'true' ? true : undefined;
 
+  // F3 fix: controlled input state so URL-driven clears (e.g. "Clear filters") reset the visible text
+  const [localSearch, setLocalSearch] = useState(search);
   const [localMin, setLocalMin] = useState(minPrice?.toString() || '');
   const [localMax, setLocalMax] = useState(maxPrice?.toString() || '');
+
+  // Keep localSearch in sync when URL param changes (e.g. after clearAll)
+  React.useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  React.useEffect(() => {
+    setLocalMin(minPrice?.toString() || '');
+    setLocalMax(maxPrice?.toString() || '');
+  }, [minPrice, maxPrice]);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -108,12 +120,12 @@ const ShopPage: React.FC = () => {
                 <input
                   type="search"
                   placeholder="Search products..."
-                  defaultValue={search}
+                  value={localSearch}
                   className="input-field text-sm"
+                  onChange={e => setLocalSearch(e.target.value)}
                   onKeyDown={e => {
-                    if (e.key === 'Enter') setParam('search', (e.target as HTMLInputElement).value);
+                    if (e.key === 'Enter') setParam('search', localSearch.trim() || undefined);
                   }}
-                  onChange={e => !e.target.value && setParam('search', '')}
                 />
               </div>
 

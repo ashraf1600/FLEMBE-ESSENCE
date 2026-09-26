@@ -45,7 +45,14 @@ class OrderCreateSerializer(serializers.Serializer):
     def _generate_order_number(self):
         today = timezone.now().strftime('%Y%m%d')
         prefix = f'FE-{today}-'
-        last_order = Order.objects.filter(order_number__startswith=prefix).order_by('-order_number').first()
+        # select_for_update locks the row so concurrent requests inside the same
+        # atomic transaction cannot generate the same sequence number.
+        last_order = (
+            Order.objects.select_for_update()
+            .filter(order_number__startswith=prefix)
+            .order_by('-order_number')
+            .first()
+        )
         if last_order:
             last_seq = int(last_order.order_number.split('-')[-1])
             new_seq = last_seq + 1
@@ -131,9 +138,10 @@ class OrderCreateSerializer(serializers.Serializer):
         # Create order items and deduct stock
         for item in order_items:
             product = item.pop('product')
+            quantity = item['quantity']  # capture before passing to create
             OrderItem.objects.create(order=order, product=product, **item)
-            # Deduct stock
-            product.stock_quantity -= item['quantity']
+            # Deduct stock atomically
+            product.stock_quantity -= quantity
             product.save(update_fields=['stock_quantity'])
 
         return order

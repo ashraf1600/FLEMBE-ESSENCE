@@ -4,6 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+# ── Brand the built-in Django admin ──────────────────────────────────────
+admin.site.site_header  = 'Flembe Essence'
+admin.site.site_title   = 'Flembe Essence Admin'
+admin.site.index_title  = 'Store Management'
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Auth

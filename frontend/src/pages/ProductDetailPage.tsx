@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart } = useCart();
+  const { addToCart, totalItems } = useCart();
   const [qty, setQty] = useState(1);
   const [selectedImg, setSelectedImg] = useState(0);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
@@ -168,9 +168,12 @@ const ProductDetailPage: React.FC = () => {
               {isInStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
 
-            <Link to="/checkout" className="block text-center mt-3 btn-outline w-full py-4">
-              Proceed to Checkout
-            </Link>
+            {/* F5 fix: only show checkout link when the cart is not empty */}
+            {totalItems > 0 && (
+              <Link to="/checkout" className="block text-center mt-3 btn-outline w-full py-4">
+                Proceed to Checkout ({totalItems} item{totalItems !== 1 ? 's' : ''})
+              </Link>
+            )}
 
             <p className="font-body text-xs text-off-black/30 mt-4 text-center">
               Cash on Delivery only · No Return / No Exchange

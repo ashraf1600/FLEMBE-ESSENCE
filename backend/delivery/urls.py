@@ -7,5 +7,4 @@ router.register('delivery-zones', DeliveryZoneViewSet, basename='delivery-zone')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('admin/', include(router.urls)),  # Same endpoints, protected by IsAdminUser
 ]

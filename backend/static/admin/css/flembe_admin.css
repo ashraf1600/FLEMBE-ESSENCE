@@ -1,0 +1,913 @@
+/*
+ * Flembe Essence — Custom Django Admin Theme
+ * Brand palette:
+ *   Burgundy    #4B1D3F  — primary / CTA / headings
+ *   Nude        #E8D9C1  — backgrounds / soft surfaces
+ *   Rose Smoke  #D8A7B1  — accents / hover / badges
+ *   Off Black   #1B1B1B  — body text / navbar
+ *
+ * Fonts: Cormorant Garamond (display) + Jost (body)
+ */
+
+/* ── Google Fonts ────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
+/* ── CSS Variables ───────────────────────────────────────────────────────── */
+:root {
+  --fe-burgundy:        #4B1D3F;
+  --fe-burgundy-light:  #6B2D5A;
+  --fe-burgundy-dark:   #2E1127;
+  --fe-nude:            #E8D9C1;
+  --fe-nude-dark:       #D5C4A8;
+  --fe-rose-smoke:      #D8A7B1;
+  --fe-rose-light:      #E8C4CB;
+  --fe-off-black:       #1B1B1B;
+  --fe-off-black-light: #2E2E2E;
+  --fe-white:           #FFFFFF;
+}
+
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
+body, html {
+  font-family: 'Jost', system-ui, sans-serif !important;
+  background-color: var(--fe-nude) !important;
+  color: var(--fe-off-black) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.breadcrumbs a,
+#site-name a,
+caption,
+th {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--fe-burgundy) !important;
+  text-decoration: none;
+}
+a:hover {
+  color: var(--fe-burgundy-light) !important;
+  text-decoration: underline;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+#header {
+  background: var(--fe-off-black) !important;
+  color: var(--fe-nude) !important;
+  padding: 0 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  border-bottom: none !important;
+}
+
+#branding {
+  display: flex;
+  align-items: center;
+}
+
+#site-name {
+  font-size: 0 !important; /* reset */
+}
+
+#site-name a {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  text-decoration: none !important;
+}
+
+.brand-flembe {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 22px !important;
+  font-weight: 600;
+  color: var(--fe-nude) !important;
+  letter-spacing: 0.15em;
+}
+
+.brand-essence {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 22px !important;
+  font-weight: 600;
+  color: var(--fe-rose-smoke) !important;
+  letter-spacing: 0.15em;
+  margin-left: 6px;
+}
+
+.brand-badge {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fe-off-black) !important;
+  background: var(--fe-rose-smoke);
+  padding: 2px 7px;
+  margin-left: 10px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/* User tools in header */
+#user-tools {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.08em;
+  color: rgba(232, 217, 193, 0.65) !important;
+}
+
+#user-tools a {
+  color: var(--fe-nude) !important;
+  font-size: 11px !important;
+}
+
+#user-tools a:hover {
+  color: var(--fe-rose-smoke) !important;
+  text-decoration: none !important;
+}
+
+/* ── Breadcrumbs ─────────────────────────────────────────────────────────── */
+div.breadcrumbs {
+  background: var(--fe-nude-dark) !important;
+  color: var(--fe-off-black-light) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 24px !important;
+  border-bottom: 1px solid rgba(75, 29, 63, 0.1);
+}
+
+div.breadcrumbs a {
+  color: var(--fe-burgundy) !important;
+  font-family: 'Jost', sans-serif !important;
+}
+
+div.breadcrumbs a:hover {
+  color: var(--fe-burgundy-light) !important;
+  text-decoration: none !important;
+}
+
+/* ── Navigation Sidebar ──────────────────────────────────────────────────── */
+#nav-sidebar {
+  background: var(--fe-white) !important;
+  border-right: 1px solid var(--fe-nude-dark) !important;
+}
+
+.toggle-nav-sidebar {
+  border-right: 1px solid var(--fe-nude-dark) !important;
+  background: var(--fe-white) !important;
+  color: var(--fe-burgundy) !important;
+}
+
+#nav-sidebar .current-app .section:link,
+#nav-sidebar .current-app .section:visited {
+  color: var(--fe-nude) !important;
+  background: var(--fe-burgundy) !important;
+}
+
+#nav-sidebar .current-model > a {
+  color: var(--fe-burgundy) !important;
+  font-weight: 600 !important;
+  background: var(--fe-nude) !important;
+}
+
+.nav-sidebar-top {
+  padding: 16px 12px 8px;
+}
+
+#nav-sidebar .sidebar-group-header,
+#nav-sidebar .app-label {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 9px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.45) !important;
+  padding: 12px 12px 4px;
+}
+
+#nav-sidebar a:link,
+#nav-sidebar a:visited {
+  color: var(--fe-off-black-light) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  padding: 6px 12px !important;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+#nav-sidebar a:hover {
+  background: var(--fe-nude) !important;
+  color: var(--fe-burgundy) !important;
+  text-decoration: none !important;
+}
+
+/* ── Content / Main ──────────────────────────────────────────────────────── */
+#content {
+  background: var(--fe-nude) !important;
+  padding: 24px !important;
+}
+
+#content-main {
+  background: transparent !important;
+}
+
+#content h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 2rem !important;
+  color: var(--fe-burgundy) !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--fe-nude-dark);
+  padding-bottom: 12px;
+}
+
+/* ── Dashboard Index ─────────────────────────────────────────────────────── */
+.dashboard #content {
+  background: var(--fe-nude) !important;
+}
+
+/* ── App / Module Blocks ─────────────────────────────────────────────────── */
+.module {
+  background: var(--fe-white) !important;
+  border: 1px solid var(--fe-nude-dark) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 4px rgba(75,29,63,0.06) !important;
+  margin-bottom: 20px !important;
+  overflow: hidden;
+}
+
+.module h2,
+.module caption {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+  letter-spacing: 0.02em;
+  border: none !important;
+}
+
+.module h3 {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.5) !important;
+  padding: 10px 16px 4px !important;
+  border-bottom: 1px solid var(--fe-nude) !important;
+  background: var(--fe-white) !important;
+}
+
+.module table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* ── App Index Boxes ─────────────────────────────────────────────────────── */
+.app-orders .module h2     { background: var(--fe-burgundy) !important; }
+.app-catalog .module h2    { background: var(--fe-burgundy-light) !important; }
+.app-delivery .module h2   { background: var(--fe-off-black) !important; }
+.app-auth .module h2       { background: var(--fe-off-black-light) !important; }
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+table {
+  border-collapse: collapse !important;
+}
+
+thead th,
+th {
+  background: var(--fe-off-black) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  padding: 10px 14px !important;
+  border-bottom: 2px solid var(--fe-burgundy) !important;
+}
+
+th a:link, th a:visited {
+  color: var(--fe-nude) !important;
+}
+
+th a:hover, th a.sorted {
+  color: var(--fe-rose-smoke) !important;
+}
+
+th.sorted {
+  background: var(--fe-off-black-light) !important;
+}
+
+/* Sorting arrows */
+th .text a:after,
+th.sorted-asc a:after,
+th.sorted-desc a:after {
+  color: var(--fe-rose-smoke) !important;
+}
+
+tr.row1 {
+  background: var(--fe-white) !important;
+}
+
+tr.row2 {
+  background: rgba(232, 217, 193, 0.25) !important;
+}
+
+tr:hover td {
+  background: rgba(216, 167, 177, 0.12) !important;
+}
+
+td {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  color: var(--fe-off-black) !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid var(--fe-nude) !important;
+}
+
+td a:link, td a:visited {
+  color: var(--fe-burgundy) !important;
+  font-weight: 500;
+}
+
+td a:hover {
+  color: var(--fe-burgundy-light) !important;
+}
+
+/* ── Action Bar / Object Tools ───────────────────────────────────────────── */
+.object-tools {
+  margin-bottom: 16px !important;
+}
+
+.object-tools a,
+.object-tools li {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 8px 16px !important;
+  border-radius: 0 !important;
+  transition: background 0.2s;
+}
+
+.object-tools a:hover,
+.object-tools li:hover {
+  background: var(--fe-burgundy-light) !important;
+  color: var(--fe-nude) !important;
+  text-decoration: none !important;
+}
+
+.object-tools a.addlink {
+  background: var(--fe-burgundy) !important;
+}
+
+.object-tools a.addlink::before {
+  color: var(--fe-rose-smoke) !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  border: none !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 20px !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  transition: background 0.2s !important;
+  box-shadow: none !important;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+.submit-row input:hover,
+a.button:hover {
+  background: var(--fe-burgundy-light) !important;
+  color: var(--fe-nude) !important;
+  text-decoration: none !important;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: var(--fe-burgundy) !important;
+  border: 2px solid var(--fe-burgundy-dark) !important;
+}
+
+/* Delete button */
+.deletelink,
+.submit-row a.deletelink {
+  background: transparent !important;
+  color: #dc2626 !important;
+  border: 1px solid #dc2626 !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 16px !important;
+  transition: all 0.2s !important;
+}
+
+.deletelink:hover,
+.submit-row a.deletelink:hover {
+  background: #dc2626 !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+/* ── Submit Row ──────────────────────────────────────────────────────────── */
+.submit-row {
+  background: var(--fe-nude) !important;
+  border-top: 1px solid var(--fe-nude-dark) !important;
+  padding: 16px 24px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Form Fields ─────────────────────────────────────────────────────────── */
+.form-row {
+  border-bottom: 1px solid var(--fe-nude) !important;
+  padding: 14px 16px !important;
+}
+
+.form-row:last-child {
+  border-bottom: none !important;
+}
+
+label {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.65) !important;
+  font-weight: 500 !important;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  border: 1px solid var(--fe-nude-dark) !important;
+  background: var(--fe-white) !important;
+  color: var(--fe-off-black) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: border-color 0.2s !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--fe-burgundy) !important;
+  box-shadow: 0 0 0 2px rgba(75,29,63,0.12) !important;
+}
+
+/* ── Fieldsets ───────────────────────────────────────────────────────────── */
+fieldset {
+  background: var(--fe-white) !important;
+  border: 1px solid var(--fe-nude-dark) !important;
+  margin-bottom: 20px !important;
+  padding: 0 !important;
+}
+
+fieldset h2 {
+  background: var(--fe-off-black) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 16px !important;
+  margin: 0 !important;
+  font-weight: 500 !important;
+}
+
+.help {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  color: rgba(27,27,27,0.5) !important;
+  margin-top: 4px;
+}
+
+/* ── Inline Admin ────────────────────────────────────────────────────────── */
+.inline-group {
+  background: var(--fe-white) !important;
+  border: 1px solid var(--fe-nude-dark) !important;
+  margin-bottom: 20px !important;
+}
+
+.inline-group h2 {
+  background: var(--fe-off-black-light) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500 !important;
+  padding: 10px 16px !important;
+}
+
+.inline-related h3 {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.55) !important;
+  background: var(--fe-nude) !important;
+  border: none !important;
+  padding: 8px 14px !important;
+}
+
+/* ── Filters Sidebar ─────────────────────────────────────────────────────── */
+#changelist-filter {
+  background: var(--fe-white) !important;
+  border-left: 1px solid var(--fe-nude-dark) !important;
+}
+
+#changelist-filter h2 {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+  border: none !important;
+}
+
+#changelist-filter h3 {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 9px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.5) !important;
+  padding: 12px 16px 4px !important;
+  border-bottom: none !important;
+  background: transparent !important;
+}
+
+#changelist-filter ul {
+  padding: 0 16px 12px !important;
+}
+
+#changelist-filter li a {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 12px !important;
+  color: var(--fe-off-black-light) !important;
+  padding: 3px 0 !important;
+  display: block;
+  transition: color 0.15s;
+}
+
+#changelist-filter li a:hover {
+  color: var(--fe-burgundy) !important;
+  text-decoration: none !important;
+}
+
+#changelist-filter li.selected a {
+  color: var(--fe-burgundy) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Search Bar ──────────────────────────────────────────────────────────── */
+#changelist-search input[type="text"],
+#searchbar {
+  border: 1px solid var(--fe-nude-dark) !important;
+  background: var(--fe-white) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+#changelist-search input[type="text"]:focus,
+#searchbar:focus {
+  border-color: var(--fe-burgundy) !important;
+  box-shadow: 0 0 0 2px rgba(75,29,63,0.1) !important;
+}
+
+#changelist-search input[type="submit"],
+#changelist-search .button {
+  background: var(--fe-burgundy) !important;
+  padding: 8px 14px !important;
+}
+
+/* ── Actions Dropdown ────────────────────────────────────────────────────── */
+#changelist .actions {
+  background: var(--fe-nude) !important;
+  border: 1px solid var(--fe-nude-dark) !important;
+  padding: 10px 14px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions select {
+  border: 1px solid var(--fe-nude-dark) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 12px !important;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+.paginator {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 12px !important;
+  color: rgba(27,27,27,0.6) !important;
+  border-top: 1px solid var(--fe-nude-dark) !important;
+  background: var(--fe-nude) !important;
+  padding: 10px 16px !important;
+}
+
+.paginator a:link,
+.paginator a:visited {
+  color: var(--fe-burgundy) !important;
+  font-weight: 500;
+}
+
+.paginator a:hover {
+  color: var(--fe-burgundy-light) !important;
+}
+
+.paginator .this-page {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  padding: 4px 9px;
+  font-weight: 600;
+}
+
+/* ── Messages / Alerts ───────────────────────────────────────────────────── */
+ul.messagelist {
+  padding: 0 !important;
+  margin: 0 0 16px !important;
+}
+
+ul.messagelist li {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 12px !important;
+  letter-spacing: 0.05em;
+  padding: 10px 16px 10px 42px !important;
+  border: none !important;
+  border-left: 4px solid var(--fe-burgundy) !important;
+  background: rgba(232,217,193,0.6) !important;
+  color: var(--fe-off-black) !important;
+  margin-bottom: 4px;
+  border-radius: 0;
+}
+
+ul.messagelist li.success {
+  border-left-color: #059669 !important;
+  background: rgba(236,253,245,0.8) !important;
+}
+
+ul.messagelist li.warning {
+  border-left-color: #d97706 !important;
+  background: rgba(255,251,235,0.8) !important;
+}
+
+ul.messagelist li.error {
+  border-left-color: #dc2626 !important;
+  background: rgba(254,242,242,0.8) !important;
+}
+
+/* ── Error / Validation ──────────────────────────────────────────────────── */
+.errornote,
+.errorlist li {
+  font-family: 'Jost', sans-serif !important;
+  background: rgba(254,242,242,0.8) !important;
+  color: #dc2626 !important;
+  border: 1px solid #fca5a5 !important;
+  border-left: 4px solid #dc2626 !important;
+  padding: 8px 14px !important;
+  border-radius: 0;
+  font-size: 12px !important;
+}
+
+.form-row.errors .errorlist li {
+  background: transparent !important;
+  border: none !important;
+  border-left: none !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+}
+
+/* ── Collapse/Expand ─────────────────────────────────────────────────────── */
+.collapse-toggle {
+  color: var(--fe-burgundy) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Login Page ──────────────────────────────────────────────────────────── */
+body.login {
+  background: var(--fe-off-black) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+body.login #header {
+  display: none !important;
+}
+
+body.login #container {
+  background: transparent !important;
+  min-width: unset !important;
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+body.login #content {
+  background: var(--fe-white) !important;
+  padding: 40px 36px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important;
+}
+
+body.login #content h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 2.2rem !important;
+  color: var(--fe-burgundy) !important;
+  text-align: center;
+  margin-bottom: 8px !important;
+  border: none !important;
+  padding-bottom: 0 !important;
+}
+
+/* Login logo / brand above the box */
+body.login #content::before {
+  content: 'FLEMBE ESSENCE';
+  display: block;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--fe-nude-dark);
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+body.login .form-row label {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 9px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(27,27,27,0.55) !important;
+}
+
+body.login #id_username,
+body.login #id_password {
+  width: 100% !important;
+  border: 1px solid var(--fe-nude-dark) !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+}
+
+body.login #id_username:focus,
+body.login #id_password:focus {
+  border-color: var(--fe-burgundy) !important;
+  box-shadow: 0 0 0 3px rgba(75,29,63,0.12) !important;
+}
+
+body.login .submit-row {
+  background: transparent !important;
+  border: none !important;
+  padding: 20px 0 0 !important;
+}
+
+body.login input[type="submit"] {
+  width: 100% !important;
+  padding: 14px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.2em;
+}
+
+/* ── Related Widget Lookup ───────────────────────────────────────────────── */
+.related-widget-wrapper-link img {
+  filter: hue-rotate(260deg) saturate(0.8) brightness(0.6) !important;
+}
+
+/* ── Calendar / Date Picker ──────────────────────────────────────────────── */
+.calendarbox,
+.clockbox {
+  border: 1px solid var(--fe-nude-dark) !important;
+  box-shadow: 0 4px 16px rgba(75,29,63,0.15) !important;
+}
+
+.calendar td a,
+.calendar td.nonday a {
+  color: var(--fe-off-black) !important;
+}
+
+.calendar td.selected a {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+}
+
+.calendarbox h2,
+.clockbox h2 {
+  background: var(--fe-burgundy) !important;
+  color: var(--fe-nude) !important;
+  font-family: 'Jost', sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── Dashboard Quick Links ───────────────────────────────────────────────── */
+#content-related .module {
+  background: var(--fe-white) !important;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+#footer {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  color: rgba(27,27,27,0.4) !important;
+  text-align: center;
+  padding: 20px !important;
+  border-top: 1px solid var(--fe-nude-dark) !important;
+  background: var(--fe-nude) !important;
+}
+
+/* ── Misc polish ─────────────────────────────────────────────────────────── */
+/* Checkboxes */
+input[type="checkbox"]:checked {
+  accent-color: var(--fe-burgundy) !important;
+}
+
+/* Selected rows */
+tr.selected {
+  background: rgba(216,167,177,0.18) !important;
+}
+
+/* Recently added banner */
+.addedrows {
+  background: rgba(216,167,177,0.25) !important;
+}
+
+/* Dashboard recent actions */
+#recent-actions-module li {
+  font-family: 'Jost', sans-serif !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid var(--fe-nude) !important;
+  padding: 8px 16px !important;
+}
+
+#recent-actions-module .actionlist .addlink::before { color: #059669; }
+#recent-actions-module .actionlist .changelink::before { color: var(--fe-burgundy); }
+#recent-actions-module .actionlist .deletelink::before { color: #dc2626; }
+
+/* List-editable save row */
+.changelist-actions {
+  background: var(--fe-nude) !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: var(--fe-nude); }
+::-webkit-scrollbar-thumb { background: var(--fe-nude-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fe-rose-smoke); }

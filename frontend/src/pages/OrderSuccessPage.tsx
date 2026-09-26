@@ -9,7 +9,7 @@ const OrderSuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get('order') || '';
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading, isError } = useQuery({
     queryKey: ['order', orderNumber],
     queryFn: () => fetchOrder(orderNumber),
     enabled: !!orderNumber,
@@ -37,6 +37,11 @@ const OrderSuccessPage: React.FC = () => {
 
         {isLoading ? (
           <LoadingSpinner message="Loading order details..." />
+        ) : isError ? (
+          <div className="bg-red-50 border border-red-200 p-4 mb-8 font-body text-sm text-red-600">
+            Could not load order details. Please note your order number above and contact us at{' '}
+            <a href="tel:01865330801" className="underline">01865330801</a> if you need help.
+          </div>
         ) : order ? (
           <div className="bg-white p-6 shadow-sm text-left mb-8">
             <div className="flex items-center gap-2 mb-4">

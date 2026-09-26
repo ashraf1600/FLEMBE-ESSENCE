@@ -15,7 +15,7 @@ from .filters import ProductFilter
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.filter(parent=None)
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
 
@@ -25,9 +25,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return [permissions.AllowAny()]
 
     def get_queryset(self):
+        # Detail / write actions need to reach any category (including children)
+        # so child category slugs don't 404.
+        if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
+            return Category.objects.prefetch_related('children').all()
         if self.request.query_params.get('all'):
-            return Category.objects.all()
-        return Category.objects.filter(parent=None, is_active=True)
+            return Category.objects.prefetch_related('children').all()
+        # List shows only active root categories; children are nested via serializer
+        return (
+            Category.objects
+            .filter(parent=None, is_active=True)
+            .prefetch_related('children')
+        )
 
     def perform_create(self, serializer):
         name = serializer.validated_data.get('name', '')

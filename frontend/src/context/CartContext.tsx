@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { CartItem, ProductListItem } from '../types';
 
 interface CartContextType {
@@ -11,10 +11,29 @@ interface CartContextType {
   subtotal: number;
 }
 
+const CART_STORAGE_KEY = 'flembe_cart';
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // F2 fix: initialise from localStorage so the cart survives page refreshes
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persist every change back to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch {
+      // localStorage quota exceeded or unavailable — fail silently
+    }
+  }, [cart]);
 
   const addToCart = useCallback((product: ProductListItem, quantity = 1) => {
     setCart(prev => {
@@ -47,7 +66,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = useCallback(() => setCart([]), []);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + parseFloat(item.product.price) * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
+    0,
+  );
 
   return (
     <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, subtotal }}>
