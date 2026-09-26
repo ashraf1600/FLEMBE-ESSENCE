@@ -271,9 +271,9 @@ const Navbar: React.FC = () => {
 
               {/* Cart */}
               <Link
-                to="/checkout"
+                to="/cart"
                 className="relative p-2.5 text-nude hover:text-rose-smoke transition-colors rounded-full hover:bg-white/5"
-                title="Your Bag / Checkout"
+                title="Your Bag"
               >
                 <ShoppingBag size={21} />
                 {totalItems > 0 && (
@@ -430,6 +430,26 @@ const Navbar: React.FC = () => {
             </div>
 
             <NavLink
+              to="/cart"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center justify-between font-body text-sm font-semibold tracking-widest uppercase py-2.5 px-2 rounded transition-colors ${
+                  isActive ? 'text-rose-smoke bg-white/5' : 'text-nude hover:text-rose-smoke'
+                }`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingBag size={16} className="text-rose-smoke" />
+                <span>Shopping Bag</span>
+              </div>
+              {totalItems > 0 && (
+                <span className="bg-rose-smoke text-off-black text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                  {totalItems}
+                </span>
+              )}
+            </NavLink>
+
+            <NavLink
               to="/wishlist"
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
@@ -438,7 +458,10 @@ const Navbar: React.FC = () => {
                 }`
               }
             >
-              <span>Wishlist</span>
+              <div className="flex items-center gap-2">
+                <Heart size={16} className="text-rose-smoke" />
+                <span>Wishlist</span>
+              </div>
               {wishlistCount > 0 && (
                 <span className="bg-rose-smoke text-off-black text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                   {wishlistCount}

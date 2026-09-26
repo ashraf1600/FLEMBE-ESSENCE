@@ -12,24 +12,54 @@ const AboutPage: React.FC = () => (
       </div>
 
       <div className="grid md:grid-cols-2 gap-12 items-start mb-16">
-        <div>
-          <h2 className="font-display text-2xl text-burgundy mb-4">Who We Are</h2>
-          <p className="font-body text-sm text-off-black/70 leading-relaxed mb-4">
+        <div className="space-y-4">
+          <h2 className="font-display text-2xl sm:text-3xl text-burgundy mb-4 font-semibold">Who We Are</h2>
+          <p className="font-body text-sm text-off-black/75 leading-relaxed mb-4">
             Flembe Essence is a small business founded by a young entrepreneur from Cox's Bazar, Bangladesh.
             We believe that every woman deserves to feel beautiful — without spending a fortune.
           </p>
-          <p className="font-body text-sm text-off-black/70 leading-relaxed mb-4">
+          <p className="font-body text-sm text-off-black/75 leading-relaxed mb-4">
             We started selling jewellery and fashion accessories through Facebook, Instagram, and at
             stalls at Daffodil International University. Our products are carefully selected to offer
             style, quality, and affordability.
           </p>
-          <p className="font-body text-sm text-off-black/70 leading-relaxed">
-            Our tagline says it all: <em className="text-burgundy font-medium">Real products. Honest service. Your satisfaction matters.</em>
+          <p className="font-body text-sm text-off-black/75 leading-relaxed border-l-2 border-rose-smoke pl-4 italic">
+            Our tagline says it all: <strong className="text-burgundy font-medium not-italic">Real products. Honest service. Your satisfaction matters.</strong>
           </p>
         </div>
-        <div className="bg-burgundy p-10 text-center">
-          <span className="font-display text-8xl text-nude/20">F</span>
-          <p className="font-display text-xl text-nude mt-4">Affordable Style,<br />Made for You</p>
+
+        <div className="relative bg-gradient-to-br from-burgundy via-burgundy-dark to-off-black rounded-2xl p-8 sm:p-10 text-center shadow-xl border border-rose-smoke/30 overflow-hidden flex flex-col items-center justify-center min-h-[320px] group">
+          <div className="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_50%_20%,rgba(216,167,177,0.35),transparent_65%)]" />
+          
+          <Link
+            to="/"
+            className="relative z-10 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
+            title="Flembe Essence — Home"
+          >
+            {/* The circular crest with 'F' */}
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-rose-smoke/60 flex items-center justify-center bg-burgundy/80 shadow-[0_0_35px_rgba(216,167,177,0.2)] mb-5 group-hover:border-rose-smoke transition-colors">
+              <span className="font-display text-rose-smoke text-4xl sm:text-5xl font-bold">F</span>
+            </div>
+
+            {/* FLEMBE ESSENCE Logo typography */}
+            <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">
+              <span className="font-display text-2xl sm:text-3xl text-nude tracking-[0.22em] leading-none">FLEMBE</span>
+              <span className="font-display text-2xl sm:text-3xl text-rose-smoke tracking-[0.22em] font-semibold leading-none">ESSENCE</span>
+            </div>
+            
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-nude/70 mt-2.5 font-body">
+              Jewellery & Accessories
+            </span>
+          </Link>
+
+          <div className="relative z-10 mt-6 pt-5 border-t border-rose-smoke/20 w-full max-w-xs">
+            <p className="font-display text-base sm:text-lg text-nude/95 italic">
+              Affordable Style, Made for You
+            </p>
+            <p className="font-body text-[10px] text-rose-smoke/80 tracking-widest uppercase mt-1">
+              Real Products · Honest Service
+            </p>
+          </div>
         </div>
       </div>
 
