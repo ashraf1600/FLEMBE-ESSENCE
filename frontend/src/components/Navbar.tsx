@@ -101,20 +101,22 @@ const Navbar: React.FC = () => {
       <div className="bg-off-black/90 backdrop-blur-xl border-b border-rose-smoke/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between min-h-20 py-3">
-            {/* Logo — bigger, bolder */}
-            <Link to="/" className="flex items-center gap-3 group flex-shrink-0 mr-auto md:mr-5 lg:mr-8">
-              <div className="w-11 h-11 rounded-full border border-rose-smoke/50 flex items-center justify-center bg-burgundy/50 shadow-[0_0_24px_rgba(216,167,177,0.12)] group-hover:border-rose-smoke group-hover:scale-105 transition-all duration-300">
-                <span className="font-display text-rose-smoke text-lg font-bold">F</span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center">
-                  <span className="font-display text-2xl sm:text-3xl text-nude tracking-widest leading-none">FLEMBE</span>
-                  <span className="font-display text-2xl sm:text-3xl text-rose-smoke tracking-widest ml-1.5 font-semibold leading-none">ESSENCE</span>
-                </div>
-                <span className="text-[9px] uppercase tracking-[0.3em] text-nude/50 mt-1 font-body">Jewellery & Accessories</span>
-              </div>
-            </Link>
-
+           {/* Logo */}
+<Link to="/" className="flex items-center gap-3 group flex-shrink-0 mr-6 md:mr-10">
+  <img
+    src="/images/logo.png"
+    alt="Flembe Essence icon"
+    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-rose-smoke/50 group-hover:border-rose-smoke group-hover:scale-105 transition-all duration-300"
+  />
+  <div className="flex flex-col">
+    <span className="font-display font-bold text-3xl sm:text-4xl text-nude tracking-wide leading-none group-hover:text-rose-smoke transition-colors duration-300">
+      Flembe Essence
+    </span>
+    <span className="text-[9px] uppercase tracking-[0.3em] text-nude/50 mt-1.5 font-body">
+      Jewellery & Accessories
+    </span>
+  </div>
+</Link>
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-4 lg:gap-5 shrink-0">
               <NavLink

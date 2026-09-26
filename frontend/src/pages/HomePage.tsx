@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Phone, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Sparkles, CheckCircle2 } from 'lucide-react';
 import { fetchCategories, fetchProducts } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner } from '../components/UI';
@@ -19,6 +19,12 @@ const InstagramIcon = ({ size = 16 }: { size?: number }) => (
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
     <circle cx="12" cy="12" r="4"/>
     <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+  </svg>
+);
+const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12.004 2C6.478 2 2 6.478 2 12.004c0 1.86.514 3.638 1.442 5.17L2 22l4.965-1.417a10.03 10.03 0 0 0 5.039 1.348c5.526 0 10.004-4.478 10.004-10.004C22.008 6.478 17.53 2 12.004 2zm0 18.184a8.13 8.13 0 0 1-4.36-1.267l-.312-.185-2.98.851.865-2.951-.203-.32a8.13 8.13 0 0 1-1.256-4.308c0-4.506 3.667-8.172 8.246-8.172 4.505 0 8.171 3.666 8.171 8.172 0 4.506-3.666 8.18-8.171 8.18z"/>
   </svg>
 );
 
@@ -398,31 +404,49 @@ const HomePage: React.FC = () => {
             Stay updated with new arrivals, styling tips, university stall announcements, and exclusive deals on our socials.
           </p>
 
-          <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
+          <div className="flex justify-center items-center gap-4 sm:gap-5 pt-3">
             <a
               href="https://www.facebook.com/share/19bb8cxwHW/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
+              aria-label="Facebook Page"
+              className="group flex flex-col items-center gap-2"
             >
-              <FacebookIcon size={16} />
-              <span>Facebook Page</span>
+              <span className="w-14 h-14 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-md group-hover:shadow-xl group-hover:-translate-y-1.5 group-hover:scale-105 transition-all duration-300">
+                <FacebookIcon size={24} />
+              </span>
+              <span className="font-body text-[10px] uppercase tracking-widest text-off-black/60 group-hover:text-burgundy transition-colors">
+                Facebook
+              </span>
             </a>
             <a
-              href="https://www.instagram.com/_flembe_._essence_?stkn=MmI4OG8yem9mZ2hn"
+              href="https://wa.me/8801865330801"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 hover:opacity-95 text-white font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
+              aria-label="Instagram Feed"
+              className="group flex flex-col items-center gap-2"
             >
-              <InstagramIcon size={16} />
-              <span>Instagram Feed</span>
+              <span className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-700 text-white flex items-center justify-center shadow-md group-hover:shadow-xl group-hover:-translate-y-1.5 group-hover:scale-105 transition-all duration-300">
+                <InstagramIcon size={24} />
+              </span>
+              <span className="font-body text-[10px] uppercase tracking-widest text-off-black/60 group-hover:text-burgundy transition-colors">
+                Instagram
+              </span>
             </a>
             <a
-              href="tel:01865330801"
-              className="flex items-center gap-2 bg-off-black text-nude hover:bg-off-black-light font-body text-xs uppercase tracking-wider px-5 py-3 rounded-xs shadow-xs transition-transform hover:-translate-y-0.5"
+            
+              href="https://wa.me/8801865330801"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat on WhatsApp"
+              className="group flex flex-col items-center gap-2"
             >
-              <Phone size={14} className="text-rose-smoke" />
-              <span>01865330801</span>
+              <span className="w-14 h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-md group-hover:shadow-xl group-hover:-translate-y-1.5 group-hover:scale-105 transition-all duration-300">
+                <WhatsAppIcon size={26} />
+              </span>
+              <span className="font-body text-[10px] uppercase tracking-widest text-off-black/60 group-hover:text-burgundy transition-colors">
+                WhatsApp
+              </span>
             </a>
           </div>
         </div>

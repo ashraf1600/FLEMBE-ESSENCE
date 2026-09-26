@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+// src/pages/ShopPage.tsx
+import React, { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { SlidersHorizontal, X, Search, Sparkles, ArrowDownUp } from 'lucide-react';
+import { SlidersHorizontal, X, Search, Sparkles, ArrowDownUp, Check, ChevronDown } from 'lucide-react';
 import { fetchProducts, fetchCategories } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
 import { LoadingSpinner, EmptyState, ErrorState } from '../components/UI';
@@ -9,6 +10,8 @@ import { LoadingSpinner, EmptyState, ErrorState } from '../components/UI';
 const ShopPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   const search = searchParams.get('search') || '';
   const category = searchParams.get('category') || '';
@@ -31,6 +34,25 @@ const ShopPage: React.FC = () => {
     setLocalMin(minPrice?.toString() || '');
     setLocalMax(maxPrice?.toString() || '');
   }, [minPrice, maxPrice]);
+
+  // Close sort dropdown when clicking outside of it
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const sortOptions = [
+    { value: '-created_at', label: 'Newest First' },
+    { value: 'price', label: 'Price: Low to High' },
+    { value: '-price', label: 'Price: High to Low' },
+    { value: 'name', label: 'Name A–Z' },
+  ];
+  const currentSortLabel = sortOptions.find(o => o.value === ordering)?.label || 'Newest First';
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -88,7 +110,7 @@ const ShopPage: React.FC = () => {
   return (
     <>
       <title>Shop Jewellery & Accessories — Flembe Essence</title>
-      
+
       <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12 py-5 sm:py-7">
         {/* Page Title & Breadcrumb header */}
         <div className="mb-5">
@@ -109,20 +131,46 @@ const ShopPage: React.FC = () => {
 
             {/* Quick Sort & Mobile Filter Toggle */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-nude-dark/60 bg-white/70 px-3 py-1.5 shadow-sm">
-                <ArrowDownUp size={13} className="text-burgundy" />
-                <span className="font-body text-[10px] text-off-black/55 hidden sm:inline uppercase tracking-[0.16em] font-semibold">Sort by</span>
-                <select
-                  value={ordering}
-                  onChange={e => setParam('ordering', e.target.value)}
-                  aria-label="Sort products"
-                  className="bg-transparent border-0 text-xs font-body font-semibold py-1 px-1 text-burgundy focus:outline-none focus:ring-0 cursor-pointer"
+              {/* Custom Sort Dropdown */}
+              <div ref={sortRef} className="relative">
+                <button
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="flex items-center gap-2 rounded-full border border-nude-dark/60 bg-white/80 hover:border-burgundy/50 px-4 py-2 shadow-sm transition-colors"
                 >
-                  <option value="-created_at">Newest First</option>
-                  <option value="price">Price: Low to High</option>
-                  <option value="-price">Price: High to Low</option>
-                  <option value="name">Name A–Z</option>
-                </select>
+                  <ArrowDownUp size={13} className="text-burgundy" />
+                  <span className="font-body text-[10px] text-off-black/55 hidden sm:inline uppercase tracking-[0.16em] font-semibold">
+                    Sort by
+                  </span>
+                  <span className="font-body text-xs font-bold text-burgundy">
+                    {currentSortLabel}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-burgundy transition-transform duration-300 ${sortOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {sortOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-2xl border border-nude-dark/20 py-2 z-50 animate-fade-in overflow-hidden">
+                    {sortOptions.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          setParam('ordering', opt.value);
+                          setSortOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 text-left font-body text-xs transition-colors ${
+                          ordering === opt.value
+                            ? 'bg-burgundy/10 text-burgundy font-bold'
+                            : 'text-off-black/80 hover:bg-nude/40'
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {ordering === opt.value && <Check size={14} className="text-burgundy" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button
