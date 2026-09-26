@@ -4,29 +4,19 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Menu, X, Search, LayoutDashboard, Package, LogOut, User, Phone, Sparkles, Heart, ChevronDown, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchCategories } from '../lib/queries';
 import AuthDrawer from './AuthDrawer';
-
-const WISHLIST_KEY = 'flembe_wishlist_ids';
-
-function getWishlistCount(): number {
-  try {
-    const raw = localStorage.getItem(WISHLIST_KEY);
-    return raw ? (JSON.parse(raw) as number[]).length : 0;
-  } catch {
-    return 0;
-  }
-}
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
   const { totalItems } = useCart();
+  const { totalWishlist } = useWishlist();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const megaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -36,17 +26,6 @@ const Navbar: React.FC = () => {
     queryFn: fetchCategories,
   });
   const subCategories = categories?.flatMap(c => c.children || []).filter(c => c.is_active) || [];
-
-  useEffect(() => {
-    setWishlistCount(getWishlistCount());
-    const sync = () => setWishlistCount(getWishlistCount());
-    window.addEventListener('wishlist-updated', sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener('wishlist-updated', sync);
-      window.removeEventListener('storage', sync);
-    };
-  }, []);
 
   const navLinks = [
     { to: '/',          label: 'Home' },
