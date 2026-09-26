@@ -14,9 +14,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      '/admin': {
+      '^/admin(/.*)?$': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
+        bypass(req) {
+          if (req.url && (req.url.startsWith('/admin-dashboard') || req.url.startsWith('/admin-login'))) {
+            return '/index.html';
+          }
+        },
       },
       '/static': {
         target: 'http://127.0.0.1:8000',
