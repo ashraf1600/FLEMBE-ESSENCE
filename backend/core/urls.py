@@ -12,9 +12,6 @@ admin.site.site_title   = 'Flembe Essence Admin'
 admin.site.index_title  = 'Store Management'
 
 urlpatterns = [
-    # Use the JWT-backed storefront admin login so successful login always
-    # opens the custom dashboard instead of returning to an add form.
-    path('admin/login/', lambda request: redirect('http://localhost:5173/admin-login')),
     path('admin/', admin.site.urls),
     # Auth
     path('api/v1/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
