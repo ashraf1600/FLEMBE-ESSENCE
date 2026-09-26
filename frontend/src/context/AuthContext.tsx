@@ -52,6 +52,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       localStorage.setItem(TOKEN_KEY, data.access);
       localStorage.setItem(REFRESH_KEY, data.refresh);
+
+      // Verify that this user has staff/admin permissions
+      try {
+        await api.get('/admin/stats/', {
+          headers: { Authorization: `Bearer ${data.access}` },
+        });
+      } catch (checkErr: any) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(REFRESH_KEY);
+        if (checkErr.response?.status === 403) {
+          throw new Error('Access denied: Admin privileges (staff status) are required.');
+        }
+        throw checkErr;
+      }
+
       const user: AdminUser = { username };
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       setAdmin(user);

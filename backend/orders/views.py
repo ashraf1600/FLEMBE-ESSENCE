@@ -129,7 +129,7 @@ class AdminStatsView(APIView):
         top_products = list(
             OrderItem.objects
             .filter(order__order_status__in=confirmed_statuses)
-            .values('product_name', product_id=F('product__id'), slug=F('product__slug'))
+            .values('product_name', 'product_id', slug=F('product__slug'))
             .annotate(units_sold=Sum('quantity'), revenue=Sum(F('unit_price') * F('quantity')))
             .order_by('-units_sold')[:10]
         )

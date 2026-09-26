@@ -23,8 +23,9 @@ const AdminLoginPage: React.FC = () => {
       await login(username.trim(), password);
       toast.success('Welcome back!');
       navigate(from, { replace: true });
-    } catch {
-      setError('Invalid username or password. Please try again.');
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.message || 'Invalid username or password. Please try again.';
+      setError(msg);
     }
   };
 
