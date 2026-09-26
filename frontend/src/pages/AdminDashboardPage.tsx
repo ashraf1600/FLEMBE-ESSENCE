@@ -5,7 +5,7 @@ import {
   BarChart2, ShoppingBag, Package, TrendingUp,
   Truck, LogOut, ChevronRight, RefreshCw, Search, Filter,
   ExternalLink, Plus, CheckCircle, ArrowUpRight, X,
-  Upload, Image as ImageIcon, Trash2
+  Upload, Trash2
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
