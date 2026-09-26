@@ -39,6 +39,9 @@ interface Stats {
   low_stock_products: { id: number; name: string; slug: string; stock_quantity: number; cat_name: string }[];
 }
 
+// ── Backend Admin URL helper ──────────────────────────────────────────────────
+const DJANGO_ADMIN_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1').replace(/\/api\/v1\/?$/, '');
+
 // ── Data fetchers ──────────────────────────────────────────────────────────────
 const fetchStats = async (): Promise<Stats> => (await api.get('/admin/stats/')).data;
 const fetchOrders = async (params?: object) => (await api.get('/admin/orders/', { params })).data;
@@ -198,7 +201,7 @@ const AdminDashboardPage: React.FC = () => {
           <div className="px-5 mt-6 pt-5 border-t border-white/10">
             <p className="font-body text-[10px] uppercase tracking-widest text-nude/40 mb-2">Advanced</p>
             <a
-              href="/admin/"
+              href={`${DJANGO_ADMIN_URL}/admin/`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between text-nude/60 hover:text-nude text-xs font-body py-1.5 transition-colors"
@@ -508,7 +511,7 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void }> = 
                       {p.stock_quantity === 0 ? '❌ OUT OF STOCK' : `⚠️ Only ${p.stock_quantity} left`}
                     </span>
                     <a
-                      href={`/admin/catalog/product/${p.id}/change/`}
+                      href={`${DJANGO_ADMIN_URL}/admin/catalog/product/${p.id}/change/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs font-body text-burgundy hover:underline"
@@ -724,7 +727,7 @@ const ProductsTab: React.FC<{
       <div className="flex items-center gap-3">
         <span className="font-body text-xs text-off-black/60">{totalCount} product(s) registered</span>
         <a
-          href="/admin/catalog/product/add/"
+          href={`${DJANGO_ADMIN_URL}/admin/catalog/product/add/`}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
@@ -790,7 +793,7 @@ const ProductsTab: React.FC<{
                       View Live <ExternalLink size={10} />
                     </Link>
                     <a
-                      href={`/admin/catalog/product/${p.id}/change/`}
+                      href={`${DJANGO_ADMIN_URL}/admin/catalog/product/${p.id}/change/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-burgundy font-bold hover:underline text-[11px]"
@@ -819,7 +822,7 @@ const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean }> = ({ ca
         <p className="font-body text-xs text-off-black/50">Manage the hierarchical taxonomy for your catalogue</p>
       </div>
       <a
-        href="/admin/catalog/category/add/"
+        href={`${DJANGO_ADMIN_URL}/admin/catalog/category/add/`}
         target="_blank"
         rel="noopener noreferrer"
         className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
@@ -869,7 +872,7 @@ const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean }> = ({ ca
                       View <ExternalLink size={10} />
                     </Link>
                     <a
-                      href={`/admin/catalog/category/${c.id}/change/`}
+                      href={`${DJANGO_ADMIN_URL}/admin/catalog/category/${c.id}/change/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-burgundy font-bold hover:underline text-[11px]"
@@ -898,7 +901,7 @@ const DeliveryTab: React.FC<{ zones: any[]; isLoading: boolean }> = ({ zones, is
         <p className="font-body text-xs text-off-black/50">Manage free delivery eligibility and regional delivery charges</p>
       </div>
       <a
-        href="/admin/delivery/deliveryzone/add/"
+        href={`${DJANGO_ADMIN_URL}/admin/delivery/deliveryzone/add/`}
         target="_blank"
         rel="noopener noreferrer"
         className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3"
@@ -940,7 +943,7 @@ const DeliveryTab: React.FC<{ zones: any[]; isLoading: boolean }> = ({ zones, is
                 </td>
                 <td className="py-3 px-4 text-right">
                   <a
-                    href={`/admin/delivery/deliveryzone/${z.id}/change/`}
+                    href={`${DJANGO_ADMIN_URL}/admin/delivery/deliveryzone/${z.id}/change/`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-burgundy font-bold hover:underline text-[11px]"

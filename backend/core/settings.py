@@ -143,13 +143,19 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# ─── CORS ─────────────────────────────────────────────────────────────────────
+# ─── CORS & CSRF ─────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:5173,http://localhost:3000',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:8000',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
 # ─── Cloudinary ───────────────────────────────────────────────────────────────
 CLOUDINARY_STORAGE = {
