@@ -21,13 +21,7 @@ function getCartKey(userId?: number | null): string {
 function loadCartFromStorage(key: string): CartItem[] {
   try {
     const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
-    // Legacy migration: check 'flembe_cart' if key is guest
-    if (key === 'flembe_cart_guest') {
-      const legacy = localStorage.getItem('flembe_cart');
-      if (legacy) return JSON.parse(legacy);
-    }
-    return [];
+    return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
@@ -38,7 +32,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const currentKey = getCartKey(user?.id);
   const prevUserRef = useRef<number | null | undefined>(user?.id);
 
-  const [cart, setCart] = useState<CartItem[]>(() => loadCartFromStorage(currentKey));
+  // Initialize: if logged in, load user's cart; if not logged in, start with guest cart (or empty)
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    // Clean any old legacy key
+    localStorage.removeItem('flembe_cart');
+    return loadCartFromStorage(currentKey);
+  });
 
   // Whenever user changes (login, logout, switch account)
   useEffect(() => {
@@ -47,39 +46,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     prevUserRef.current = currentId;
 
     if (prevId !== currentId) {
-      const newKey = getCartKey(currentId);
-      let userCart = loadCartFromStorage(newKey);
-
-      // If user just logged in from guest, merge guest cart into user's cart
-      if (!prevId && currentId) {
-        const guestCart = loadCartFromStorage('flembe_cart_guest');
-        if (guestCart.length > 0) {
-          const merged = [...userCart];
-          guestCart.forEach(gItem => {
-            const idx = merged.findIndex(m => m.product.id === gItem.product.id);
-            if (idx > -1) {
-              merged[idx].quantity += gItem.quantity;
-            } else {
-              merged.push(gItem);
-            }
-          });
-          userCart = merged;
-          localStorage.setItem(newKey, JSON.stringify(userCart));
-          localStorage.removeItem('flembe_cart_guest');
-          localStorage.removeItem('flembe_cart');
-        }
+      if (!currentId) {
+        // User logged out: completely reset cart to empty
+        setCart([]);
+        localStorage.removeItem('flembe_cart_guest');
+        localStorage.removeItem('flembe_cart');
+        return;
       }
 
+      // User logged in: load their user-specific cart
+      const newKey = getCartKey(currentId);
+      const userCart = loadCartFromStorage(newKey);
       setCart(userCart);
+      localStorage.removeItem('flembe_cart_guest');
+      localStorage.removeItem('flembe_cart');
     }
   }, [user?.id]);
 
-  // Persist every change back to the active user's storage key
+  // Persist cart to active key only if there are items or key exists
   useEffect(() => {
     try {
-      localStorage.setItem(currentKey, JSON.stringify(cart));
+      if (cart.length > 0) {
+        localStorage.setItem(currentKey, JSON.stringify(cart));
+      } else {
+        localStorage.removeItem(currentKey);
+      }
     } catch {
-      // localStorage quota exceeded or unavailable — fail silently
+      // ignore
     }
   }, [cart, currentKey]);
 
@@ -111,7 +104,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const clearCart = useCallback(() => setCart([]), []);
+  const clearCart = useCallback(() => {
+    setCart([]);
+    localStorage.removeItem(currentKey);
+  }, [currentKey]);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce(

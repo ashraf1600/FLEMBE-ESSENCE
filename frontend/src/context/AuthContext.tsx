@@ -143,6 +143,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('flembe_cart');
+    localStorage.removeItem('flembe_cart_guest');
+    localStorage.removeItem('flembe_wishlist_ids');
+    localStorage.removeItem('flembe_wishlist_guest');
     setUser(null);
   }, []);
 

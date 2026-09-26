@@ -20,13 +20,7 @@ function getWishlistKey(userId?: number | null): string {
 function loadWishlistFromStorage(key: string): number[] {
   try {
     const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
-    // Legacy migration: check 'flembe_wishlist_ids' if key is guest
-    if (key === 'flembe_wishlist_guest') {
-      const legacy = localStorage.getItem('flembe_wishlist_ids');
-      if (legacy) return JSON.parse(legacy);
-    }
-    return [];
+    return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
@@ -37,37 +31,44 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const currentKey = getWishlistKey(user?.id);
   const prevUserRef = useRef<number | null | undefined>(user?.id);
 
-  const [wishlistIds, setWishlistIds] = useState<number[]>(() => loadWishlistFromStorage(currentKey));
+  // Initialize: if logged in, load user's wishlist; clean any legacy key
+  const [wishlistIds, setWishlistIds] = useState<number[]>(() => {
+    localStorage.removeItem('flembe_wishlist_ids');
+    return loadWishlistFromStorage(currentKey);
+  });
 
-  // Switch wishlist when user logs in, logs out, or switches accounts
+  // Whenever user changes (login, logout, switch account)
   useEffect(() => {
     const prevId = prevUserRef.current;
     const currentId = user?.id;
     prevUserRef.current = currentId;
 
     if (prevId !== currentId) {
-      const newKey = getWishlistKey(currentId);
-      let userWishlist = loadWishlistFromStorage(newKey);
-
-      // If user just logged in from guest session, merge guest items into user account
-      if (!prevId && currentId) {
-        const guestWishlist = loadWishlistFromStorage('flembe_wishlist_guest');
-        if (guestWishlist.length > 0) {
-          userWishlist = Array.from(new Set([...userWishlist, ...guestWishlist]));
-          localStorage.setItem(newKey, JSON.stringify(userWishlist));
-          localStorage.removeItem('flembe_wishlist_guest');
-          localStorage.removeItem('flembe_wishlist_ids');
-        }
+      if (!currentId) {
+        // User logged out: completely reset wishlist to empty
+        setWishlistIds([]);
+        localStorage.removeItem('flembe_wishlist_guest');
+        localStorage.removeItem('flembe_wishlist_ids');
+        return;
       }
 
+      // User logged in: load their user-specific wishlist
+      const newKey = getWishlistKey(currentId);
+      const userWishlist = loadWishlistFromStorage(newKey);
       setWishlistIds(userWishlist);
+      localStorage.removeItem('flembe_wishlist_guest');
+      localStorage.removeItem('flembe_wishlist_ids');
     }
   }, [user?.id]);
 
   // Persist current user's wishlist
   useEffect(() => {
     try {
-      localStorage.setItem(currentKey, JSON.stringify(wishlistIds));
+      if (wishlistIds.length > 0) {
+        localStorage.setItem(currentKey, JSON.stringify(wishlistIds));
+      } else {
+        localStorage.removeItem(currentKey);
+      }
     } catch {
       // ignore
     }
@@ -100,8 +101,9 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const clearWishlist = useCallback(() => {
     setWishlistIds([]);
+    localStorage.removeItem(currentKey);
     toast('Wishlist cleared', { icon: '💔' });
-  }, []);
+  }, [currentKey]);
 
   const totalWishlist = wishlistIds.length;
 
