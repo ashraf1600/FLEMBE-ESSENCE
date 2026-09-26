@@ -1,5 +1,8 @@
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import serializers, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -153,6 +156,23 @@ class CurrentUserView(APIView):
                 cust.save()
 
         return Response(get_user_profile(user))
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdminSessionView(APIView):
+    """Create a Django admin session alongside the frontend JWT session."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user = authenticate(
+            request,
+            username=request.data.get('username', ''),
+            password=request.data.get('password', ''),
+        )
+        if not user or not user.is_active or not user.is_staff:
+            return Response({'detail': 'Invalid admin credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+        login(request, user)
+        return Response({'detail': 'Admin session created.'})
 
 
 class ChangePasswordView(APIView):

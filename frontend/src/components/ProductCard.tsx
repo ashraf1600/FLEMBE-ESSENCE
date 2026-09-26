@@ -1,7 +1,7 @@
 // src/components/ProductCard.tsx
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Check, Heart, Eye, X } from 'lucide-react';
 import type { ProductListItem } from '../types';
 import { useCart } from '../context/CartContext';
@@ -33,6 +33,7 @@ function toggleWishlist(id: number): boolean {
 
 const ProductCard: React.FC<Props> = ({ product }) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [justAdded, setJustAdded] = React.useState(false);
   const [imgError, setImgError] = React.useState(false);
   const [isWishlisted, setIsWishlisted] = React.useState(false);
@@ -50,6 +51,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
     e.stopPropagation();
     if (!isInStock) return;
     addToCart(product, 1);
+    navigate('/checkout');
     setJustAdded(true);
     toast.success(`${product.name} added to cart!`, {
       style: {
@@ -88,9 +90,9 @@ const ProductCard: React.FC<Props> = ({ product }) => {
   return (
     <>
       <Link to={`/products/${product.slug}`} className="group block h-full">
-        <div className="relative bg-white rounded-2xl overflow-hidden border border-nude-dark/30 shadow-sm hover:shadow-2xl hover:shadow-burgundy/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1.5">
+        <div className="relative bg-white rounded-xl overflow-hidden border border-nude-dark/35 shadow-sm hover:shadow-2xl hover:shadow-burgundy/12 transition-all duration-500 flex flex-col h-full hover:-translate-y-1.5">
           {/* Image Container */}
-          <div className="relative aspect-square overflow-hidden bg-nude/30">
+          <div className="relative aspect-[4/5] overflow-hidden bg-nude/30">
             {imageUrl && !imgError ? (
               <img
                 src={imageUrl}
@@ -157,21 +159,21 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           </div>
 
           {/* Info */}
-          <div className="p-4 flex flex-col flex-1 justify-between">
+          <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
             <div>
               {product.category && (
-                <p className="font-body text-[10px] tracking-[0.18em] uppercase text-rose-smoke font-semibold mb-1">
+                <p className="font-body text-[10px] tracking-[0.2em] uppercase text-rose-smoke font-bold mb-1.5">
                   {product.category.name}
                 </p>
               )}
-              <h3 className="font-display text-base sm:text-lg text-off-black leading-snug mb-1 line-clamp-2 group-hover:text-burgundy transition-colors duration-200">
+              <h3 className="font-body text-sm sm:text-[15px] font-semibold tracking-[-0.01em] text-off-black leading-[1.3] mb-1.5 line-clamp-2 group-hover:text-burgundy transition-colors duration-200">
                 {product.name}
               </h3>
             </div>
 
-            <div className="pt-2">
-              <div className="flex items-baseline justify-between mb-3">
-                <span className="font-body text-burgundy font-semibold text-lg">
+              <div className="pt-3">
+              <div className="flex items-baseline justify-between mb-3.5">
+                <span className="font-body text-burgundy font-bold text-xl">
                   ৳{parseFloat(product.price).toLocaleString()}
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-off-black/40 font-body">COD</span>
@@ -180,7 +182,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
               <button
                 onClick={handleAddToCart}
                 disabled={!isInStock}
-                className={`w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-body text-[11px] tracking-widest uppercase transition-all duration-200 shadow-xs ${
+                  className={`w-full flex items-center justify-center gap-1.5 py-3 px-3 rounded-lg font-body text-[11px] font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs ${
                   justAdded
                     ? 'bg-emerald-700 text-white'
                     : isInStock

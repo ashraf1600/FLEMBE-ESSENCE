@@ -96,18 +96,30 @@ const RegisterPage: React.FC = () => {
   return (
     <>
       <title>Create Account — Flembe Essence</title>
-      <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-nude/30">
-        <div className="w-full max-w-md">
-          <div className="bg-white border border-nude-dark shadow-sm p-8 sm:p-10">
+      <div className="min-h-[calc(100svh-5rem)] bg-nude/30 px-4 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto grid min-h-[680px] max-w-6xl overflow-hidden bg-off-black shadow-2xl lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="relative hidden min-h-[680px] overflow-hidden lg:block">
+            <img src="/images/hero-jewellery.jpg" alt="Flembe Essence jewellery" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-burgundy-dark via-burgundy/40 to-off-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-10 xl:p-14 text-nude">
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.28em] text-rose-smoke">Join the circle</p>
+              <h2 className="mt-4 max-w-md font-display text-5xl font-semibold leading-[0.95]">Your next favourite piece starts here.</h2>
+              <p className="mt-5 max-w-sm font-body text-sm leading-relaxed text-nude/75">Save your edit, follow your orders and make every delivery feel personal.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center bg-nude px-6 py-10 sm:px-12 lg:px-14">
+            <div className="w-full max-w-md">
             {/* Header */}
-            <div className="text-center mb-8">
-              <span className="font-display text-2xl text-burgundy tracking-widest block">FLEMBE</span>
+            <div className="mb-8">
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke">Create your account</p>
+              <span className="font-display text-3xl text-burgundy tracking-[0.12em] block mt-3">FLEMBE</span>
               <span className="font-display text-xs tracking-[0.25em] text-rose-smoke uppercase block mt-0.5">
                 ESSENCE
               </span>
-              <h1 className="font-display text-2xl text-off-black mt-4">Create Your Account</h1>
-              <p className="font-body text-xs text-off-black/60 mt-1">
-                Join us for seamless shopping, order tracking, and COD delivery
+              <h1 className="font-display text-4xl text-burgundy mt-4 leading-none">Create your account.</h1>
+              <p className="font-body text-sm text-off-black/60 mt-3 leading-relaxed">
+                Save your details for a smoother order and delivery experience.
               </p>
             </div>
 
@@ -128,7 +140,7 @@ const RegisterPage: React.FC = () => {
                     value={form.name}
                     onChange={handleChange}
                     placeholder="e.g. Nusrat Jahan"
-                    className="w-full pl-9 pr-3 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-3 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                 </div>
                 {errors.name && <p className="text-[11px] text-red-600 mt-1 font-body">{errors.name}</p>}
@@ -150,7 +162,7 @@ const RegisterPage: React.FC = () => {
                     value={form.username}
                     onChange={handleChange}
                     placeholder="Choose a username"
-                    className="w-full pl-9 pr-3 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-3 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                 </div>
                 {errors.username && <p className="text-[11px] text-red-600 mt-1 font-body">{errors.username}</p>}
@@ -172,7 +184,7 @@ const RegisterPage: React.FC = () => {
                     value={form.email}
                     onChange={handleChange}
                     placeholder="you@example.com"
-                    className="w-full pl-9 pr-3 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-3 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                 </div>
                 {errors.email && <p className="text-[11px] text-red-600 mt-1 font-body">{errors.email}</p>}
@@ -193,7 +205,7 @@ const RegisterPage: React.FC = () => {
                     value={form.phone}
                     onChange={handleChange}
                     placeholder="01XXXXXXXXX"
-                    className="w-full pl-9 pr-3 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-3 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                 </div>
                 {errors.phone && <p className="text-[11px] text-red-600 mt-1 font-body">{errors.phone}</p>}
@@ -215,7 +227,7 @@ const RegisterPage: React.FC = () => {
                     value={form.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-10 py-2.5 bg-nude/20 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-xs transition-colors text-off-black"
+                    className="w-full pl-9 pr-10 py-3.5 bg-white/70 border border-nude-dark focus:border-burgundy focus:outline-none font-body text-sm transition-colors text-off-black"
                   />
                   <button
                     type="button"
@@ -231,7 +243,7 @@ const RegisterPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-burgundy hover:bg-burgundy/90 text-nude py-3 px-4 font-body text-xs uppercase tracking-widest transition-all duration-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+                className="w-full bg-burgundy hover:bg-burgundy-light text-nude py-3.5 px-4 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-200 shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 hover:-translate-y-0.5"
               >
                 {isLoading ? 'Creating Account…' : 'Register Account'}
                 {!isLoading && <ArrowRight size={14} />}
@@ -250,6 +262,7 @@ const RegisterPage: React.FC = () => {
                 </Link>
               </p>
             </div>
+          </div>
           </div>
         </div>
       </div>
