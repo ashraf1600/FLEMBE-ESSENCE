@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Minus, Plus, ShoppingBag, ChevronLeft, ChevronRight, Truck, ShieldCheck, Check, Sparkles } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, ChevronLeft, ChevronRight, Truck, ShieldCheck, Check } from 'lucide-react';
 import { fetchProductBySlug } from '../lib/queries';
 import { useCart } from '../context/CartContext';
 import { LoadingSpinner, ErrorState } from '../components/UI';
@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart, totalItems } = useCart();
+  const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [selectedImg, setSelectedImg] = useState(0);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});

@@ -46,6 +46,7 @@ export interface ProductListItem {
   id: number;
   name: string;
   slug: string;
+  material?: string;
   price: string;
   stock_quantity: number;
   stock_status: 'IN_STOCK' | 'OUT_OF_STOCK';
