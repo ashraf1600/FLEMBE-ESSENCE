@@ -15,6 +15,8 @@ const ShopPage           = lazy(() => import('./pages/ShopPage'));
 const CategoriesPage     = lazy(() => import('./pages/CategoriesPage'));
 const CategoryPage       = lazy(() => import('./pages/CategoryPage'));
 const ProductDetailPage  = lazy(() => import('./pages/ProductDetailPage'));
+const CartPage           = lazy(() => import('./pages/CartPage'));
+const WishlistPage       = lazy(() => import('./pages/WishlistPage'));
 const CheckoutPage       = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage   = lazy(() => import('./pages/OrderSuccessPage'));
 const AboutPage          = lazy(() => import('./pages/AboutPage'));
@@ -110,6 +112,8 @@ function App() {
                 <Route path="/categories" element={<StorefrontLayout><CategoriesPage /></StorefrontLayout>} />
                 <Route path="/categories/:slug" element={<StorefrontLayout><CategoryPage /></StorefrontLayout>} />
                 <Route path="/products/:slug" element={<StorefrontLayout><ProductDetailPage /></StorefrontLayout>} />
+                <Route path="/cart" element={<StorefrontLayout><CartPage /></StorefrontLayout>} />
+                <Route path="/wishlist" element={<StorefrontLayout><WishlistPage /></StorefrontLayout>} />
                 <Route
                   path="/checkout"
                   element={<StorefrontLayout><CheckoutPage /></StorefrontLayout>}
