@@ -69,7 +69,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <Router>
+          <WishlistProvider>
+            <Router>
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* ── Admin routes (no navbar/footer) ──────────── */}
@@ -142,7 +143,8 @@ function App() {
                 error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
               }}
             />
-          </Router>
+            </Router>
+          </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
