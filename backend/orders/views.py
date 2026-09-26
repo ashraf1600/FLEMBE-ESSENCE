@@ -11,12 +11,12 @@ from .serializers import OrderCreateSerializer, OrderSerializer, OrderStatusUpda
 
 
 class OrderCreateView(generics.CreateAPIView):
-    """POST /api/v1/orders/ — Place a new COD order (public)."""
+    """POST /api/v1/orders/ — Place a new COD order (requires JWT authentication)."""
     serializer_class = OrderCreateSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
         return Response({
@@ -29,6 +29,22 @@ class OrderCreateView(generics.CreateAPIView):
             'order_status': order.order_status,
             'message': 'Your order has been placed successfully.',
         }, status=status.HTTP_201_CREATED)
+
+
+class CustomerOrderListView(generics.ListAPIView):
+    """GET /api/v1/orders/my-orders/ — Authenticated customer: list their own orders."""
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Order.objects
+            .filter(user=user)
+            .select_related('customer', 'delivery_zone')
+            .prefetch_related('items')
+            .order_by('-created_at')
+        )
 
 
 class OrderDetailView(generics.RetrieveAPIView):

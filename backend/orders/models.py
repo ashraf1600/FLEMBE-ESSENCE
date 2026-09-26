@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from catalog.models import Product
 from delivery.models import DeliveryZone
 
@@ -31,6 +32,13 @@ class Order(models.Model):
         COD = 'COD', 'Cash on Delivery'
 
     order_number = models.CharField(max_length=50, unique=True, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='orders',
+    )
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
     delivery_zone = models.ForeignKey(DeliveryZone, on_delete=models.PROTECT, related_name='orders')
     address = models.TextField()

@@ -119,9 +119,14 @@ class OrderCreateSerializer(serializers.Serializer):
         # Generate unique order number
         order_number = self._generate_order_number()
 
+        # Associate with authenticated user if present
+        request = self.context.get('request')
+        user = request.user if request and request.user.is_authenticated else None
+
         # Create order
         order = Order.objects.create(
             order_number=order_number,
+            user=user,
             customer=customer,
             delivery_zone=delivery_zone,
             address=address,
