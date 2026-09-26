@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { CartItem, ProductListItem } from '../types';
+import { useAuth } from './AuthContext';
 
 interface CartContextType {
   cart: CartItem[];
@@ -11,29 +12,76 @@ interface CartContextType {
   subtotal: number;
 }
 
-const CART_STORAGE_KEY = 'flembe_cart';
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // F2 fix: initialise from localStorage so the cart survives page refreshes
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+function getCartKey(userId?: number | null): string {
+  return userId ? `flembe_cart_user_${userId}` : 'flembe_cart_guest';
+}
 
-  // Persist every change back to localStorage
+function loadCartFromStorage(key: string): CartItem[] {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+    // Legacy migration: check 'flembe_cart' if key is guest
+    if (key === 'flembe_cart_guest') {
+      const legacy = localStorage.getItem('flembe_cart');
+      if (legacy) return JSON.parse(legacy);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const currentKey = getCartKey(user?.id);
+  const prevUserRef = useRef<number | null | undefined>(user?.id);
+
+  const [cart, setCart] = useState<CartItem[]>(() => loadCartFromStorage(currentKey));
+
+  // Whenever user changes (login, logout, switch account)
+  useEffect(() => {
+    const prevId = prevUserRef.current;
+    const currentId = user?.id;
+    prevUserRef.current = currentId;
+
+    if (prevId !== currentId) {
+      const newKey = getCartKey(currentId);
+      let userCart = loadCartFromStorage(newKey);
+
+      // If user just logged in from guest, merge guest cart into user's cart
+      if (!prevId && currentId) {
+        const guestCart = loadCartFromStorage('flembe_cart_guest');
+        if (guestCart.length > 0) {
+          const merged = [...userCart];
+          guestCart.forEach(gItem => {
+            const idx = merged.findIndex(m => m.product.id === gItem.product.id);
+            if (idx > -1) {
+              merged[idx].quantity += gItem.quantity;
+            } else {
+              merged.push(gItem);
+            }
+          });
+          userCart = merged;
+          localStorage.setItem(newKey, JSON.stringify(userCart));
+          localStorage.removeItem('flembe_cart_guest');
+          localStorage.removeItem('flembe_cart');
+        }
+      }
+
+      setCart(userCart);
+    }
+  }, [user?.id]);
+
+  // Persist every change back to the active user's storage key
   useEffect(() => {
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(currentKey, JSON.stringify(cart));
     } catch {
       // localStorage quota exceeded or unavailable — fail silently
     }
-  }, [cart]);
+  }, [cart, currentKey]);
 
   const addToCart = useCallback((product: ProductListItem, quantity = 1) => {
     setCart(prev => {
