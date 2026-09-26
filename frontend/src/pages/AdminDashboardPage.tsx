@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart2, ShoppingBag, Package, TrendingUp,
   Truck, LogOut, ChevronRight, RefreshCw, Search, Filter,
-  ExternalLink, Plus, CheckCircle, ArrowUpRight, X, Edit2, AlertTriangle
+  ExternalLink, Plus, CheckCircle, ArrowUpRight, X
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -392,7 +392,17 @@ const DashboardTab: React.FC<{
     <div className="space-y-6">
       {/* KPI Cards — Financials */}
       <div>
-        <p className="font-body text-xs uppercase tracking-widest text-off-black/50 mb-3 font-semibold">Financial & Inventory Overview</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-body text-xs uppercase tracking-widest text-off-black/50 font-semibold">Financial & Inventory Overview</p>
+          {onOpenCreateProduct && (
+            <button
+              onClick={onOpenCreateProduct}
+              className="btn-primary inline-flex items-center gap-1.5 text-xs py-1.5 px-3 cursor-pointer"
+            >
+              <Plus size={13} /> Add Product
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard label="Total Revenue" value={fmt(stats.total_revenue)} sub="Confirmed + Delivered" color="burgundy" />
           <KPICard label="Today's Revenue" value={fmt(stats.today_revenue)} sub={`${stats.today_orders} order(s) today`} />
@@ -1067,5 +1077,584 @@ const KPICard: React.FC<{
     {sub && <span className="font-body text-[11px] text-off-black/50">{sub}</span>}
   </div>
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IN-DASHBOARD MODALS (Zero Re-Authentications Required)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CreateProductModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  categories: any[];
+  onSuccess: () => void;
+}> = ({ isOpen, onClose, categories, onSuccess }) => {
+  const [name, setName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('10');
+  const [material, setMaterial] = useState('');
+  const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return setError('Product title is required.');
+    if (!categoryId) return setError('Please select a category.');
+    if (!price || Number(price) <= 0) return setError('Please enter a valid price.');
+    if (!description.trim()) return setError('Description is required.');
+
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/api/v1/products/', {
+        name: name.trim(),
+        category_id: Number(categoryId),
+        price: Number(price),
+        stock_quantity: Number(stock) || 0,
+        material: material.trim(),
+        description: description.trim(),
+        image_url: imageUrl.trim() || undefined,
+        is_active: true,
+      });
+      toast.success('Product added successfully!');
+      setName('');
+      setCategoryId('');
+      setPrice('');
+      setStock('10');
+      setMaterial('');
+      setDescription('');
+      setImageUrl('');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to create product.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-off-black/40 hover:text-burgundy p-1"
+        >
+          <X size={20} />
+        </button>
+        <h3 className="font-display text-xl text-burgundy mb-1">Add New Product</h3>
+        <p className="font-body text-xs text-off-black/50 mb-5">Instantly list a new jewellery item without leaving the dashboard</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-body">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Product Title *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Royal Emerald Crystal Pendant"
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Category *</label>
+              <select
+                value={categoryId}
+                onChange={e => setCategoryId(e.target.value)}
+                className="input-field text-sm"
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Material</label>
+              <input
+                type="text"
+                value={material}
+                onChange={e => setMaterial(e.target.value)}
+                placeholder="e.g. 18K Gold Plated"
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Price (৳ BDT) *</label>
+              <input
+                type="number"
+                min="1"
+                step="any"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                placeholder="e.g. 450"
+                className="input-field text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Initial Stock Units *</label>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={e => setStock(e.target.value)}
+                className="input-field text-sm"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Product Image URL</label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+              placeholder="https://images.unsplash.com/... or direct image link"
+              className="input-field text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Product Description *</label>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Detailed description of features, size, and styling tips…"
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-nude-dark">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="btn-outline text-xs py-2 px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary text-xs py-2 px-5 inline-flex items-center gap-2"
+            >
+              {loading ? <RefreshCw size={14} className="animate-spin" /> : <Plus size={14} />}
+              Publish Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const CreateCategoryModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  categories: any[];
+  onSuccess: () => void;
+}> = ({ isOpen, onClose, categories, onSuccess }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [parentId, setParentId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return setError('Category name is required.');
+
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/api/v1/categories/', {
+        name: name.trim(),
+        description: description.trim(),
+        parent: parentId ? Number(parentId) : null,
+        is_active: true,
+      });
+      toast.success('Category created successfully!');
+      setName('');
+      setDescription('');
+      setParentId('');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to create category.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-md w-full p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-off-black/40 hover:text-burgundy p-1"
+        >
+          <X size={20} />
+        </button>
+        <h3 className="font-display text-xl text-burgundy mb-1">Create Category</h3>
+        <p className="font-body text-xs text-off-black/50 mb-5">Organize items into collections or subcategories</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-body">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Category Name *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Bangles & Kadas"
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Parent Category (Optional)</label>
+            <select
+              value={parentId}
+              onChange={e => setParentId(e.target.value)}
+              className="input-field text-sm"
+            >
+              <option value="">None (Top-Level Category)</option>
+              {categories.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Short description of this category…"
+              className="input-field text-sm"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-nude-dark">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="btn-outline text-xs py-2 px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary text-xs py-2 px-5 inline-flex items-center gap-2"
+            >
+              {loading ? <RefreshCw size={14} className="animate-spin" /> : <Plus size={14} />}
+              Save Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const CreateDeliveryZoneModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ isOpen, onClose, onSuccess }) => {
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('Dhaka');
+  const [charge, setCharge] = useState('60');
+  const [isFree, setIsFree] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return setError('Zone name is required.');
+
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/api/v1/delivery-zones/', {
+        name: name.trim(),
+        city: city.trim(),
+        delivery_charge: isFree ? 0 : Number(charge) || 0,
+        is_free: isFree,
+        is_active: true,
+      });
+      toast.success('Delivery zone added successfully!');
+      setName('');
+      setCity('Dhaka');
+      setCharge('60');
+      setIsFree(false);
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || 'Failed to create delivery zone.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-md w-full p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-off-black/40 hover:text-burgundy p-1"
+        >
+          <X size={20} />
+        </button>
+        <h3 className="font-display text-xl text-burgundy mb-1">Add Delivery Zone</h3>
+        <p className="font-body text-xs text-off-black/50 mb-5">Define regional delivery charges or free campus delivery areas</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-body">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Zone / Campus / Area Name *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Daffodil Smart City (Ashulia)"
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">City / Region *</label>
+            <input
+              type="text"
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="e.g. Dhaka or Cox's Bazar"
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-nude/30 border border-nude-dark rounded">
+            <input
+              type="checkbox"
+              id="is_free_zone"
+              checked={isFree}
+              onChange={e => setIsFree(e.target.checked)}
+              className="w-4 h-4 text-burgundy accent-burgundy cursor-pointer"
+            />
+            <label htmlFor="is_free_zone" className="font-semibold text-off-black cursor-pointer select-none">
+              Mark as Free Delivery Zone 🎁
+            </label>
+          </div>
+
+          {!isFree && (
+            <div>
+              <label className="block font-semibold text-off-black mb-1">Standard Delivery Fee (৳ BDT) *</label>
+              <input
+                type="number"
+                min="0"
+                value={charge}
+                onChange={e => setCharge(e.target.value)}
+                placeholder="e.g. 60"
+                className="input-field text-sm"
+                required
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-nude-dark">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="btn-outline text-xs py-2 px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary text-xs py-2 px-5 inline-flex items-center gap-2"
+            >
+              {loading ? <RefreshCw size={14} className="animate-spin" /> : <Plus size={14} />}
+              Save Zone
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const QuickRestockModal: React.FC<{
+  product: any | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ product, onClose, onSuccess }) => {
+  const [stock, setStock] = useState(product ? String(product.stock_quantity) : '0');
+  const [price, setPrice] = useState(product ? String(product.price) : '0');
+  const [isActive, setIsActive] = useState(product ? Boolean(product.is_active) : true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (product) {
+      setStock(String(product.stock_quantity));
+      setPrice(String(product.price));
+      setIsActive(Boolean(product.is_active));
+      setError('');
+    }
+  }, [product]);
+
+  if (!product) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await api.patch(`/api/v1/products/${product.slug}/`, {
+        stock_quantity: Number(stock),
+        price: Number(price),
+        is_active: isActive,
+      });
+      toast.success(`Updated "${product.name}" successfully!`);
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || 'Failed to update product.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-nude-dark shadow-2xl rounded-2xl max-w-sm w-full p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-off-black/40 hover:text-burgundy p-1"
+        >
+          <X size={20} />
+        </button>
+        <h3 className="font-display text-xl text-burgundy mb-1">Quick Restock / Edit</h3>
+        <p className="font-body text-xs text-off-black/60 font-semibold mb-1 truncate">{product.name}</p>
+        <p className="font-body text-[11px] font-mono text-off-black/40 mb-4">SKU: {product.sku}</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-body">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Stock Quantity (Units) *</label>
+            <input
+              type="number"
+              min="0"
+              value={stock}
+              onChange={e => setStock(e.target.value)}
+              className="input-field text-sm"
+              required
+            />
+            <span className="text-[10px] text-off-black/40 mt-1 block">
+              Setting to 0 will immediately mark item as Out of Stock
+            </span>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-off-black mb-1">Price (৳ BDT) *</label>
+            <input
+              type="number"
+              min="1"
+              step="any"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              className="input-field text-sm"
+              required
+            />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-nude/30 border border-nude-dark rounded">
+            <input
+              type="checkbox"
+              id="product_is_active"
+              checked={isActive}
+              onChange={e => setIsActive(e.target.checked)}
+              className="w-4 h-4 text-burgundy accent-burgundy cursor-pointer"
+            />
+            <label htmlFor="product_is_active" className="font-semibold text-off-black cursor-pointer select-none">
+              Visible & Purchasable in Store
+            </label>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-nude-dark">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="btn-outline text-xs py-2 px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary text-xs py-2 px-5 inline-flex items-center gap-2"
+            >
+              {loading ? <RefreshCw size={14} className="animate-spin" /> : null}
+              Update Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export default AdminDashboardPage;
