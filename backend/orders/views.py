@@ -11,9 +11,9 @@ from .serializers import OrderCreateSerializer, OrderSerializer, OrderStatusUpda
 
 
 class OrderCreateView(generics.CreateAPIView):
-    """POST /api/v1/orders/ — Place a new COD order (requires JWT authentication)."""
+    """POST /api/v1/orders/ — Place a new COD order (public guest or authenticated)."""
     serializer_class = OrderCreateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})

@@ -128,3 +128,19 @@ export interface CheckoutForm {
   customer_note: string;
   policy_accepted: boolean;
 }
+
+export interface Review {
+  id: number;
+  product?: number;
+  reviewer_name: string;
+  reviewer_email?: string;
+  user?: number | null;
+  rating: number;
+  title: string;
+  body: string;
+  is_approved?: boolean;
+  is_featured?: boolean;
+  helpful_count: number;
+  created_at: string;
+}
+

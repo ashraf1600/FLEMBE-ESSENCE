@@ -140,10 +140,11 @@ class OrderAPITest(TestCase):
             'policy_accepted': policy,
         }
 
-    def test_unauthenticated_cannot_place_order(self):
+    def test_unauthenticated_can_place_guest_order(self):
         anon_client = APIClient()
         resp = anon_client.post('/api/v1/orders/', self._order_payload(), format='json')
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 201)
+        self.assertIn('order_number', resp.data)
 
     def test_valid_order_creation(self):
         resp = self.client.post('/api/v1/orders/', self._order_payload(), format='json')

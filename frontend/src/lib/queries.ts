@@ -1,7 +1,7 @@
 import api from '../lib/api';
 import type {
   Category, Product, ProductListItem, PaginatedResponse,
-  DeliveryZone, OrderCreateResponse, Order
+  DeliveryZone, OrderCreateResponse, Order, Review
 } from '../types';
 
 // ─── Categories ───────────────────────────────────────────────────────────────
@@ -66,3 +66,41 @@ export const fetchOrder = async (orderNumber: string): Promise<Order> => {
   const { data } = await api.get<Order>(`/orders/${orderNumber}/`);
   return data;
 };
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export interface ReviewStats {
+  total_reviews: number;
+  average_rating: number;
+  rating_counts: Record<number, number>;
+}
+
+export interface ProductReviewsResponse {
+  stats: ReviewStats;
+  results: Review[];
+}
+
+export interface ReviewSubmitPayload {
+  product: number;
+  reviewer_name: string;
+  reviewer_email?: string;
+  rating: number;
+  title: string;
+  body: string;
+}
+
+export const fetchProductReviews = async (slug: string): Promise<ProductReviewsResponse> => {
+  const { data } = await api.get<ProductReviewsResponse>(`/products/${slug}/reviews/`);
+  return data;
+};
+
+export const submitProductReview = async (payload: ReviewSubmitPayload): Promise<{ message: string; review: Review }> => {
+  const { data } = await api.post<{ message: string; review: Review }>('/reviews/', payload);
+  return data;
+};
+
+export const markReviewHelpful = async (reviewId: number): Promise<{ helpful_count: number }> => {
+  const { data } = await api.post<{ helpful_count: number }>(`/reviews/${reviewId}/helpful/`);
+  return data;
+};
+

@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.utils.text import slugify
 
 from .models import Category, Product, ProductImage
 from .serializers import (
@@ -39,9 +38,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        name = serializer.validated_data.get('name', '')
-        slug = slugify(name)
-        serializer.save(slug=slug)
+        # Do NOT pass a hard-coded slug here — let the model's save() method
+        # generate and deduplicate the slug. Passing slug= would bypass the
+        # uniqueness counter logic in Category.save() and crash on duplicates.
+        serializer.save()
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -55,9 +55,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
     def perform_create(self, serializer):
-        name = serializer.validated_data.get('name', '')
-        slug = slugify(name)
-        product = serializer.save(slug=slug)
+        # Let the model's save() method generate and deduplicate the slug.
+        product = serializer.save()
 
         # Handle multiple uploaded image files
         uploaded_files = self.request.FILES.getlist('images')

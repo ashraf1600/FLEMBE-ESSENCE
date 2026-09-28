@@ -4,7 +4,7 @@ from django.db import models
 class DeliveryZone(models.Model):
     name = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
-    area = models.CharField(max_length=255)
+    area = models.CharField(max_length=255, blank=True)
     delivery_charge = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     is_free = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
