@@ -790,11 +790,11 @@ const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) =
             e.stopPropagation();
             onPrintSlip(order);
           }}
-          className="px-2.5 py-1.5 rounded-lg border border-burgundy/25 bg-burgundy/5 text-burgundy hover:bg-burgundy hover:text-nude font-body text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+          className="px-3 py-1.5 rounded-lg border border-burgundy/30 bg-burgundy/10 text-burgundy hover:bg-burgundy hover:text-nude font-body text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer whitespace-nowrap"
           title="Print Packing / Delivery Slip for Courier"
         >
-          <Printer size={13} />
-          <span className="hidden sm:inline">Print Slip</span>
+          <Printer size={14} />
+          <span>Print Slip</span>
         </button>
 
         <div className="text-right min-w-[80px]">
@@ -2298,6 +2298,13 @@ const QuickRestockModal: React.FC<{ product: any | null; onClose: () => void; on
 // ─────────────────────────────────────────────────────────────────────────────
 const PackingSlipModal: React.FC<{ order: any | null; onClose: () => void }> = ({ order, onClose }) => {
   if (!order) return null;
+
+  React.useEffect(() => {
+    document.body.classList.add('print-slip-open');
+    return () => {
+      document.body.classList.remove('print-slip-open');
+    };
+  }, []);
 
   const handlePrint = () => {
     window.print();
