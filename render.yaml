@@ -46,12 +46,13 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   # 2. React / Vite Frontend Static Site
   # ─────────────────────────────────────────────────────────────────────────────
-  - type: static
+  - type: web
     name: flembe-essence-frontend
+    runtime: static
     rootDir: frontend
     plan: free
     buildCommand: "npm run build"
-    publishPath: "dist"
+    staticPublishPath: "./dist"
     autoDeploy: true
     envVars:
       - key: VITE_API_URL
