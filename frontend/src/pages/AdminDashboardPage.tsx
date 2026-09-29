@@ -7,6 +7,7 @@ import {
   ExternalLink, Plus, CheckCircle, ArrowUpRight, X,
   Upload, Trash2, Star, MessageSquare, ChevronDown,
   Eye, EyeOff, Award, AlertTriangle, Activity,
+  Pencil, MapPin,
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -195,7 +196,9 @@ const AdminDashboardPage: React.FC = () => {
 
   const [isCreateProductOpen,  setIsCreateProductOpen]  = useState(false);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
-  const [isCreateDeliveryOpen, setIsCreateDeliveryOpen] = useState(false);
+  const [isDeliveryModalOpen,  setIsDeliveryModalOpen]  = useState(false);
+  const [selectedDeliveryZone, setSelectedDeliveryZone] = useState<any | null>(null);
+  const [deletingDeliveryZone, setDeletingDeliveryZone] = useState<any | null>(null);
   const [restockProduct,       setRestockProduct]       = useState<any>(null);
 
   const [orderSearchInput, setOrderSearchInput] = useState('');
@@ -235,6 +238,16 @@ const AdminDashboardPage: React.FC = () => {
     mutationFn: updateStatus,
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-orders'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); toast.success('Order status updated!'); },
     onError: () => toast.error('Failed to update status.'),
+  });
+  const toggleDeliveryStatusMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) =>
+      (await api.patch(`/delivery-zones/${id}/`, { is_active })).data,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-delivery-list'] });
+      qc.invalidateQueries({ queryKey: ['delivery-zones'] });
+      toast.success(data.is_active ? `"${data.name}" is now Active` : `"${data.name}" is now Paused`);
+    },
+    onError: () => toast.error('Could not update zone status.'),
   });
   const approveMutation = useMutation({
     mutationFn: toggleApprove,
@@ -336,7 +349,7 @@ const AdminDashboardPage: React.FC = () => {
             </button>
             {tab === 'products'   && <button onClick={() => setIsCreateProductOpen(true)}  className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Product</button>}
             {tab === 'categories' && <button onClick={() => setIsCreateCategoryOpen(true)} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Category</button>}
-            {tab === 'delivery'   && <button onClick={() => setIsCreateDeliveryOpen(true)} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Zone</button>}
+            {tab === 'delivery'   && <button onClick={() => { setSelectedDeliveryZone(null); setIsDeliveryModalOpen(true); }} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Zone</button>}
           </div>
         </header>
 
@@ -348,7 +361,16 @@ const AdminDashboardPage: React.FC = () => {
           {tab === 'orders' && <OrdersTab ordersData={ordersData} isLoading={ordersLoading} statusFilter={statusFilter} setStatusFilter={setStatusFilter} orderSearchInput={orderSearchInput} setOrderSearchInput={setOrderSearchInput} onSearch={(q) => setOrderSearch(q)} orderSearch={orderSearch} onUpdateStatus={(n, s) => statusMutation.mutate({ orderNumber: n, order_status: s })} />}
           {tab === 'products' && <ProductsTab products={productsData?.results || []} totalCount={productsData?.count || 0} isLoading={prodsLoading} search={prodSearch} setSearch={setProdSearch} onSearchSubmit={(q) => setProdSearchQuery(q)} onOpenCreateProduct={() => setIsCreateProductOpen(true)} onRestock={(p) => setRestockProduct(p)} />}
           {tab === 'categories' && <CategoriesTab categories={cats} isLoading={catsLoading} onOpenCreateCategory={() => setIsCreateCategoryOpen(true)} />}
-          {tab === 'delivery' && <DeliveryTab zones={deliveryData?.results || deliveryData || []} isLoading={deliveryLoading} onOpenCreateDelivery={() => setIsCreateDeliveryOpen(true)} />}
+          {tab === 'delivery' && (
+            <DeliveryTab
+              zones={deliveryData?.results || deliveryData || []}
+              isLoading={deliveryLoading}
+              onOpenCreateDelivery={() => { setSelectedDeliveryZone(null); setIsDeliveryModalOpen(true); }}
+              onEditZone={(z) => { setSelectedDeliveryZone(z); setIsDeliveryModalOpen(true); }}
+              onDeleteZone={(z) => setDeletingDeliveryZone(z)}
+              onToggleActive={(z) => toggleDeliveryStatusMutation.mutate({ id: z.id, is_active: !z.is_active })}
+            />
+          )}
           {tab === 'reviews' && <ReviewsTab reviewsData={reviewsData} isLoading={reviewsLoading} filter={reviewFilter} setFilter={setReviewFilter} onApprove={(id) => approveMutation.mutate(id)} onFeature={(id) => featureMutation.mutate(id)} onDelete={(id) => { if (confirm('Delete this review permanently?')) deleteMutation.mutate(id); }} />}
         </div>
       </main>
@@ -356,7 +378,17 @@ const AdminDashboardPage: React.FC = () => {
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
       <CreateProductModal isOpen={isCreateProductOpen} onClose={() => setIsCreateProductOpen(false)} categories={cats} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-products-list'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); qc.invalidateQueries({ queryKey: ['products'] }); }} />
       <CreateCategoryModal isOpen={isCreateCategoryOpen} onClose={() => setIsCreateCategoryOpen(false)} categories={cats} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-categories-list'] }); qc.invalidateQueries({ queryKey: ['categories'] }); }} />
-      <CreateDeliveryZoneModal isOpen={isCreateDeliveryOpen} onClose={() => setIsCreateDeliveryOpen(false)} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-delivery-list'] }); qc.invalidateQueries({ queryKey: ['delivery-zones'] }); }} />
+      <DeliveryZoneModal
+        isOpen={isDeliveryModalOpen}
+        zone={selectedDeliveryZone}
+        onClose={() => { setIsDeliveryModalOpen(false); setSelectedDeliveryZone(null); }}
+        onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-delivery-list'] }); qc.invalidateQueries({ queryKey: ['delivery-zones'] }); }}
+      />
+      <DeleteDeliveryZoneModal
+        zone={deletingDeliveryZone}
+        onClose={() => setDeletingDeliveryZone(null)}
+        onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-delivery-list'] }); qc.invalidateQueries({ queryKey: ['delivery-zones'] }); }}
+      />
       <QuickRestockModal product={restockProduct} onClose={() => setRestockProduct(null)} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-products-list'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); }} />
     </div>
   );
@@ -844,36 +876,308 @@ const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean; onOpenCre
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DELIVERY TAB
+// DELIVERY TAB (FULL CRUD)
 // ─────────────────────────────────────────────────────────────────────────────
-const DeliveryTab: React.FC<{ zones: any[]; isLoading: boolean; onOpenCreateDelivery: () => void }> = ({ zones, isLoading, onOpenCreateDelivery }) => (
-  <div className="space-y-4">
-    <Card className="p-4 flex items-center justify-between">
-      <div>
-        <h2 className="font-display text-lg" style={{ color: '#4B1D3F' }}>Delivery Zones & Rates</h2>
-        <p className="font-body text-[11px]" style={{ color: 'rgba(27,27,27,0.4)' }}>Manage delivery charges and eligible areas</p>
-      </div>
-      <button type="button" onClick={onOpenCreateDelivery} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={13} /> Add Zone</button>
-    </Card>
-    {isLoading ? <LoadingSpinner /> : (
-      <TableWrap>
-        <thead><tr><Th>Zone / Area</Th><Th>City</Th><Th>Area Detail</Th><Th>Delivery Fee</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
-        <tbody>
-          {zones.map((z: any) => (
-            <tr key={z.id} style={{ background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,217,193,0.15)')} onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
-              <Td><span className="font-bold" style={{ color: '#1B1B1B' }}>{z.name}</span></Td>
-              <Td>{z.city}</Td>
-              <Td>{z.area || <span style={{ color: 'rgba(27,27,27,0.3)' }}>—</span>}</Td>
-              <Td>{z.is_free ? <span className="px-2 py-0.5 rounded-md text-[10px] font-bold" style={{ background: '#ecfdf5', color: '#059669' }}>🎁 FREE</span> : <strong style={{ color: '#4B1D3F' }}>৳{Number(z.delivery_charge).toLocaleString()}</strong>}</Td>
-              <Td><span className={`text-[11px] font-semibold ${z.is_active ? 'text-emerald-600' : 'text-slate-400'}`}>{z.is_active ? '✓ Active' : '○ Paused'}</span></Td>
-              <Td right><a href={`${DJANGO_ADMIN_URL}/delivery/deliveryzone/${z.id}/change/`} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold" style={{ color: '#4B1D3F' }}>Edit ↗</a></Td>
+const DeliveryTab: React.FC<{
+  zones: any[];
+  isLoading: boolean;
+  onOpenCreateDelivery: () => void;
+  onEditZone: (zone: any) => void;
+  onDeleteZone: (zone: any) => void;
+  onToggleActive: (zone: any) => void;
+}> = ({ zones, isLoading, onOpenCreateDelivery, onEditZone, onDeleteZone, onToggleActive }) => {
+  const [search, setSearch] = useState('');
+  const [cityFilter, setCityFilter] = useState('ALL');
+  const [rateFilter, setRateFilter] = useState<'ALL' | 'FREE' | 'PAID'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'PAUSED'>('ALL');
+
+  // Dynamically extract unique cities from zones
+  const uniqueCities = Array.from(new Set(zones.map((z: any) => z.city).filter(Boolean))).sort();
+
+  const filteredZones = zones.filter((z: any) => {
+    if (cityFilter !== 'ALL' && z.city !== cityFilter) return false;
+    if (rateFilter === 'FREE' && !z.is_free) return false;
+    if (rateFilter === 'PAID' && z.is_free) return false;
+    if (statusFilter === 'ACTIVE' && !z.is_active) return false;
+    if (statusFilter === 'PAUSED' && z.is_active) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matchName = (z.name || '').toLowerCase().includes(q);
+      const matchCity = (z.city || '').toLowerCase().includes(q);
+      const matchArea = (z.area || '').toLowerCase().includes(q);
+      if (!matchName && !matchCity && !matchArea) return false;
+    }
+    return true;
+  });
+
+  const totalCount = zones.length;
+  const freeCount = zones.filter((z: any) => z.is_free).length;
+  const activeCount = zones.filter((z: any) => z.is_active).length;
+
+  return (
+    <div className="space-y-4">
+      {/* Top Banner Card */}
+      <Card className="p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-display text-xl" style={{ color: '#4B1D3F' }}>Delivery Zones & Rates</h2>
+            <span className="font-body text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-burgundy/10 text-burgundy">
+              {totalCount} Total
+            </span>
+          </div>
+          <p className="font-body text-xs mt-0.5" style={{ color: 'rgba(27,27,27,0.5)' }}>
+            Manage delivery charges, free campus routes, and customer eligible areas for Cash on Delivery
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+              🎁 {freeCount} Free Routes
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-burgundy/5 text-burgundy border border-burgundy/10 font-medium">
+              ✓ {activeCount} Active
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenCreateDelivery}
+            className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus size={14} /> Add Zone
+          </button>
+        </div>
+      </Card>
+
+      {/* Filter and Search Bar */}
+      <Card className="p-4 space-y-3">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Search box */}
+          <div className="relative flex-1 max-w-md">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-off-black/40" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by zone, campus, city, or area detail..."
+              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs font-body border border-burgundy/15 focus:outline-none focus:border-burgundy focus:ring-1 focus:ring-burgundy transition-all bg-white"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-off-black/40 hover:text-off-black"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Quick city filter pills */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="font-body text-[10px] uppercase tracking-wider text-off-black/40 mr-1">City:</span>
+            <button
+              type="button"
+              onClick={() => setCityFilter('ALL')}
+              className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all ${
+                cityFilter === 'ALL'
+                  ? 'bg-burgundy text-nude font-semibold shadow-sm'
+                  : 'bg-white text-off-black/60 hover:text-off-black border border-burgundy/10'
+              }`}
+            >
+              All ({zones.length})
+            </button>
+            {uniqueCities.map((city: string) => {
+              const count = zones.filter((z: any) => z.city === city).length;
+              return (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={() => setCityFilter(city)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    cityFilter === city
+                      ? 'bg-burgundy text-nude font-semibold shadow-sm'
+                      : 'bg-white text-off-black/60 hover:text-off-black border border-burgundy/10'
+                  }`}
+                >
+                  {city} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Secondary filters (Rate & Status) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-burgundy/5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-off-black/40 mr-1">Rate:</span>
+            {(['ALL', 'FREE', 'PAID'] as const).map(rate => (
+              <button
+                key={rate}
+                type="button"
+                onClick={() => setRateFilter(rate)}
+                className={`text-[10px] px-2.5 py-1 rounded-md font-medium transition-all ${
+                  rateFilter === rate
+                    ? 'bg-rose-smoke/30 text-burgundy font-bold border border-rose-smoke'
+                    : 'text-off-black/50 hover:text-off-black'
+                }`}
+              >
+                {rate === 'ALL' ? 'All Rates' : rate === 'FREE' ? '🎁 Free Delivery' : '৳ Standard Fee'}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-off-black/40 mr-1">Status:</span>
+            {(['ALL', 'ACTIVE', 'PAUSED'] as const).map(status => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setStatusFilter(status)}
+                className={`text-[10px] px-2.5 py-1 rounded-md font-medium transition-all ${
+                  statusFilter === status
+                    ? 'bg-rose-smoke/30 text-burgundy font-bold border border-rose-smoke'
+                    : 'text-off-black/50 hover:text-off-black'
+                }`}
+              >
+                {status === 'ALL' ? 'All Status' : status === 'ACTIVE' ? '✓ Active' : '○ Paused'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Table */}
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : filteredZones.length === 0 ? (
+        <Card className="p-12 text-center">
+          <MapPin size={36} className="mx-auto mb-3" style={{ color: 'rgba(75,29,63,0.2)' }} />
+          <p className="font-body text-sm font-semibold text-off-black">No delivery zones found</p>
+          <p className="font-body text-xs text-off-black/40 mt-1">
+            {search || cityFilter !== 'ALL' || rateFilter !== 'ALL' || statusFilter !== 'ALL'
+              ? 'Try adjusting your search query or filters above.'
+              : 'Add your first delivery zone to enable Cash on Delivery checkout.'}
+          </p>
+          <button
+            type="button"
+            onClick={onOpenCreateDelivery}
+            className="btn-primary text-xs py-1.5 px-3 mt-4 inline-flex items-center gap-1"
+          >
+            <Plus size={12} /> Add Zone Now
+          </button>
+        </Card>
+      ) : (
+        <TableWrap>
+          <thead>
+            <tr>
+              <Th>Zone / Area</Th>
+              <Th>City</Th>
+              <Th>Area Detail</Th>
+              <Th>Delivery Fee</Th>
+              <Th>Status</Th>
+              <Th right>Actions</Th>
             </tr>
-          ))}
-        </tbody>
-      </TableWrap>
-    )}
-  </div>
-);
+          </thead>
+          <tbody>
+            {filteredZones.map((z: any) => (
+              <tr
+                key={z.id}
+                style={{ background: 'white', transition: 'background 0.1s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,217,193,0.15)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+              >
+                {/* Zone / Area */}
+                <Td>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-burgundy/60 flex-shrink-0" />
+                    <div>
+                      <span className="font-bold text-off-black block">{z.name}</span>
+                      {z.is_free && (
+                        <span className="text-[10px] text-emerald-700 font-medium">Eligible for free doorstep delivery</span>
+                      )}
+                    </div>
+                  </div>
+                </Td>
+
+                {/* City */}
+                <Td>
+                  <span className="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-nude/40 text-off-black border border-burgundy/10">
+                    {z.city}
+                  </span>
+                </Td>
+
+                {/* Area Detail */}
+                <Td>
+                  <span className="text-off-black/80 font-medium text-xs">
+                    {z.area || <span className="text-off-black/25 font-normal italic">—</span>}
+                  </span>
+                </Td>
+
+                {/* Delivery Fee */}
+                <Td>
+                  {z.is_free ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      🎁 FREE
+                    </span>
+                  ) : (
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="font-display font-bold text-base" style={{ color: '#4B1D3F' }}>
+                        ৳{Number(z.delivery_charge).toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-off-black/40">BDT</span>
+                    </div>
+                  )}
+                </Td>
+
+                {/* Status (Interactive Toggle) */}
+                <Td>
+                  <button
+                    type="button"
+                    onClick={() => onToggleActive(z)}
+                    title={`Click to switch to ${z.is_active ? 'Paused' : 'Active'}`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
+                      z.is_active
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300'
+                        : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200 hover:text-slate-700'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${z.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                    {z.is_active ? '✓ Active' : '○ Paused'}
+                  </button>
+                </Td>
+
+                {/* Actions */}
+                <Td right>
+                  <div className="flex items-center justify-end gap-1.5">
+                    {/* In-app Edit Button */}
+                    <button
+                      type="button"
+                      onClick={() => onEditZone(z)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all border border-burgundy/20 text-burgundy bg-burgundy/5 hover:bg-burgundy hover:text-nude shadow-2xs"
+                      title="Edit zone details and rates"
+                    >
+                      <Pencil size={11} /> Edit
+                    </button>
+
+                    {/* Delete Zone Button */}
+                    <button
+                      type="button"
+                      onClick={() => onDeleteZone(z)}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-red-600 bg-red-50 hover:bg-red-600 hover:text-white border border-red-200 transition-all shadow-2xs"
+                      title="Delete delivery zone"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REVIEWS TAB
@@ -1083,38 +1387,261 @@ const CreateCategoryModal: React.FC<{ isOpen: boolean; onClose: () => void; cate
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CREATE DELIVERY ZONE MODAL
+// DELIVERY ZONE MODAL (CREATE & EDIT)
 // ─────────────────────────────────────────────────────────────────────────────
-const CreateDeliveryZoneModal: React.FC<{ isOpen: boolean; onClose: () => void; onSuccess: () => void }> = ({ isOpen, onClose, onSuccess }) => {
-  const [name, setName] = useState(''); const [city, setCity] = useState('Dhaka'); const [area, setArea] = useState('');
-  const [charge, setCharge] = useState('60'); const [isFree, setIsFree] = useState(false);
-  const [loading, setLoading] = useState(false); const [error, setError] = useState('');
+const DeliveryZoneModal: React.FC<{
+  isOpen: boolean;
+  zone: any | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ isOpen, zone, onClose, onSuccess }) => {
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('Dhaka');
+  const [area, setArea] = useState('');
+  const [charge, setCharge] = useState('60');
+  const [isFree, setIsFree] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (zone) {
+      setName(zone.name || '');
+      setCity(zone.city || 'Dhaka');
+      setArea(zone.area || '');
+      setIsFree(Boolean(zone.is_free));
+      setCharge(String(zone.delivery_charge || '0'));
+      setIsActive(zone.is_active !== undefined ? Boolean(zone.is_active) : true);
+      setError('');
+    } else {
+      setName('');
+      setCity('Dhaka');
+      setArea('');
+      setIsFree(false);
+      setCharge('60');
+      setIsActive(true);
+      setError('');
+    }
+  }, [zone, isOpen]);
+
   if (!isOpen) return null;
+
+  const isEditing = Boolean(zone?.id);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return setError('Zone name required.');
-    if (!city.trim()) return setError('City required.');
-    setLoading(true); setError('');
+    if (!name.trim()) return setError('Zone / Area name is required.');
+    if (!city.trim()) return setError('City is required.');
+    setLoading(true);
+    setError('');
+
+    const payload = {
+      name: name.trim(),
+      city: city.trim(),
+      area: area.trim(),
+      delivery_charge: isFree ? 0 : Number(charge) || 0,
+      is_free: isFree,
+      is_active: isActive,
+    };
+
     try {
-      await api.post('/delivery-zones/', { name: name.trim(), city: city.trim(), area: area.trim() || name.trim(), delivery_charge: isFree ? 0 : Number(charge) || 0, is_free: isFree, is_active: true });
-      toast.success('Delivery zone added!'); setName(''); setCity('Dhaka'); setArea(''); setCharge('60'); setIsFree(false); onSuccess(); onClose();
-    } catch (err: any) { setError(err.response?.data?.detail || 'Failed to create delivery zone.'); }
-    finally { setLoading(false); }
+      if (isEditing) {
+        await api.patch(`/delivery-zones/${zone.id}/`, payload);
+        toast.success(`Delivery zone "${name.trim()}" updated!`);
+      } else {
+        await api.post('/delivery-zones/', payload);
+        toast.success(`Delivery zone "${name.trim()}" added!`);
+      }
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to save delivery zone.');
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <ModalBase title="Add Delivery Zone" subtitle="Define delivery charges or free delivery areas" onClose={onClose}>
+    <ModalBase
+      title={isEditing ? 'Edit Delivery Zone' : 'Add Delivery Zone'}
+      subtitle={isEditing ? 'Update delivery charges, coverage, and availability' : 'Define delivery charges or free campus delivery areas'}
+      onClose={onClose}
+    >
       {error && <div className="mb-4"><FormError msg={error} /></div>}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Zone / Campus Name" required><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Daffodil Main Campus" className="input-field" required /></FormField>
-        <FormField label="City / Region" required><input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Dhaka or Cox's Bazar" className="input-field" required /></FormField>
-        <FormField label="Area / Address Detail"><input type="text" value={area} onChange={e => setArea(e.target.value)} placeholder="Optional — e.g. Mirpur 1" className="input-field" /></FormField>
-        <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(232,217,193,0.3)', border: '1px solid rgba(75,29,63,0.1)' }}>
-          <input type="checkbox" id="is_free_zone" checked={isFree} onChange={e => setIsFree(e.target.checked)} className="w-4 h-4 cursor-pointer" />
-          <label htmlFor="is_free_zone" className="font-body text-xs font-semibold cursor-pointer select-none" style={{ color: '#1B1B1B' }}>🎁 Mark as Free Delivery Zone</label>
+        <FormField label="Zone / Area Name" required>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g. Daffodil International University — Main Campus"
+            className="input-field"
+            required
+          />
+        </FormField>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="City / Region" required>
+            <input
+              type="text"
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="e.g. Dhaka or Cox's Bazar"
+              className="input-field"
+              required
+            />
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[10px] text-off-black/40">Quick:</span>
+              <button
+                type="button"
+                onClick={() => setCity('Dhaka')}
+                className="text-[10px] px-2 py-0.5 rounded bg-nude/40 text-burgundy hover:bg-nude transition-colors"
+              >
+                Dhaka
+              </button>
+              <button
+                type="button"
+                onClick={() => setCity("Cox's Bazar")}
+                className="text-[10px] px-2 py-0.5 rounded bg-nude/40 text-burgundy hover:bg-nude transition-colors"
+              >
+                Cox's Bazar
+              </button>
+            </div>
+          </FormField>
+
+          <FormField label="Area Detail (Optional)">
+            <input
+              type="text"
+              value={area}
+              onChange={e => setArea(e.target.value)}
+              placeholder="e.g. Birulia, Mirpur 1, Kolatoli"
+              className="input-field"
+            />
+          </FormField>
         </div>
-        {!isFree && <FormField label="Delivery Fee (৳ BDT)" required><input type="number" min="0" value={charge} onChange={e => setCharge(e.target.value)} placeholder="60" className="input-field" required /></FormField>}
-        <FormActions onClose={onClose} loading={loading} submitLabel="Save Zone" />
+
+        <div className="p-3.5 rounded-xl border border-burgundy/10 bg-nude/20 space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              id="is_free_zone"
+              checked={isFree}
+              onChange={e => {
+                setIsFree(e.target.checked);
+                if (e.target.checked) setCharge('0');
+              }}
+              className="w-4 h-4 accent-burgundy cursor-pointer"
+            />
+            <div className="min-w-0">
+              <span className="font-body text-xs font-semibold text-off-black flex items-center gap-1.5">
+                🎁 Mark as Free Delivery Area (৳0 Fee)
+              </span>
+              <span className="block text-[11px] text-off-black/50">
+                Customers selecting this zone will receive 100% free delivery.
+              </span>
+            </div>
+          </label>
+
+          {!isFree && (
+            <div className="pt-2 border-t border-burgundy/10">
+              <FormField label="Delivery Fee (৳ BDT)" required>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-off-black/40 font-bold text-xs">৳</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={charge}
+                    onChange={e => setCharge(e.target.value)}
+                    placeholder="60"
+                    className="input-field pl-7"
+                    required
+                  />
+                </div>
+              </FormField>
+            </div>
+          )}
+        </div>
+
+        <div className="p-3 rounded-xl border border-burgundy/10 bg-white flex items-center justify-between">
+          <div>
+            <span className="font-body text-xs font-semibold text-off-black block">Active Status</span>
+            <span className="text-[11px] text-off-black/50">Available for customer selection during checkout</span>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={e => setIsActive(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+
+        <FormActions onClose={onClose} loading={loading} submitLabel={isEditing ? 'Save Changes' : 'Add Zone'} />
       </form>
+    </ModalBase>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE DELIVERY ZONE MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+const DeleteDeliveryZoneModal: React.FC<{
+  zone: any | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ zone, onClose, onSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  if (!zone) return null;
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await api.delete(`/delivery-zones/${zone.id}/`);
+      toast.success(`Zone "${zone.name}" removed.`);
+      onSuccess();
+      onClose();
+    } catch {
+      toast.error('Could not delete delivery zone.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ModalBase title="Delete Delivery Zone" subtitle="Confirm permanent deletion" onClose={onClose}>
+      <div className="space-y-4">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-900">
+          <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div>
+            <h4 className="font-display text-sm font-bold text-red-800">Are you sure?</h4>
+            <p className="font-body text-xs text-red-700 mt-1 leading-relaxed">
+              You are about to delete <strong>{zone.name}</strong> ({zone.city}). Customers will no longer see or select this zone for Cash on Delivery checkout.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="btn-secondary text-xs py-2 px-4"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={loading}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors inline-flex items-center gap-1.5 shadow-sm"
+          >
+            {loading ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
+            {loading ? 'Deleting...' : 'Delete Zone'}
+          </button>
+        </div>
+      </div>
     </ModalBase>
   );
 };

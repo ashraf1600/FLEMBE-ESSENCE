@@ -18,7 +18,9 @@ class DeliveryZone(models.Model):
         return f"{self.name} ({self.city})"
 
     def save(self, *args, **kwargs):
-        # Ensure free zones have 0 delivery charge
+        # Ensure free zones have 0 delivery charge; if charge > 0, is_free is False
         if self.is_free:
             self.delivery_charge = 0
+        elif self.delivery_charge and float(self.delivery_charge) > 0:
+            self.is_free = False
         super().save(*args, **kwargs)
