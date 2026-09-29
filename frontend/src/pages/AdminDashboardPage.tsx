@@ -7,7 +7,7 @@ import {
   ExternalLink, Plus, CheckCircle, ArrowUpRight, X,
   Upload, Trash2, Star, MessageSquare, ChevronDown,
   Eye, EyeOff, Award, AlertTriangle, Activity,
-  Pencil, MapPin,
+  Pencil, MapPin, Printer, BellRing,
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +40,7 @@ interface Stats {
   daily_orders: { date: string; count: number; revenue: string }[];
   recent_orders: any[];
   low_stock_products: { id: number; name: string; slug: string; stock_quantity: number; cat_name: string }[];
+  restock_demands?: { id: number; name: string; slug: string; price: string; request_count: number }[];
 }
 
 interface Review {
@@ -193,6 +194,7 @@ const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('dashboard');
+  const [printingOrder, setPrintingOrder] = useState<any | null>(null);
 
   const [isCreateProductOpen,  setIsCreateProductOpen]  = useState(false);
   const [isCategoryModalOpen,  setIsCategoryModalOpen]  = useState(false);
@@ -370,7 +372,20 @@ const AdminDashboardPage: React.FC = () => {
             statsLoading ? <LoadingSpinner /> : statsError ? <ErrorState onRetry={refetchStats} /> :
             stats ? <DashboardTab stats={stats} onTabChange={setTab} onRestock={setRestockProduct} /> : null
           )}
-          {tab === 'orders' && <OrdersTab ordersData={ordersData} isLoading={ordersLoading} statusFilter={statusFilter} setStatusFilter={setStatusFilter} orderSearchInput={orderSearchInput} setOrderSearchInput={setOrderSearchInput} onSearch={(q) => setOrderSearch(q)} orderSearch={orderSearch} onUpdateStatus={(n, s) => statusMutation.mutate({ orderNumber: n, order_status: s })} />}
+          {tab === 'orders' && (
+            <OrdersTab
+              ordersData={ordersData}
+              isLoading={ordersLoading}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              orderSearchInput={orderSearchInput}
+              setOrderSearchInput={setOrderSearchInput}
+              onSearch={(q) => setOrderSearch(q)}
+              orderSearch={orderSearch}
+              onUpdateStatus={(n, s) => statusMutation.mutate({ orderNumber: n, order_status: s })}
+              onPrintSlip={setPrintingOrder}
+            />
+          )}
           {tab === 'products' && <ProductsTab products={productsData?.results || []} totalCount={productsData?.count || 0} isLoading={prodsLoading} search={prodSearch} setSearch={setProdSearch} onSearchSubmit={(q) => setProdSearchQuery(q)} onOpenCreateProduct={() => setIsCreateProductOpen(true)} onRestock={(p) => setRestockProduct(p)} />}
           {tab === 'categories' && (
             <CategoriesTab
@@ -422,6 +437,7 @@ const AdminDashboardPage: React.FC = () => {
         onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-delivery-list'] }); qc.invalidateQueries({ queryKey: ['delivery-zones'] }); }}
       />
       <QuickRestockModal product={restockProduct} onClose={() => setRestockProduct(null)} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-products-list'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); }} />
+      <PackingSlipModal order={printingOrder} onClose={() => setPrintingOrder(null)} />
     </div>
   );
 };
@@ -569,6 +585,79 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void; onRe
           ))}
         </Card>
       </div>
+
+      {/* ── Most Requested Out-of-Stock Items (Demand Counter) ─────────────── */}
+      <Card className="p-6 border border-burgundy/15 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-burgundy/10 text-burgundy">
+              <BellRing size={18} />
+            </div>
+            <div>
+              <h2 className="font-display text-lg font-bold text-burgundy flex items-center gap-2">
+                Most Requested Out-of-Stock Items <span className="text-xs px-2 py-0.5 rounded-full bg-rose-smoke/30 text-burgundy font-body font-semibold">Demand Counter</span>
+              </h2>
+              <p className="font-body text-[11px] text-off-black/60">
+                Customers waiting for restock alerts via SMS/WhatsApp — prioritized for your next supplier batch
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onTabChange('products')}
+            className="font-body text-[11px] font-bold text-burgundy hover:underline flex items-center gap-1"
+          >
+            Manage Products <ArrowUpRight size={12} />
+          </button>
+        </div>
+
+        {(!stats.restock_demands || stats.restock_demands.length === 0) ? (
+          <div className="py-8 px-4 text-center border border-dashed border-burgundy/15 rounded-xl bg-nude/10">
+            <BellRing size={28} className="mx-auto mb-2 text-burgundy/30" />
+            <p className="font-body text-xs font-semibold text-off-black/70">No restock requests currently pending</p>
+            <p className="font-body text-[11px] text-off-black/50 mt-1 max-w-md mx-auto">
+              When shoppers sign up for restock alerts on sold-out pieces, their interest will automatically aggregate here with customer counts.
+            </p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {stats.restock_demands.map(item => (
+              <div
+                key={item.id}
+                className="p-4 rounded-xl border border-burgundy/15 bg-white flex flex-col justify-between gap-3 shadow-2xs hover:shadow-xs transition-shadow"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-body text-xs font-bold text-off-black line-clamp-1">{item.name}</p>
+                    <span className="font-mono text-xs font-bold text-burgundy">৳{Number(item.price).toLocaleString()}</span>
+                  </div>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-burgundy text-nude shadow-2xs">
+                      🔥 {item.request_count} {item.request_count === 1 ? 'Customer Waiting' : 'Customers Waiting'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-burgundy/10 text-xs font-body">
+                  <a
+                    href={`/products/${item.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-off-black/60 hover:text-burgundy hover:underline flex items-center gap-1"
+                  >
+                    View Product ↗
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => onRestock?.({ id: item.id, name: item.name, stock_quantity: 0, slug: item.slug })}
+                    className="text-[11px] font-bold text-burgundy bg-burgundy/10 hover:bg-burgundy hover:text-nude px-2.5 py-1 rounded-md transition-colors"
+                  >
+                    Restock Now →
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 };
@@ -583,7 +672,8 @@ const OrdersTab: React.FC<{
   ordersData: any; isLoading: boolean; statusFilter: string; setStatusFilter: (s: string) => void;
   orderSearchInput: string; setOrderSearchInput: (s: string) => void; onSearch: (q: string) => void;
   orderSearch: string; onUpdateStatus: (n: string, s: string) => void;
-}> = ({ ordersData, isLoading, statusFilter, setStatusFilter, orderSearchInput, setOrderSearchInput, onSearch, orderSearch, onUpdateStatus }) => (
+  onPrintSlip: (order: any) => void;
+}> = ({ ordersData, isLoading, statusFilter, setStatusFilter, orderSearchInput, setOrderSearchInput, onSearch, orderSearch, onUpdateStatus, onPrintSlip }) => (
   <div className="space-y-4">
     {/* Quick Filter Pills */}
     <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
@@ -636,14 +726,14 @@ const OrdersTab: React.FC<{
             <p className="font-body text-sm font-semibold" style={{ color: '#1B1B1B' }}>No orders found</p>
           </Card>
         ) : (ordersData?.results || []).map((order: any) => (
-          <OrderCard key={order.id} order={order} onUpdateStatus={onUpdateStatus} />
+          <OrderCard key={order.id} order={order} onUpdateStatus={onUpdateStatus} onPrintSlip={onPrintSlip} />
         ))}
       </div>
     )}
   </div>
 );
 
-const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) => void }> = ({ order, onUpdateStatus }) => {
+const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) => void; onPrintSlip: (order: any) => void }> = ({ order, onUpdateStatus, onPrintSlip }) => {
   const [expanded, setExpanded] = useState(false);
   const next = NEXT_STATUS[order.order_status];
   const nextLabel = NEXT_ACTION_LABELS[order.order_status];
@@ -692,6 +782,20 @@ const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) =
             </button>
           )}
         </div>
+
+        {/* 🖨️ 1-Click Printable Packing / Delivery Slip Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrintSlip(order);
+          }}
+          className="px-2.5 py-1.5 rounded-lg border border-burgundy/25 bg-burgundy/5 text-burgundy hover:bg-burgundy hover:text-nude font-body text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+          title="Print Packing / Delivery Slip for Courier"
+        >
+          <Printer size={13} />
+          <span className="hidden sm:inline">Print Slip</span>
+        </button>
 
         <div className="text-right min-w-[80px]">
           <p className="font-body text-sm font-bold text-burgundy">৳{Number(order.total_amount).toLocaleString()}</p>
@@ -799,6 +903,15 @@ const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) =
                 </button>
               ))}
             </div>
+
+            <button
+              type="button"
+              onClick={() => onPrintSlip(order)}
+              className="btn-primary text-xs py-1.5 px-3.5 inline-flex items-center gap-1.5 shadow-xs"
+            >
+              <Printer size={13} />
+              <span>Print Delivery Slip (Invoice)</span>
+            </button>
           </div>
         </div>
       )}
@@ -2180,5 +2293,187 @@ const QuickRestockModal: React.FC<{ product: any | null; onClose: () => void; on
     </ModalBase>
   );
 };
+// ─────────────────────────────────────────────────────────────────────────────
+// 1-CLICK PRINTABLE PACKING / DELIVERY SLIP MODAL (INVOICE)
+// ─────────────────────────────────────────────────────────────────────────────
+const PackingSlipModal: React.FC<{ order: any | null; onClose: () => void }> = ({ order, onClose }) => {
+  if (!order) return null;
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const orderDate = new Date(order.created_at).toLocaleDateString('en-BD', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static print:overflow-visible">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-6 overflow-hidden border border-burgundy/15 print:border-none print:shadow-none print:max-w-none print:my-0 print:rounded-none">
+        {/* Top Control Bar (Hidden on Print) */}
+        <div className="px-6 py-4 bg-nude/40 border-b border-burgundy/10 flex items-center justify-between no-print">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-burgundy text-nude">
+              <Printer size={16} />
+            </span>
+            <div>
+              <h3 className="font-display text-base font-bold text-burgundy">Printable Delivery Slip / Invoice</h3>
+              <p className="font-body text-[11px] text-off-black/60">Ready to print & tape to jewellery box / parcel</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1.5 shadow-sm"
+            >
+              <Printer size={14} /> Print Slip Now
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-off-black/50 hover:bg-black/5 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Printable Slip Body ── */}
+        <div id="printable-delivery-slip" className="p-8 print:p-6 font-body text-off-black bg-white">
+          {/* Header */}
+          <div className="flex justify-between items-start pb-5 border-b-2 border-burgundy">
+            <div>
+              <h1 className="font-display text-2xl font-bold tracking-wider text-burgundy leading-none">
+                FLEMBE ESSENCE
+              </h1>
+              <p className="text-[11px] italic text-burgundy/80 font-serif mt-1">
+                Real products. Honest service. Your satisfaction matters.
+              </p>
+              <p className="text-[10px] text-off-black/60 mt-2 font-mono">
+                Dhaka & Cox's Bazar, Bangladesh · Hotline: <strong>01865330801</strong>
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="inline-block px-2.5 py-1 bg-burgundy text-nude font-bold text-xs uppercase tracking-wider rounded-xs mb-1">
+                COD Delivery Slip
+              </span>
+              <p className="font-mono text-xs font-bold text-off-black">Order #{order.order_number}</p>
+              <p className="text-[10px] text-off-black/60 mt-0.5">{orderDate}</p>
+            </div>
+          </div>
+
+          {/* Delivery & Rider Callout Section */}
+          <div className="grid grid-cols-2 gap-4 my-5 p-4 rounded-lg bg-nude/20 border-2 border-burgundy/20 print:border-black/30">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-burgundy print:text-black mb-1">
+                DELIVER TO (CUSTOMER):
+              </p>
+              <p className="text-base font-bold text-off-black">{order.customer_name}</p>
+              <p className="text-xs text-off-black/90 mt-1 whitespace-pre-wrap">{order.address}</p>
+              <p className="text-xs font-semibold text-burgundy mt-1">
+                Zone: {order.delivery_zone_name || order.delivery_zone_city || 'Standard Area'}
+              </p>
+            </div>
+
+            <div className="text-right flex flex-col justify-between border-l pl-4 border-burgundy/15 print:border-black/20">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-burgundy print:text-black mb-1">
+                  CALL RIDER / CUSTOMER PHONE:
+                </p>
+                <p className="font-mono text-xl font-bold text-burgundy print:text-black tracking-wide">
+                  📞 {order.customer_phone}
+                </p>
+                <p className="text-[10px] text-off-black/60 mt-0.5">
+                  Call upon arrival before delivery
+                </p>
+              </div>
+
+              {order.customer_note && (
+                <div className="mt-2 pt-2 border-t border-burgundy/10 text-left">
+                  <span className="text-[9px] uppercase tracking-wider font-bold text-off-black/50 block">Customer Instruction:</span>
+                  <p className="text-xs italic text-off-black font-serif">"{order.customer_note}"</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Itemized Table */}
+          <div className="mb-5">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b-2 border-burgundy/30 text-[10px] uppercase tracking-wider text-off-black/60">
+                  <th className="py-2 font-bold">#</th>
+                  <th className="py-2 font-bold">Product Item</th>
+                  <th className="py-2 text-center font-bold">Qty</th>
+                  <th className="py-2 text-right font-bold">Unit Price</th>
+                  <th className="py-2 text-right font-bold">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {(order.items || []).map((item: any, i: number) => (
+                  <tr key={item.id || i}>
+                    <td className="py-2 text-off-black/40 font-mono text-[11px]">{i + 1}</td>
+                    <td className="py-2 font-medium text-off-black">{item.product_name}</td>
+                    <td className="py-2 text-center font-bold">{item.quantity}</td>
+                    <td className="py-2 text-right font-mono text-off-black/70">৳{Number(item.unit_price).toLocaleString()}</td>
+                    <td className="py-2 text-right font-bold font-mono">৳{Number(item.subtotal).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pricing Calculation & Highlighted COD Cash Box */}
+          <div className="flex justify-between items-start pt-3 border-t border-burgundy/20">
+            <div className="text-[10px] space-y-1 text-off-black/70 max-w-[260px]">
+              <p className="font-semibold text-burgundy print:text-black">Payment Term: Cash on Delivery (COD)</p>
+              <p>Please inspect jewellery parcel immediately upon delivery.</p>
+              <p className="font-bold text-off-black">No Return / No Exchange Policy.</p>
+            </div>
+
+            <div className="w-64 space-y-2">
+              <div className="flex justify-between text-xs text-off-black/75">
+                <span>Subtotal:</span>
+                <span className="font-mono">৳{Number(order.subtotal).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-xs text-off-black/75">
+                <span>Delivery Charge:</span>
+                <span className="font-mono">৳{Number(order.delivery_charge).toLocaleString()}</span>
+              </div>
+
+              {/* Bold COD Box for Rider */}
+              <div className="p-3 bg-burgundy/10 border-2 border-burgundy rounded print:border-2 print:border-black print:bg-gray-100 text-center mt-2">
+                <span className="text-[10px] uppercase font-bold tracking-widest block text-burgundy print:text-black">
+                  CASH TO COLLECT (COD)
+                </span>
+                <span className="font-mono text-2xl font-bold text-burgundy print:text-black block mt-0.5">
+                  ৳{Number(order.total_amount).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Signature & Verification Footer */}
+          <div className="mt-8 pt-4 border-t border-dashed border-gray-300 flex justify-between items-end text-[10px] text-off-black/60">
+            <div>
+              <p>Thank you for choosing Flembe Essence!</p>
+              <p className="text-[9px] mt-0.5">facebook.com/flembeessence · instagram.com/_flembe_._essence_</p>
+            </div>
+            <div className="text-right">
+              <div className="w-40 border-b border-gray-400 mb-1"></div>
+              <span>Receiver Signature & Date</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default AdminDashboardPage;
+

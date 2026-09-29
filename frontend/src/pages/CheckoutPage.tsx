@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, CheckCircle2, AlertCircle, PhoneCall } from 'lucide-react';
 import { fetchDeliveryZones, createOrder } from '../lib/queries';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { LoadingSpinner } from '../components/UI';
+import { validateBDPhone, normalizeBDPhone } from '../lib/phone';
 import toast from 'react-hot-toast';
 
 const CheckoutPage: React.FC = () => {
@@ -32,6 +33,9 @@ const CheckoutPage: React.FC = () => {
   const deliveryCharge = selectedZone ? parseFloat(selectedZone.delivery_charge) : 0;
   const total = subtotal + deliveryCharge;
 
+  // Real-time BD phone validation state
+  const phoneValidation = validateBDPhone(form.phone);
+
   const { mutate: placeOrder, isPending } = useMutation({
     mutationFn: createOrder,
     onSuccess: (data) => {
@@ -45,6 +49,7 @@ const CheckoutPage: React.FC = () => {
         navigate('/login', { state: { from: { pathname: '/checkout' } } });
       } else if (detail?.items) toast.error(String(detail.items));
       else if (detail?.non_field_errors) toast.error(String(detail.non_field_errors));
+      else if (detail?.customer?.phone) toast.error(String(detail.customer.phone));
       else toast.error('Failed to place order. Please try again.');
     },
   });
@@ -62,8 +67,13 @@ const CheckoutPage: React.FC = () => {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = 'Name is required.';
-    if (!form.phone.trim()) newErrors.phone = 'Phone number is required.';
-    else if (!/^01[3-9]\d{8}$/.test(form.phone)) newErrors.phone = 'Enter a valid BD phone number.';
+    
+    // Bangladeshi Phone Validation
+    const phoneVal = validateBDPhone(form.phone);
+    if (!phoneVal.isValid) {
+      newErrors.phone = phoneVal.errorMessage || 'Please provide a valid 11-digit Bangladeshi mobile number (e.g. 018XXXXXXXX).';
+    }
+
     if (!form.address.trim()) newErrors.address = 'Address is required.';
     if (!form.delivery_zone_id) newErrors.delivery_zone_id = 'Please select a delivery area.';
     if (!form.policy_accepted) newErrors.policy_accepted = 'You must accept the policy to proceed.';
@@ -77,7 +87,10 @@ const CheckoutPage: React.FC = () => {
     if (cart.length === 0) { toast.error('Your cart is empty.'); return; }
 
     placeOrder({
-      customer: { name: form.name.trim(), phone: form.phone.trim() },
+      customer: { 
+        name: form.name.trim(), 
+        phone: normalizeBDPhone(form.phone) 
+      },
       address: form.address.trim(),
       delivery_zone_id: Number(form.delivery_zone_id),
       items: cart.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
@@ -89,7 +102,15 @@ const CheckoutPage: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    
+    // Automatically sanitize phone input when typing
+    if (name === 'phone') {
+      const sanitized = normalizeBDPhone(value);
+      setForm(prev => ({ ...prev, phone: sanitized }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    }
+
     if (errors[name]) setErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
   };
 
@@ -152,10 +173,51 @@ const CheckoutPage: React.FC = () => {
                     {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
                   </div>
                   <div>
-                    <label htmlFor="phone" className="label">Phone Number *</label>
-                    <input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange}
-                      placeholder="01XXXXXXXXX" className="input-field" />
-                    {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="phone" className="label mb-0">Mobile Phone Number *</label>
+                      {form.phone && (
+                        <div className="flex items-center gap-1.5 text-xs font-mono">
+                          {phoneValidation.operatorName && (
+                            <span className="px-1.5 py-0.5 rounded bg-rose-smoke/30 text-burgundy font-medium text-[10px]">
+                              {phoneValidation.operatorName}
+                            </span>
+                          )}
+                          <span className={`text-[11px] font-medium ${phoneValidation.isValid ? 'text-emerald-700' : 'text-off-black/50'}`}>
+                            {phoneValidation.digitsCount}/11 digits {phoneValidation.isValid ? '✓' : ''}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        maxLength={15}
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder="018XXXXXXXX or +88018..."
+                        className={`input-field pr-10 font-mono tracking-wide ${
+                          form.phone && (phoneValidation.isValid ? 'border-emerald-600 focus:border-emerald-700' : 'border-amber-400')
+                        }`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        {form.phone && phoneValidation.isValid ? (
+                          <CheckCircle2 size={18} className="text-emerald-600" />
+                        ) : form.phone ? (
+                          <PhoneCall size={16} className="text-amber-500 animate-pulse" />
+                        ) : null}
+                      </div>
+                    </div>
+                    {errors.phone ? (
+                      <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                        <AlertCircle size={13} /> {errors.phone}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-off-black/60 mt-1">
+                        Rider will call this number before arrival. Formats like +880 or spaces are auto-formatted.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="address" className="label">Delivery Address *</label>

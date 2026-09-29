@@ -51,6 +51,14 @@ const Navbar: React.FC = () => {
     megaTimeoutRef.current = setTimeout(() => setMegaOpen(false), 150);
   };
 
+  // Lock body scroll while the mobile drawer is open
+  React.useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open ]);
+
   return (
     <header className="sticky top-0 z-50 shadow-[0_12px_35px_rgba(46,17,39,0.18)]">
       {/* ─── Top Announcement Bar ─── */}
@@ -325,7 +333,9 @@ const Navbar: React.FC = () => {
               <button
                 onClick={() => setOpen(!open)}
                 className="md:hidden text-nude hover:text-rose-smoke p-1.5 transition-colors"
-                aria-label="Toggle menu"
+                aria-label={open ? 'Close menu' : 'Open menu'}
+                aria-expanded={open}
+                aria-controls="mobile-menu"
               >
                 {open ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -336,7 +346,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu drawer */}
       {open && (
-        <div className="md:hidden bg-off-black/95 backdrop-blur-xl border-t border-nude/10 px-4 pb-6 pt-2 shadow-2xl animate-fade-in max-h-[85vh] overflow-y-auto">
+        <div id="mobile-menu" className="md:hidden bg-off-black/95 backdrop-blur-xl border-t border-nude/10 px-4 pb-6 pt-2 shadow-2xl animate-fade-in max-h-[85vh] overflow-y-auto">
           <form onSubmit={handleSearch} className="flex items-center gap-2 py-3 border-b border-nude/10">
             <input
               type="search"
@@ -380,6 +390,7 @@ const Navbar: React.FC = () => {
             <div>
               <button
                 onClick={() => setMobileCategoriesOpen(!mobileCategoriesOpen)}
+                aria-expanded={mobileCategoriesOpen}
                 className="w-full flex items-center justify-between font-body text-sm font-semibold tracking-widest uppercase py-2.5 px-2 rounded text-nude hover:text-rose-smoke transition-colors"
               >
                 <span>Categories</span>

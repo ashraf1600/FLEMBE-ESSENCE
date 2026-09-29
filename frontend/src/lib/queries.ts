@@ -104,3 +104,22 @@ export const markReviewHelpful = async (reviewId: number): Promise<{ helpful_cou
   return data;
 };
 
+// ─── Restock Notification ───────────────────────────────────────────────────
+
+export interface RestockRequestPayload {
+  product_slug: string;
+  phone: string;
+  email?: string;
+}
+
+export const submitRestockRequest = async (payload: RestockRequestPayload): Promise<{ success: boolean; message: string; request_id?: number }> => {
+  const { data } = await api.post<{ success: boolean; message: string; request_id?: number }>(
+    `/products/${payload.product_slug}/restock-request/`,
+    {
+      phone: payload.phone,
+      email: payload.email,
+    }
+  );
+  return data;
+};
+

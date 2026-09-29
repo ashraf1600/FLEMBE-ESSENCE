@@ -1,14 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --page: #f7f2eb;
-  --ink: #20191c;
-  --plum: #4b1d3f;
-  --rose: #d8a7b1;
-  --pearl: #fdfbf8;
-  --line: rgba(75, 29, 63, 0.14);
-}
-
 @theme {
   --color-burgundy: #4B1D3F;
   --color-burgundy-light: #6B2D5A;
@@ -21,6 +12,16 @@
   --color-off-black-light: #2E2E2E;
 }
 
+/* Legacy aliases — single source of truth stays in @theme above */
+:root {
+  --page: #f7f2eb;
+  --ink: var(--color-off-black);
+  --plum: var(--color-burgundy);
+  --rose: var(--color-rose-smoke);
+  --pearl: #fdfbf8;
+  --line: rgba(75, 29, 63, 0.14);
+}
+
 /* Register font utilities */
 @utility font-display {
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -31,8 +32,8 @@
 }
 
 @utility btn-primary {
-  background-color: #4B1D3F;
-  color: #E8D9C1;
+  background-color: var(--color-burgundy);
+  color: var(--color-nude);
   padding: 0.75rem 1.5rem;
   font-family: 'Jost', system-ui, sans-serif;
   font-size: 0.75rem;
@@ -50,7 +51,7 @@
   text-align: center;
   box-shadow: 0 8px 20px rgba(75, 29, 63, 0.16);
   &:hover {
-    background-color: #6B2D5A;
+    background-color: var(--color-burgundy-light);
     box-shadow: 0 4px 12px rgba(75, 29, 63, 0.25);
     transform: translateY(-2px);
   }
@@ -60,8 +61,8 @@
 }
 
 @utility btn-outline {
-  border: 1px solid #4B1D3F;
-  color: #4B1D3F;
+  border: 1px solid var(--color-burgundy);
+  color: var(--color-burgundy);
   padding: 0.75rem 1.5rem;
   font-family: 'Jost', system-ui, sans-serif;
   font-size: 0.75rem;
@@ -78,8 +79,8 @@
   text-decoration: none;
   text-align: center;
   &:hover {
-    background-color: #4B1D3F;
-    color: #E8D9C1;
+    background-color: var(--color-burgundy);
+    color: var(--color-nude);
     transform: translateY(-1px);
   }
   &:active {
@@ -121,13 +122,13 @@
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 2.25rem;
   font-weight: 600;
-  color: #4B1D3F;
+  color: var(--color-burgundy);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
 }
 
 @utility section-subtitle {
-  color: #4B1D3F;
+  color: var(--color-burgundy);
   opacity: 0.75;
   font-family: 'Jost', sans-serif;
   font-size: 0.72rem;
@@ -145,14 +146,48 @@
   }
 }
 
+/* Hide scrollbars while keeping scrollability (e.g. pill bars, thumbnail strips) */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Shimmering skeleton placeholder for loading states */
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--color-nude) 45%, white);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.65),
+      transparent
+    );
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @utility input-field {
   width: 100%;
-  border: 1px solid #D5C4A8;
+  border: 1px solid var(--color-nude-dark);
   background-color: #ffffff;
   padding: 0.75rem 1rem;
   font-family: 'Jost', sans-serif;
   font-size: 0.875rem;
-  color: #1B1B1B;
+  color: var(--color-off-black);
   border-radius: 2px;
   transition: border-color 0.2s, box-shadow 0.2s;
   &::placeholder {
@@ -160,7 +195,7 @@
   }
   &:focus {
     outline: none;
-    border-color: #4B1D3F;
+    border-color: var(--color-burgundy);
     box-shadow: 0 0 0 2px rgba(75, 29, 63, 0.1);
   }
 }
@@ -196,8 +231,8 @@
   }
 
   ::selection {
-    background: #d8a7b1;
-    color: #2e1127;
+    background: var(--color-rose-smoke);
+    color: var(--color-burgundy-dark);
   }
 
   button, a, input, select, textarea {
@@ -205,7 +240,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #d8a7b1;
+    outline: 2px solid var(--color-rose-smoke);
     outline-offset: 3px;
   }
 
@@ -215,19 +250,52 @@
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #E8D9C1;
+    background: var(--color-nude);
   }
   ::-webkit-scrollbar-thumb {
-    background: #D5C4A8;
+    background: var(--color-nude-dark);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #4B1D3F;
+    background: var(--color-burgundy);
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-weight: 600;
     letter-spacing: -0.015em;
+  }
+}
+
+/* ── Print Media Styles for 1-Click Delivery Slip ───────────────────────── */
+@media print {
+  nav, aside, header, footer, .no-print, button {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    background-image: none !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #printable-delivery-slip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

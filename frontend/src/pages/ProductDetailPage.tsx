@@ -3,23 +3,31 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Minus, Plus, ShoppingBag, ChevronLeft, ChevronRight, Truck,
-  ShieldCheck, Check, Star, ThumbsUp, MessageSquarePlus, X, RefreshCw
+  ShieldCheck, Check, Star, ThumbsUp, MessageSquarePlus, X, RefreshCw, Bell, Send
 } from 'lucide-react';
 import {
   fetchProductBySlug, fetchProductReviews, submitProductReview,
-  markReviewHelpful
+  markReviewHelpful, fetchProducts, submitRestockRequest
 } from '../lib/queries';
 import { useCart } from '../context/CartContext';
-import { LoadingSpinner, ErrorState } from '../components/UI';
+import { useAuth } from '../context/AuthContext';
+import { validateBDPhone, normalizeBDPhone } from '../lib/phone';
+import { ErrorState, Breadcrumbs, ProductCardSkeleton } from '../components/UI';
+import ProductCard from '../components/ProductCard';
 import toast from 'react-hot-toast';
 
 const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [qty, setQty] = useState(1);
   const [selectedImg, setSelectedImg] = useState(0);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
   const [justAdded, setJustAdded] = useState(false);
+
+  // Restock Notification State
+  const [restockPhone, setRestockPhone] = useState(user?.phone || '');
+  const [restockSubmitted, setRestockSubmitted] = useState(false);
 
   const { data: product, isLoading, isError, refetch } = useQuery({
     queryKey: ['product', slug],
@@ -30,6 +38,35 @@ const ProductDetailPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [helpfulVoted, setHelpfulVoted] = useState<Record<number, boolean>>({});
+
+  const { mutate: requestRestock, isPending: isRestockPending } = useMutation({
+    mutationFn: submitRestockRequest,
+    onSuccess: (data) => {
+      setRestockSubmitted(true);
+      toast.success(data.message || 'We will message you when this item is restocked!', {
+        style: { background: '#4B1D3F', color: '#E8D9C1' },
+      });
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.error || err?.response?.data?.phone?.[0] || 'Failed to submit restock request.';
+      toast.error(msg);
+    },
+  });
+
+  const handleRestockSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    const phoneVal = validateBDPhone(restockPhone);
+    if (!phoneVal.isValid) {
+      toast.error(phoneVal.errorMessage || 'Please enter a valid 11-digit Bangladeshi mobile number.');
+      return;
+    }
+    requestRestock({
+      product_slug: product.slug,
+      phone: normalizeBDPhone(restockPhone),
+      email: user?.email,
+    });
+  };
 
   // Review Form State
   const [reviewRating, setReviewRating] = useState(5);
@@ -44,6 +81,26 @@ const ProductDetailPage: React.FC = () => {
     queryFn: () => fetchProductReviews(slug!),
     enabled: !!slug,
   });
+
+  // Reset gallery/quantity when navigating between products
+  // (state adjustment during render — the React-endorsed reset pattern)
+  const [prevSlug, setPrevSlug] = React.useState(slug);
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
+    setSelectedImg(0);
+    setQty(1);
+    setImgErrors({});
+  }
+
+  // Related pieces from the same category (excludes the current product)
+  const { data: relatedData, isLoading: relatedLoading } = useQuery({
+    queryKey: ['products', { category: product?.category?.slug, exclude: product?.id }],
+    queryFn: () => fetchProducts({ category: product!.category!.slug, page: 1 }),
+    enabled: !!product?.category?.slug,
+  });
+  const relatedProducts = (relatedData?.results || [])
+    .filter(p => p.id !== product?.id)
+    .slice(0, 4);
 
   const submitReviewMutation = useMutation({
     mutationFn: submitProductReview,
@@ -95,7 +152,29 @@ const ProductDetailPage: React.FC = () => {
     });
   };
 
-  if (isLoading) return <div className="py-24"><LoadingSpinner message="Loading handcrafted jewellery details..." /></div>;
+  if (isLoading) return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" role="status" aria-label="Loading product">
+      <div className="skeleton h-4 w-64 rounded-full mb-6" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+        <div className="lg:col-span-6 space-y-3">
+          <div className="skeleton aspect-square rounded-sm" />
+          <div className="flex gap-2.5">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="skeleton w-18 h-18 rounded-xs flex-shrink-0" />
+            ))}
+          </div>
+        </div>
+        <div className="lg:col-span-6 space-y-5">
+          <div className="skeleton h-3 w-28 rounded-full" />
+          <div className="skeleton h-10 w-3/4 rounded-full" />
+          <div className="skeleton h-8 w-40 rounded-full" />
+          <div className="skeleton h-20 w-full rounded-xs" />
+          <div className="skeleton h-12 w-full rounded-xs" />
+          <div className="skeleton h-12 w-full rounded-xs" />
+        </div>
+      </div>
+    </div>
+  );
   if (isError || !product) return <div className="py-24"><ErrorState onRetry={refetch} /></div>;
 
   const isInStock = product.stock_status === 'IN_STOCK';
@@ -118,18 +197,7 @@ const ProductDetailPage: React.FC = () => {
     };
     addToCart(listItem, qty);
     setJustAdded(true);
-    toast.success(`${qty}x ${product.name} added to cart!`, {
-      style: {
-        background: '#4B1D3F',
-        color: '#E8D9C1',
-        fontSize: '12px',
-        fontFamily: 'Jost, sans-serif',
-      },
-      iconTheme: {
-        primary: '#D8A7B1',
-        secondary: '#4B1D3F',
-      },
-    });
+    toast.success(`${qty}x ${product.name} added to your bag!`);
     setTimeout(() => setJustAdded(false), 1500);
   };
 
@@ -138,26 +206,31 @@ const ProductDetailPage: React.FC = () => {
       <title>{product.name} — Flembe Essence</title>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs font-body text-off-black/60 mb-6">
-          <Link to="/" className="hover:text-burgundy transition-colors">Home</Link>
-          <span>/</span>
-          <Link to="/shop" className="hover:text-burgundy transition-colors">Shop</Link>
-          {product.category && (
-            <>
-              <span>/</span>
-              <Link to={`/categories/${product.category.slug}`} className="hover:text-burgundy transition-colors">
-                {product.category.name}
-              </Link>
-            </>
-          )}
-          <span>/</span>
-          <span className="text-burgundy font-medium truncate max-w-[200px]">{product.name}</span>
-        </div>
+        <Breadcrumbs
+          className="mb-6"
+          items={[
+            { label: 'Shop', to: '/shop' },
+            ...(product.category
+              ? [{ label: product.category.name, to: `/categories/${product.category.slug}` }]
+              : []),
+            { label: product.name },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           {/* ─── Image Gallery (Column 1) ─────────────────────────────────── */}
           <div className="lg:col-span-6 space-y-3">
-            <div className="relative aspect-square bg-white rounded-sm overflow-hidden border border-nude-dark/50 shadow-sm">
+            <div
+              className="relative aspect-square bg-white rounded-sm overflow-hidden border border-nude-dark/50 shadow-sm"
+              tabIndex={0}
+              role="region"
+              aria-label={`Product images${images.length > 1 ? ' — use left and right arrow keys to browse' : ''}`}
+              onKeyDown={e => {
+                if (images.length < 2) return;
+                if (e.key === 'ArrowLeft') setSelectedImg(i => (i - 1 + images.length) % images.length);
+                if (e.key === 'ArrowRight') setSelectedImg(i => (i + 1) % images.length);
+              }}
+            >
               {currentImage && !isCurrentFailed ? (
                 <img
                   src={currentImage.url || currentImage.image_url}
@@ -204,16 +277,23 @@ const ProductDetailPage: React.FC = () => {
                   >
                     <ChevronRight size={18} />
                   </button>
+                  {/* Image counter */}
+                  <span className="absolute bottom-3 right-3 z-10 font-body text-[11px] font-medium bg-off-black/70 text-nude px-2.5 py-1 rounded-full backdrop-blur-xs tabular-nums">
+                    {selectedImg + 1} / {images.length}
+                  </span>
                 </>
               )}
             </div>
 
             {/* Thumbnail Strip */}
             {images.length > 1 && (
-              <div className="flex gap-2.5 overflow-x-auto pb-1">
+              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Product image thumbnails">
                 {images.map((img, i) => (
                   <button
                     key={img.id}
+                    role="tab"
+                    aria-selected={i === selectedImg}
+                    aria-label={`View image ${i + 1} of ${images.length}`}
                     onClick={() => setSelectedImg(i)}
                     className={`w-18 h-18 rounded-xs overflow-hidden border-2 transition-all flex-shrink-0 ${
                       i === selectedImg
@@ -310,6 +390,12 @@ const ProductDetailPage: React.FC = () => {
             {/* Order Controls */}
             {isInStock ? (
               <div className="space-y-4 pt-2">
+                {product.stock_quantity <= 5 && (
+                  <p className="inline-flex items-center gap-2 font-body text-xs font-semibold text-burgundy bg-rose-smoke/25 border border-rose-smoke/50 rounded-full px-3.5 py-1.5" aria-live="polite">
+                    <span className="w-1.5 h-1.5 rounded-full bg-burgundy animate-pulse" />
+                    Only {product.stock_quantity} left in stock — order soon
+                  </p>
+                )}
                 <div className="flex items-center gap-4">
                   <span className="font-body text-xs uppercase tracking-wider text-off-black/70 font-semibold">Quantity:</span>
                   <div className="flex items-center border border-nude-dark bg-white rounded-xs">
@@ -368,8 +454,81 @@ const ProductDetailPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded text-center font-body text-xs">
-                This item is currently out of stock. Follow us on Instagram for restock announcements!
+              <div className="bg-nude/40 border-2 border-burgundy/20 p-5 rounded-xs space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 bg-burgundy text-nude rounded-full flex-shrink-0">
+                    <Bell size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg text-burgundy font-semibold">
+                      Out of Stock — Join Restock Waitlist
+                    </h3>
+                    <p className="font-body text-xs text-off-black/75 mt-0.5 leading-relaxed">
+                      This piece is currently unavailable. Enter your mobile number below and we'll alert you the instant new batches arrive.
+                    </p>
+                  </div>
+                </div>
+
+                {restockSubmitted ? (
+                  <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded text-xs font-body flex items-center gap-2">
+                    <Check size={16} className="text-emerald-600 flex-shrink-0" />
+                    <span>
+                      <strong>You're on the priority waitlist!</strong> We will message you via SMS/WhatsApp as soon as it's restocked.
+                    </span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleRestockSubmit} className="space-y-3 pt-1">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label htmlFor="restock_phone" className="text-[11px] font-medium text-off-black uppercase tracking-wider">
+                          Your Mobile Number (BD)
+                        </label>
+                        {restockPhone && (
+                          <span className="text-[10px] font-mono text-off-black/60">
+                            {validateBDPhone(restockPhone).operatorName || ''} {validateBDPhone(restockPhone).digitsCount}/11
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          id="restock_phone"
+                          type="tel"
+                          value={restockPhone}
+                          onChange={(e) => setRestockPhone(normalizeBDPhone(e.target.value))}
+                          placeholder="01XXXXXXXXX"
+                          className="flex-1 input-field font-mono text-xs py-2"
+                          maxLength={15}
+                        />
+                        <button
+                          type="submit"
+                          disabled={isRestockPending}
+                          className="btn-primary py-2 px-4 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap"
+                        >
+                          {isRestockPending ? (
+                            <span>Submitting...</span>
+                          ) : (
+                            <>
+                              <Send size={13} />
+                              <span>Notify Me</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-off-black/50">
+                      Need it urgently? Message us directly on{' '}
+                      <a
+                        href="https://www.instagram.com/_flembe_._essence_?stkn=MmI4OG8yem9mZ2hn"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-burgundy underline hover:text-burgundy-light font-medium"
+                      >
+                        Instagram
+                      </a>{' '}
+                      or Facebook.
+                    </p>
+                  </form>
+                )}
               </div>
             )}
 
@@ -398,6 +557,44 @@ const ProductDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* ─── You May Also Like ──────────────────────────────────────────── */}
+        {(relatedLoading || relatedProducts.length > 0) && (
+          <section aria-label="Related products" className="mt-16 pt-12 border-t border-nude-dark/60">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <span className="font-body text-xs tracking-[0.2em] uppercase text-rose-smoke font-semibold block mb-1">
+                  Complete the look
+                </span>
+                <h2 className="font-display text-2xl sm:text-3xl text-off-black">
+                  You May Also Like
+                </h2>
+              </div>
+              {product.category && (
+                <Link
+                  to={`/categories/${product.category.slug}`}
+                  className="inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.2em] text-burgundy font-bold border-b-2 border-burgundy/40 pb-2 hover:text-burgundy-light hover:border-burgundy transition-colors self-start sm:self-auto"
+                >
+                  More {product.category.name}
+                </Link>
+              )}
+            </div>
+
+            {relatedLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                {[0, 1, 2, 3].map(i => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+                {relatedProducts.map(item => (
+                  <ProductCard key={item.id} product={item} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {/* ─── Customer Reviews Section ───────────────────────────────────── */}
         <section id="customer-reviews" className="mt-16 pt-12 border-t border-nude-dark/60">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -411,8 +608,7 @@ const ProductDetailPage: React.FC = () => {
             </div>
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xs font-body text-xs tracking-wider uppercase font-semibold text-white transition-all shadow-xs hover:shadow-md cursor-pointer"
-              style={{ background: '#4B1D3F' }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xs font-body text-xs tracking-wider uppercase font-semibold text-white transition-all shadow-xs hover:shadow-md cursor-pointer bg-burgundy hover:bg-burgundy-light"
             >
               <MessageSquarePlus size={15} />
               Write a Review
@@ -497,8 +693,7 @@ const ProductDetailPage: React.FC = () => {
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center font-display font-semibold text-sm select-none"
-                            style={{ background: '#4B1D3F', color: '#E8D9C1' }}
+                            className="w-9 h-9 rounded-full flex items-center justify-center font-display font-semibold text-sm select-none bg-burgundy text-nude"
                           >
                             {rev.reviewer_name?.[0]?.toUpperCase() || 'U'}
                           </div>
@@ -698,8 +893,7 @@ const ProductDetailPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={submitReviewMutation.isPending}
-                    className="px-6 py-2.5 rounded-xs font-body text-xs tracking-wider uppercase font-semibold text-white inline-flex items-center gap-2 shadow-xs hover:shadow-md transition-all disabled:opacity-50 cursor-pointer"
-                    style={{ background: '#4B1D3F' }}
+                    className="px-6 py-2.5 rounded-xs font-body text-xs tracking-wider uppercase font-semibold text-white inline-flex items-center gap-2 shadow-xs hover:shadow-md transition-all disabled:opacity-50 cursor-pointer bg-burgundy hover:bg-burgundy-light"
                   >
                     {submitReviewMutation.isPending ? (
                       <RefreshCw size={14} className="animate-spin" />

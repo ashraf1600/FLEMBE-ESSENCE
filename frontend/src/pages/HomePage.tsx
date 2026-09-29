@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Truck, ShieldCheck, HeartHandshake, Sparkles, CheckCircle2 } from 'lucide-react';
 import { fetchCategories, fetchProducts } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
-import { LoadingSpinner } from '../components/UI';
+import { ErrorState, ProductGridSkeleton, SectionHeader } from '../components/UI';
 import Testimonials from '../components/Testimonials';
 
 // Inline social SVGs
@@ -29,12 +29,12 @@ const WhatsAppIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 const HomePage: React.FC = () => {
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: catsLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: fetchCategories,
   });
 
-  const { data: featuredData, isLoading } = useQuery({
+  const { data: featuredData, isLoading, isError, refetch } = useQuery({
     queryKey: ['products', { ordering: '-created_at' }],
     queryFn: () => fetchProducts({ ordering: '-created_at', page: 1 }),
   });
@@ -67,6 +67,8 @@ const HomePage: React.FC = () => {
             src={image}
             alt=""
             aria-hidden="true"
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchPriority={index === 0 ? 'high' : 'auto'}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1400ms] ease-in-out ${index === heroSlide % heroImages.length ? 'opacity-100' : 'opacity-0'}`}
           />
         ))}
@@ -195,22 +197,22 @@ const HomePage: React.FC = () => {
 
       <section className="relative py-10 sm:py-12 bg-nude/30 overflow-hidden">
         <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-8">
-            <div>
-              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">Just landed</p>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">New arrivals</h2>
-              <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">Fresh pieces. Ready to glow.</p>
-            </div>
-            <Link
-              to="/shop"
-              className="inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.2em] text-burgundy font-bold border-b-2 border-burgundy/40 pb-2 hover:text-burgundy-light hover:border-burgundy transition-colors self-start md:self-auto"
-            >
-              Shop all <ArrowRight size={14} />
-            </Link>
-          </div>
+          <SectionHeader
+            eyebrow="Just landed"
+            title="New arrivals"
+            subtitle="Fresh pieces. Ready to glow."
+            actionLabel="Shop all"
+            actionTo="/shop"
+          />
 
           {isLoading ? (
-            <LoadingSpinner message="Curating the latest pieces..." />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" role="status" aria-label="Loading new arrivals">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="skeleton aspect-[3/4]" aria-hidden="true" />
+              ))}
+            </div>
+          ) : isError ? (
+            <ErrorState onRetry={refetch} />
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {featuredData?.results.slice(0, 4).map(product => {
@@ -253,20 +255,19 @@ const HomePage: React.FC = () => {
 
       <section className="py-10 sm:py-12 bg-nude/30">
         <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="mb-7 sm:mb-8">
-            <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">
-              Curated collections
-            </p>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">
-              Shop by Category
-            </h2>
-            <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">
-              Find your signature style.
-            </p>
-          </div>
+          <SectionHeader
+            eyebrow="Curated collections"
+            title="Shop by Category"
+            subtitle="Find your signature style."
+          />
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {subCategories.length > 0 ? subCategories.slice(0, 4).map(cat => (
+            {catsLoading ? (
+              [0, 1, 2, 3].map(i => (
+                <div key={i} className="skeleton aspect-[4/3] rounded-xl" aria-hidden="true" />
+              ))
+            ) : (
+              subCategories.slice(0, 4).map(cat => (
               <Link
                 key={cat.id}
                 to={`/categories/${cat.slug}`}
@@ -293,9 +294,6 @@ const HomePage: React.FC = () => {
                   </h3>
                 </div>
               </Link>
-            )) : (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] bg-white/60 rounded-2xl animate-pulse" />
               ))
             )}
           </div>
@@ -305,29 +303,18 @@ const HomePage: React.FC = () => {
 
       <section className="py-10 sm:py-12 bg-white">
         <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-8">
-            <div>
-              <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke mb-2">
-                Handpicked Selection
-              </p>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-none text-burgundy">
-                Featured Products
-              </h2>
-              <p className="font-body text-xs sm:text-sm font-medium text-off-black/60 mt-3">
-                Curated pieces. Made to stand out.
-              </p>
-            </div>
-            <Link
-              to="/shop"
-              className="inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.2em] text-burgundy font-bold border-b-2 border-burgundy/40 pb-2 hover:text-burgundy-light hover:border-burgundy transition-colors self-start md:self-auto"
-            >
-              <span>View Full Catalog</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
+          <SectionHeader
+            eyebrow="Handpicked Selection"
+            title="Featured Products"
+            subtitle="Curated pieces. Made to stand out."
+            actionLabel="View Full Catalog"
+            actionTo="/shop"
+          />
 
           {isLoading ? (
-            <LoadingSpinner message="Loading handcrafted jewellery..." />
+            <ProductGridSkeleton count={8} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" />
+          ) : isError ? (
+            <ErrorState onRetry={refetch} />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {featuredData?.results.slice(0, 8).map(product => (
@@ -420,7 +407,7 @@ const HomePage: React.FC = () => {
               </span>
             </a>
             <a
-              href="https://wa.me/8801865330801"
+              href="https://www.instagram.com/_flembe_._essence_?stkn=MmI4OG8yem9mZ2hn"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram Feed"

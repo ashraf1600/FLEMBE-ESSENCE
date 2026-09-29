@@ -5,13 +5,14 @@ import { useQuery } from '@tanstack/react-query';
 import { SlidersHorizontal, X, Search, Sparkles, ArrowDownUp, Check, ChevronDown } from 'lucide-react';
 import { fetchProducts, fetchCategories } from '../lib/queries';
 import ProductCard from '../components/ProductCard';
-import { LoadingSpinner, EmptyState, ErrorState } from '../components/UI';
+import { EmptyState, ErrorState, Breadcrumbs, ProductGridSkeleton } from '../components/UI';
 
 const ShopPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const search = searchParams.get('search') || '';
   const category = searchParams.get('category') || '';
@@ -106,6 +107,25 @@ const ShopPage: React.FC = () => {
   const subCategories = categories?.flatMap(c => c.children || []).filter(c => c.is_active) || [];
   const totalPages = data ? Math.ceil(data.count / 12) : 1;
   const hasActiveFilters = Boolean(search || category || minPrice || maxPrice || inStock);
+  const activeCategoryName = category ? subCategories.find(c => c.slug === category)?.name : undefined;
+
+  const goToPage = (p: number) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('page', String(p)); return n; });
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  /** Windowed page numbers: 1 … c-1 c c+1 … N */
+  const pageNumbers = React.useMemo<(number | '…')[]>(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = new Set<number>([1, 2, page - 1, page, page + 1, totalPages - 1, totalPages]);
+    const sorted = [...pages].filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+    const out: (number | '…')[] = [];
+    sorted.forEach((p, i) => {
+      if (i > 0 && p - sorted[i - 1] > 1) out.push('…');
+      out.push(p);
+    });
+    return out;
+  }, [page, totalPages]);
 
   return (
     <>
@@ -114,6 +134,10 @@ const ShopPage: React.FC = () => {
       <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-12 py-5 sm:py-7">
         {/* Page Title & Breadcrumb header */}
         <div className="mb-5">
+          <Breadcrumbs
+            className="mb-3"
+            items={[{ label: 'Shop', to: '/shop' }, ...(activeCategoryName ? [{ label: activeCategoryName }] : [])]}
+          />
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-nude-dark/40">
             <div>
               <p className="font-body text-[11px] uppercase tracking-[0.22em] text-rose-smoke font-bold mb-1">
@@ -359,9 +383,9 @@ const ShopPage: React.FC = () => {
           </aside>
 
           {/* Products Grid Area */}
-          <div className="flex-1">
+          <div className="flex-1" ref={resultsRef}>
             {isLoading ? (
-              <LoadingSpinner message="Searching our collection..." />
+              <ProductGridSkeleton count={8} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5" />
             ) : isError ? (
               <ErrorState onRetry={refetch} />
             ) : data?.results.length === 0 ? (
@@ -376,21 +400,43 @@ const ShopPage: React.FC = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-12">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('page', String(p)); return n; })}
-                        className={`w-10 h-10 font-body text-xs font-semibold rounded-xs transition-colors shadow-xs ${
-                          p === page
-                            ? 'bg-burgundy text-nude'
-                            : 'bg-white text-off-black hover:bg-burgundy hover:text-nude border border-nude-dark/40'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
+                  <nav aria-label="Shop pages" className="flex justify-center items-center gap-2 mt-12">
+                    <button
+                      onClick={() => goToPage(Math.max(1, page - 1))}
+                      disabled={page <= 1}
+                      aria-label="Previous page"
+                      className="h-10 px-3.5 font-body text-xs font-semibold rounded-xs transition-colors shadow-xs bg-white text-off-black hover:bg-burgundy hover:text-nude border border-nude-dark/40 disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      Prev
+                    </button>
+                    {pageNumbers.map((p, i) =>
+                      p === '…' ? (
+                        <span key={`gap-${i}`} className="text-off-black/40 font-body text-xs px-1">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => goToPage(p)}
+                          aria-label={`Go to page ${p}`}
+                          aria-current={p === page ? 'page' : undefined}
+                          className={`w-10 h-10 font-body text-xs font-semibold rounded-xs transition-colors shadow-xs ${
+                            p === page
+                              ? 'bg-burgundy text-nude'
+                              : 'bg-white text-off-black hover:bg-burgundy hover:text-nude border border-nude-dark/40'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+                    <button
+                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                      disabled={page >= totalPages}
+                      aria-label="Next page"
+                      className="h-10 px-3.5 font-body text-xs font-semibold rounded-xs transition-colors shadow-xs bg-white text-off-black hover:bg-burgundy hover:text-nude border border-nude-dark/40 disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      Next
+                    </button>
+                  </nav>
                 )}
               </>
             )}

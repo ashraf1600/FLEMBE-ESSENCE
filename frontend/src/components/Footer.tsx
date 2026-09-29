@@ -164,9 +164,12 @@ const Footer: React.FC = () => {
               ))}
             </ul>
             <div className="p-3 rounded bg-white/5 border border-white/10 mt-3">
-              <p className="font-body text-[11px] text-nude/80 leading-normal">
-                ⚠️ <strong className="text-rose-smoke">No Return / No Exchange.</strong><br />
-                Please verify all items at delivery before paying the delivery agent.
+              <p className="font-body text-[11px] text-nude/80 leading-normal flex gap-1.5">
+                <ShieldAlert size={14} className="text-rose-smoke flex-shrink-0 mt-px" />
+                <span>
+                  <strong className="text-rose-smoke">No Return / No Exchange.</strong><br />
+                  Please verify all items at delivery before paying the delivery agent.
+                </span>
               </p>
             </div>
           </div>
