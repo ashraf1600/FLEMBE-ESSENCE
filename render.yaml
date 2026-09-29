@@ -50,7 +50,6 @@ services:
     name: flembe-essence-frontend
     runtime: static
     rootDir: frontend
-    plan: free
     buildCommand: "npm run build"
     staticPublishPath: "./dist"
     autoDeploy: true
