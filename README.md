@@ -67,6 +67,18 @@ Open: http://localhost:5173
 
 ---
 
+## Production Deployment (Render)
+
+The repository is fully pre-configured for deployment on [Render](https://render.com) using **Render Blueprints** (`render.yaml`):
+
+- **PostgreSQL Database** (`flembe-essence-db`)
+- **Django REST Backend** (`flembe-essence-backend`) using Gunicorn & WhiteNoise
+- **React Frontend Static Site** (`flembe-essence-frontend`) with SPA routing
+
+For full step-by-step instructions, see the dedicated [Render Deployment Guide](docs/RENDER_DEPLOYMENT.md).
+
+---
+
 ## Environment Variables
 
 ### Backend (`backend/.env`)
