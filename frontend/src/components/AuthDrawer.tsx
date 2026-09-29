@@ -36,7 +36,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ mode, onClose, onModeChange }) 
     try {
       const user = await login(loginForm.username.trim(), loginForm.password);
       toast.success(`Welcome back, ${user.name || user.username}!`);
-      closeAfter(user.is_staff && location.pathname === '/' ? '/admin-dashboard' : location.pathname);
+      if (user.is_staff) {
+        closeAfter('/admin-dashboard');
+      } else {
+        closeAfter(location.pathname);
+      }
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Invalid username or password. Please try again.');
     }
@@ -127,6 +131,17 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ mode, onClose, onModeChange }) 
               {mode === 'login' ? 'Create an account' : 'Sign in'}
             </button>
           </p>
+
+          <div className="mt-6 pt-5 border-t border-burgundy/15 text-center">
+            <button
+              type="button"
+              onClick={() => closeAfter('/admin-login')}
+              className="inline-flex items-center gap-1.5 font-body text-[11px] font-semibold uppercase tracking-wider text-burgundy/80 hover:text-burgundy transition-colors"
+            >
+              <Lock size={12} className="text-burgundy" />
+              <span>Store Administrator Login Portal →</span>
+            </button>
+          </div>
         </div>
       </aside>
     </div>

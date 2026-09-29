@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
       const user = await login(username.trim(), password);
       toast.success(`Welcome back, ${user.name || user.username}!`);
 
-      if (user.is_staff && from === '/') {
+      if (user.is_staff) {
         navigate('/admin-dashboard', { replace: true });
       } else {
         navigate(from, { replace: true });
@@ -179,6 +179,16 @@ const LoginPage: React.FC = () => {
                   Create one now
                 </Link>
               </p>
+            </div>
+
+            <div className="mt-4 pt-3 text-center">
+              <Link
+                to="/admin-login"
+                className="inline-flex items-center gap-1.5 font-body text-[11px] font-semibold text-burgundy/80 hover:text-burgundy tracking-wider uppercase transition-colors"
+              >
+                <Lock size={12} />
+                <span>Store Administrator Login Portal →</span>
+              </Link>
             </div>
           </div>
           </div>
