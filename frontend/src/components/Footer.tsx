@@ -175,7 +175,13 @@ const Footer: React.FC = () => {
         {/* Bottom copyright line */}
         <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-body text-nude/40">
           <p>© {new Date().getFullYear()} Flembe Essence. Real products. Honest service.</p>
-          <p>Cash on Delivery · Dhaka & Cox's Bazar</p>
+          <div className="flex items-center gap-4">
+            <span>Cash on Delivery · Dhaka & Cox's Bazar</span>
+            <span>·</span>
+            <Link to="/admin-login" className="text-nude/40 hover:text-rose-smoke transition-colors">
+              Staff Portal
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
