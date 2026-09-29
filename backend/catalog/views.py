@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Category, Product, ProductImage
+from .models import Category, Product, ProductImage, RestockNotificationRequest
 from .serializers import (
     CategorySerializer, ProductSerializer,
     ProductListSerializer, ProductImageSerializer,
@@ -145,3 +145,32 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ProductImage.DoesNotExist:
             return Response({'error': 'Image not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.AllowAny], url_path='restock-request')
+    def request_restock(self, request, slug=None):
+        import re
+        product = self.get_object()
+        phone = request.data.get('phone', '').strip()
+        email = request.data.get('email', '').strip() or None
+
+        cleaned_phone = re.sub(r'[^\d+]', '', phone)
+        if cleaned_phone.startswith('+880'):
+            cleaned_phone = '0' + cleaned_phone[4:]
+        elif cleaned_phone.startswith('880'):
+            cleaned_phone = '0' + cleaned_phone[3:]
+
+        if not re.match(r'^01[3-9]\d{8}$', cleaned_phone):
+            return Response(
+                {'phone': ['Please enter a valid 11-digit Bangladeshi mobile number (e.g. 018XXXXXXXX).']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        RestockNotificationRequest.objects.create(
+            product=product,
+            phone=cleaned_phone,
+            email=email
+        )
+        return Response({
+            'success': True,
+            'message': 'Thank you! We will notify you on WhatsApp/SMS as soon as this item is restocked.'
+        }, status=status.HTTP_201_CREATED)

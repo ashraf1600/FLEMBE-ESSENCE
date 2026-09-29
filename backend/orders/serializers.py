@@ -11,6 +11,17 @@ class CustomerSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     phone = serializers.CharField(max_length=20)
 
+    def validate_phone(self, value):
+        import re
+        cleaned = re.sub(r'[^\d+]', '', value.strip())
+        if cleaned.startswith('+880'):
+            cleaned = '0' + cleaned[4:]
+        elif cleaned.startswith('880'):
+            cleaned = '0' + cleaned[3:]
+        if not re.match(r'^01[3-9]\d{8}$', cleaned):
+            raise serializers.ValidationError('Enter a valid 11-digit Bangladeshi mobile number (e.g. 018XXXXXXXX).')
+        return cleaned
+
 
 class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()

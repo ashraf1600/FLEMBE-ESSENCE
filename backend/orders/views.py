@@ -186,6 +186,16 @@ class AdminStatsView(APIView):
             .order_by('-created_at')[:5]
         )
 
+        # ── Restock customer demand ──────────────────────────────────────────
+        from catalog.models import RestockNotificationRequest
+        restock_demands = list(
+            RestockNotificationRequest.objects
+            .filter(is_notified=False, product__stock_quantity=0)
+            .values('product__id', 'product__name', 'product__slug', 'product__price')
+            .annotate(request_count=Count('id'))
+            .order_by('-request_count')[:10]
+        )
+
         return Response({
             # KPIs
             'total_orders':      all_orders.count(),
@@ -238,4 +248,13 @@ class AdminStatsView(APIView):
             ],
             'recent_orders':      OrderSerializer(recent, many=True).data,
             'low_stock_products': low_stock_products,
+            'restock_demands': [
+                {
+                    'id': r['product__id'],
+                    'name': r['product__name'],
+                    'slug': r['product__slug'],
+                    'price': str(r['product__price']),
+                    'request_count': r['request_count'],
+                } for r in restock_demands
+            ],
         })
