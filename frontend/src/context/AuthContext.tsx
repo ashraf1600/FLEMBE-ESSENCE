@@ -104,6 +104,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       localStorage.setItem(USER_KEY, JSON.stringify(loggedInUser));
       setUser(loggedInUser);
+
+      // If user is staff, seamlessly sync Django session for Django Admin access
+      if (loggedInUser.is_staff) {
+        api.post('/auth/admin-session/', { username, password }).catch(() => {});
+      }
+
       return loggedInUser;
     } finally {
       setIsLoading(false);

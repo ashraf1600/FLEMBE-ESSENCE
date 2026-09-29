@@ -319,6 +319,12 @@ const AdminDashboardPage: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors border border-burgundy/20 bg-burgundy/5 text-burgundy hover:bg-burgundy hover:text-nude"
+            >
+              <ExternalLink size={12} /> View Store
+            </Link>
             <button onClick={handleRefresh} className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors" style={{ background: 'white', color: '#4B1D3F', border: '1px solid rgba(75,29,63,0.15)' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4B1D3F'; (e.currentTarget as HTMLButtonElement).style.color = '#E8D9C1'; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'white'; (e.currentTarget as HTMLButtonElement).style.color = '#4B1D3F'; }}>
               <RefreshCw size={12} /> Refresh
             </button>
