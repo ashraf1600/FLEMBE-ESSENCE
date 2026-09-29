@@ -228,6 +228,9 @@
     font-family: 'Jost', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Prevent accidental horizontal scroll on small screens
+       (`clip` preserves position: sticky, unlike `hidden`) */
+    overflow-x: clip;
   }
 
   ::selection {
@@ -269,29 +272,72 @@
 
 /* ── Print Media Styles for 1-Click Delivery Slip ───────────────────────── */
 @media print {
-  nav, aside, header, footer, .no-print, button {
-    display: none !important;
+  /* 1. When slip is open, hide the entire webpage layout */
+  body.print-slip-open * {
+    visibility: hidden !important;
   }
 
-  body {
-    background: white !important;
-    background-image: none !important;
-    color: black !important;
-    padding: 0 !important;
-    margin: 0 !important;
+  body.print-slip-open #printable-delivery-slip,
+  body.print-slip-open #printable-delivery-slip * {
+    visibility: visible !important;
   }
 
-  #printable-delivery-slip {
-    position: absolute;
-    left: 0;
-    top: 0;
+  body.print-slip-open #printable-delivery-slip {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
-    padding: 16px !important;
+    padding: 10mm 14mm !important;
+    background: #ffffff !important;
+    color: #1b1b1b !important;
     box-shadow: none !important;
     border: none !important;
-    background: white !important;
-    color: black !important;
+    z-index: 99999999 !important;
+  }
+
+  /* 2. Modern :has selector fallback guarantee */
+  body:has(#printable-delivery-slip) * {
+    visibility: hidden !important;
+  }
+  body:has(#printable-delivery-slip) #printable-delivery-slip,
+  body:has(#printable-delivery-slip) #printable-delivery-slip * {
+    visibility: visible !important;
+  }
+  body:has(#printable-delivery-slip) #printable-delivery-slip {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm 14mm !important;
+    background: #ffffff !important;
+    color: #1b1b1b !important;
+    box-shadow: none !important;
+    border: none !important;
+    z-index: 99999999 !important;
+  }
+
+  /* 3. Global Print Cleanliness */
+  @page {
+    size: auto;
+    margin: 8mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #1b1b1b !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 
   * {

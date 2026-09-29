@@ -87,19 +87,19 @@ const Navbar: React.FC = () => {
       {/* ─── Main Navigation Bar ─── */}
       <div className="bg-off-black/90 backdrop-blur-xl border-b border-rose-smoke/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between min-h-20 py-3">
-           {/* Logo */}
-<Link to="/" className="flex items-center gap-3 group flex-shrink-0 mr-6 md:mr-10">
+          <div className="flex items-center justify-between min-h-16 sm:min-h-20 py-2.5 sm:py-3 gap-1">
+            {/* Logo */}
+<Link to="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 mr-2 sm:mr-6 md:mr-10 min-w-0">
   <img
     src="/images/logo.png"
     alt="Flembe Essence icon"
-    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-rose-smoke/50 group-hover:border-rose-smoke group-hover:scale-105 transition-all duration-300"
+    className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-rose-smoke/50 group-hover:border-rose-smoke group-hover:scale-105 transition-all duration-300 flex-shrink-0"
   />
-  <div className="flex flex-col">
-    <span className="font-display font-bold text-3xl sm:text-4xl text-nude tracking-wide leading-none group-hover:text-rose-smoke transition-colors duration-300">
+  <div className="flex flex-col min-w-0">
+    <span className="font-display font-bold text-2xl sm:text-4xl text-nude tracking-wide leading-none group-hover:text-rose-smoke transition-colors duration-300 truncate">
       Flembe Essence
     </span>
-    <span className="text-[9px] uppercase tracking-[0.3em] text-nude/50 mt-1.5 font-body">
+    <span className="hidden sm:block text-[9px] uppercase tracking-[0.3em] text-nude/50 mt-1.5 font-body">
       Jewellery & Accessories
     </span>
   </div>
@@ -222,7 +222,7 @@ const Navbar: React.FC = () => {
             </nav>
 
             {/* Right actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-0.5 sm:gap-3 flex-shrink-0">
               {/* Desktop search */}
               <form onSubmit={handleSearch} className="hidden lg:flex items-center relative w-44 xl:w-48 focus-within:w-56 transition-[width] duration-300 shrink-0 ml-3 xl:ml-5">
                 <Search size={15} className="absolute left-3.5 text-rose-smoke/70 pointer-events-none" />
@@ -245,8 +245,9 @@ const Navbar: React.FC = () => {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="relative p-2.5 text-nude hover:text-rose-smoke transition-colors rounded-full hover:bg-white/5"
+                className="relative p-2 sm:p-2.5 text-nude hover:text-rose-smoke transition-colors rounded-full hover:bg-white/5"
                 title="Your Wishlist"
+                aria-label="Your Wishlist"
               >
                 <Heart size={21} className={totalWishlist > 0 ? 'fill-rose-smoke text-rose-smoke' : ''} />
                 {totalWishlist > 0 && (
@@ -259,8 +260,9 @@ const Navbar: React.FC = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative p-2.5 text-nude hover:text-rose-smoke transition-colors rounded-full hover:bg-white/5"
+                className="relative p-2 sm:p-2.5 text-nude hover:text-rose-smoke transition-colors rounded-full hover:bg-white/5"
                 title="Your Bag"
+                aria-label="Your shopping bag"
               >
                 <ShoppingBag size={21} />
                 {totalItems > 0 && (

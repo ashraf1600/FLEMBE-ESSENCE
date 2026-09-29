@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Minus, Plus, ShoppingBag, ChevronLeft, ChevronRight, Truck,
@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 
 const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [qty, setQty] = useState(1);
@@ -201,10 +202,16 @@ const ProductDetailPage: React.FC = () => {
     setTimeout(() => setJustAdded(false), 1500);
   };
 
+  const handleOrderNow = () => {
+    if (!isInStock) return;
+    handleAddToCart();
+    navigate('/checkout');
+  };
+
   return (
     <>
       <title>{product.name} — Flembe Essence</title>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-28 lg:pb-12">
         {/* Navigation Breadcrumb */}
         <Breadcrumbs
           className="mb-6"
@@ -401,20 +408,20 @@ const ProductDetailPage: React.FC = () => {
                   <div className="flex items-center border border-nude-dark bg-white rounded-xs">
                     <button
                       onClick={() => setQty(q => Math.max(1, q - 1))}
-                      className="px-3.5 py-2 hover:bg-nude/40 text-off-black transition-colors"
+                      className="px-4 py-3 sm:px-3.5 sm:py-2 hover:bg-nude/40 text-off-black transition-colors"
                       aria-label="Decrease quantity"
                     >
-                      <Minus size={13} />
+                      <Minus size={14} />
                     </button>
                     <span className="px-4 py-2 font-body text-xs font-semibold min-w-[36px] text-center select-none">
                       {qty}
                     </span>
                     <button
                       onClick={() => setQty(q => Math.min(product.stock_quantity, q + 1))}
-                      className="px-3.5 py-2 hover:bg-nude/40 text-off-black transition-colors"
+                      className="px-4 py-3 sm:px-3.5 sm:py-2 hover:bg-nude/40 text-off-black transition-colors"
                       aria-label="Increase quantity"
                     >
-                      <Plus size={13} />
+                      <Plus size={14} />
                     </button>
                   </div>
                   <span className="font-body text-xs text-off-black/50">
@@ -769,10 +776,43 @@ const ProductDetailPage: React.FC = () => {
           </div>
         </section>
 
+        {/* ─── Sticky mobile buy bar ──────────────────────────────────────── */}
+        {isInStock ? (
+          <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-nude-dark/50 bg-white/95 backdrop-blur px-4 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(46,17,39,0.14)]">
+            <div className="flex items-center gap-2.5">
+              <div className="min-w-0 flex-shrink">
+                <p className="font-body text-[10px] uppercase tracking-wider text-off-black/50 truncate max-w-[110px]">
+                  {product.name}
+                </p>
+                <p className="font-body text-lg font-bold text-burgundy leading-tight">
+                  ৳{parseFloat(product.price).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={handleAddToCart}
+                aria-label={`Add ${product.name} to bag`}
+                className="flex-1 py-3 px-2 rounded-lg font-body text-[11px] font-bold tracking-[0.12em] uppercase bg-nude-dark/60 text-burgundy active:scale-[0.98] transition-transform"
+              >
+                Add to Bag
+              </button>
+              <button
+                onClick={handleOrderNow}
+                className="flex-1 py-3 px-2 rounded-lg font-body text-[11px] font-bold tracking-[0.12em] uppercase bg-burgundy text-nude shadow-md active:scale-[0.98] transition-transform"
+              >
+                Order Now
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-red-200 bg-red-50/95 backdrop-blur px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center">
+            <p className="font-body text-xs font-semibold text-red-700">Out of Stock — check back soon</p>
+          </div>
+        )}
+
         {/* ─── Write a Review Modal ───────────────────────────────────────── */}
         {showReviewModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/60 backdrop-blur-xs">
-            <div className="bg-white rounded-xs border border-nude-dark max-w-lg w-full p-6 sm:p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-xs border border-nude-dark max-w-lg w-full max-h-[92dvh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setShowReviewModal(false)}
                 className="absolute top-4 right-4 p-1 rounded-full text-off-black/50 hover:text-off-black hover:bg-stone-100 transition-colors cursor-pointer"

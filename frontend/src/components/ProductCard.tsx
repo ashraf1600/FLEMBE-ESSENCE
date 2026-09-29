@@ -189,10 +189,10 @@ const ProductCard: React.FC<Props> = ({ product }) => {
             role="dialog"
             aria-modal="true"
             aria-label={`Quick view ${product.name}`}
-            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl grid sm:grid-cols-2"
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto shadow-2xl grid sm:grid-cols-2"
             onClick={e => e.stopPropagation()}
           >
-            <div className="relative aspect-square bg-nude/30">
+            <div className="relative aspect-[4/3] sm:aspect-square bg-nude/30 sm:sticky sm:top-0">
               {imageUrl && !imgError ? (
                 <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
               ) : (

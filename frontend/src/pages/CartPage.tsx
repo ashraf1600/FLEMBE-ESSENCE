@@ -158,7 +158,7 @@ const CartPage: React.FC = () => {
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                           disabled={item.quantity <= 1}
                           aria-label="Decrease quantity"
-                          className="p-2 text-off-black/70 hover:text-burgundy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-3 sm:p-2 text-off-black/70 hover:text-burgundy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                           <Minus size={13} />
                         </button>
@@ -169,7 +169,7 @@ const CartPage: React.FC = () => {
                           onClick={() => updateQuantity(item.product.id, Math.min(maxStock, item.quantity + 1))}
                           disabled={item.quantity >= maxStock}
                           aria-label="Increase quantity"
-                          className="p-2 text-off-black/70 hover:text-burgundy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-3 sm:p-2 text-off-black/70 hover:text-burgundy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                           <Plus size={13} />
                         </button>

@@ -143,7 +143,7 @@ const ShopPage: React.FC = () => {
               <p className="font-body text-[11px] uppercase tracking-[0.22em] text-rose-smoke font-bold mb-1">
                 Handpicked Boutique
               </p>
-              <h1 className="font-display text-5xl sm:text-6xl font-semibold leading-none text-burgundy">
+              <h1 className="font-display text-4xl sm:text-6xl font-semibold leading-none text-burgundy break-words">
                 {category ? subCategories.find(c => c.slug === category)?.name || 'Collection' : 'All Jewellery'}
               </h1>
               {data && (

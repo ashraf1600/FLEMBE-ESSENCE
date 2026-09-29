@@ -127,7 +127,7 @@ const HomePage: React.FC = () => {
 
             <div className="md:col-span-5 flex justify-center md:justify-end">
               <div className="relative w-full max-w-xs sm:max-w-sm animate-float-slow">
-                <div className="ml-auto max-w-[250px] bg-off-black/35 backdrop-blur-xl border border-nude/25 p-5 sm:p-6 shadow-2xl">
+                <div className="mx-auto md:ml-auto md:mr-0 w-full max-w-[250px] bg-off-black/35 backdrop-blur-xl border border-nude/25 p-5 sm:p-6 shadow-2xl">
                   <div className="flex items-center gap-2 mb-5">
                     <span className="w-2 h-2 rounded-full bg-rose-smoke shadow-[0_0_12px_rgba(216,167,177,0.8)]" />
                     <span className="font-body text-[10px] uppercase tracking-[0.2em] text-nude/80">The Flembe edit</span>
@@ -138,7 +138,7 @@ const HomePage: React.FC = () => {
                     Explore the edit <ArrowRight size={13} />
                   </Link>
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-6" aria-label="Hero slides">
+                <div className="flex items-center justify-center md:justify-end gap-2 mt-6" aria-label="Hero slides">
                   {heroImages.slice(0, 5).map((_, index) => (
                     <span key={index} className={`h-1 rounded-full transition-all duration-500 ${index === heroSlide % Math.min(heroImages.length, 5) ? 'w-8 bg-rose-smoke' : 'w-2 bg-nude/50'}`} />
                   ))}

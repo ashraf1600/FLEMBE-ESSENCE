@@ -292,13 +292,15 @@ const CheckoutPage: React.FC = () => {
                         <p className="font-body text-xs text-off-black/50">৳{parseFloat(item.product.price).toLocaleString()} each</p>
                         <div className="flex items-center gap-2 mt-2">
                           <button type="button" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="w-6 h-6 border border-nude-dark flex items-center justify-center hover:bg-nude-dark text-xs">
-                            <Minus size={10} />
+                            aria-label="Decrease quantity"
+                            className="w-9 h-9 border border-nude-dark flex items-center justify-center hover:bg-nude-dark text-xs">
+                            <Minus size={12} />
                           </button>
                           <span className="font-body text-sm w-6 text-center">{item.quantity}</span>
                           <button type="button" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="w-6 h-6 border border-nude-dark flex items-center justify-center hover:bg-nude-dark text-xs">
-                            <Plus size={10} />
+                            aria-label="Increase quantity"
+                            className="w-9 h-9 border border-nude-dark flex items-center justify-center hover:bg-nude-dark text-xs">
+                            <Plus size={12} />
                           </button>
                         </div>
                       </div>
