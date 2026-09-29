@@ -17,6 +17,10 @@ if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; t
     python manage.py createsuperuser --noinput || echo "Note: Superuser already exists or could not be created."
 fi
 
+# Ensure admin accounts (admin and Nehal) exist and have superuser rights
+echo "==> Ensuring admin superuser accounts..."
+python manage.py ensure_admin || echo "Note: ensure_admin completed with warnings."
+
 # Seed initial store catalog data if enabled
 if [ "$AUTO_SEED" = "True" ] || [ "$AUTO_SEED" = "true" ] || [ "$AUTO_SEED" = "1" ]; then
     echo "==> Seeding catalog products and delivery zones..."
