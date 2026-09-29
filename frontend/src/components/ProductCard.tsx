@@ -92,14 +92,15 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-off-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
           {/* Stock badge */}
-          <div className="absolute top-3 left-3 z-10">
+          {/* Stock badge */}
+          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
             {isInStock ? (
-              <span className="badge-in-stock shadow-xs">
+              <span className="badge-in-stock shadow-xs text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 In Stock
               </span>
             ) : (
-              <span className="badge-out-of-stock shadow-xs">
+              <span className="badge-out-of-stock shadow-xs text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                 Out of Stock
               </span>
@@ -107,31 +108,31 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           </div>
 
           {/* Wishlist + Quick View — always visible on mobile, fade-in on desktop hover */}
-          <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex flex-col gap-1.5 sm:gap-2 sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300">
             <button
               onClick={handleWishlistToggle}
               aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
               aria-pressed={isWishlisted}
-              className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200 ${
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200 ${
                 isWishlisted
                   ? 'bg-rose-smoke text-off-black'
                   : 'bg-white/90 text-off-black hover:bg-rose-smoke hover:text-off-black'
               }`}
             >
-              <Heart size={15} className={isWishlisted ? 'fill-current' : ''} />
+              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
             <button
               onClick={handleQuickView}
               aria-label={`Quick view ${product.name}`}
-              className="w-9 h-9 rounded-full bg-white/90 text-off-black hover:bg-burgundy hover:text-nude flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200"
+              className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/90 text-off-black hover:bg-burgundy hover:text-nude flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200"
             >
-              <Eye size={15} />
+              <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
           {/* Material pill */}
           {product.material && (
-            <div className="absolute bottom-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
               <span className="text-[9px] uppercase tracking-wider font-body bg-off-black/80 text-nude px-2 py-0.5 rounded-full backdrop-blur-xs">
                 {product.material}
               </span>
@@ -140,39 +141,39 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         </div>
 
         {/* Info */}
-        <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between">
+        <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between">
           <div>
             {product.category && (
-              <p className="font-body text-[10px] tracking-[0.2em] uppercase text-rose-smoke font-bold mb-1.5">
+              <p className="font-body text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rose-smoke font-bold mb-1">
                 {product.category.name}
               </p>
             )}
-            <h3 className="font-body text-sm sm:text-[15px] font-semibold tracking-[-0.01em] text-off-black leading-[1.3] mb-1.5 line-clamp-2 group-hover:text-burgundy transition-colors duration-200">
+            <h3 className="font-body text-xs sm:text-[15px] font-semibold tracking-[-0.01em] text-off-black leading-[1.3] mb-1 line-clamp-2 group-hover:text-burgundy transition-colors duration-200">
               <Link to={detailUrl}>{product.name}</Link>
             </h3>
           </div>
 
-          <div className="pt-3">
-            <div className="flex items-baseline justify-between mb-1">
-              <span className="font-body text-burgundy font-bold text-xl">
+          <div className="pt-2 sm:pt-3">
+            <div className="flex items-baseline justify-between mb-0.5 sm:mb-1">
+              <span className="font-body text-burgundy font-bold text-base sm:text-xl">
                 ৳{parseFloat(product.price).toLocaleString()}
               </span>
-              <span className="text-[10px] uppercase tracking-wider text-off-black/40 font-body">COD</span>
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-off-black/40 font-body">COD</span>
             </div>
-            <p className={`font-body text-[11px] font-semibold mb-2.5 ${lowStock ? 'text-burgundy' : 'text-transparent'} select-none`} aria-live="polite">
-              {lowStock ? `Only ${product.stock_quantity} left — order soon` : '·'}
+            <p className={`font-body text-[10px] sm:text-[11px] font-semibold mb-2 sm:mb-2.5 ${lowStock ? 'text-burgundy' : 'text-transparent'} select-none`} aria-live="polite">
+              {lowStock ? `Only ${product.stock_quantity} left` : '·'}
             </p>
 
             <button
               onClick={handleOrderNow}
               disabled={!isInStock}
-              className={`w-full flex items-center justify-center gap-1.5 py-3 px-3 rounded-lg font-body text-[11px] font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs ${
+              className={`w-full flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg font-body text-[10px] sm:text-[11px] font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs ${
                 isInStock
                   ? 'bg-burgundy text-nude hover:bg-burgundy-light hover:shadow-md'
                   : 'bg-nude-dark text-off-black/40 cursor-not-allowed'
               }`}
             >
-              <ShoppingBag size={14} />
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>{isInStock ? 'Order Now' : 'Out of Stock'}</span>
             </button>
           </div>

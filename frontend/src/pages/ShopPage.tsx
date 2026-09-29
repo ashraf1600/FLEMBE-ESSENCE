@@ -292,7 +292,7 @@ const ShopPage: React.FC = () => {
                     type="search"
                     placeholder="E.g. pearl, gold ring..."
                     value={localSearch}
-                    className="input-field text-sm pl-3 pr-8 py-3"
+                    className="input-field text-base sm:text-sm pl-3 pr-8 py-3"
                     onChange={e => setLocalSearch(e.target.value)}
                     onKeyDown={e => {
                       if (e.key === 'Enter') setParam('search', localSearch.trim() || undefined);
@@ -339,7 +339,7 @@ const ShopPage: React.FC = () => {
                     placeholder="Min"
                     value={localMin}
                     onChange={e => setLocalMin(e.target.value)}
-                    className="input-field text-sm text-center py-3"
+                    className="input-field text-base sm:text-sm text-center py-3"
                   />
                   <span className="text-off-black/40 text-xs">—</span>
                   <input
@@ -347,7 +347,7 @@ const ShopPage: React.FC = () => {
                     placeholder="Max"
                     value={localMax}
                     onChange={e => setLocalMax(e.target.value)}
-                    className="input-field text-sm text-center py-3"
+                    className="input-field text-base sm:text-sm text-center py-3"
                   />
                 </div>
                 <button

@@ -461,7 +461,7 @@ const ProductDetailPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-nude/40 border-2 border-burgundy/20 p-5 rounded-xs space-y-4">
+              <div id="restock-section" className="bg-nude/40 border-2 border-burgundy/20 p-5 rounded-xs space-y-4 scroll-mt-24">
                 <div className="flex items-start gap-3">
                   <div className="p-2.5 bg-burgundy text-nude rounded-full flex-shrink-0">
                     <Bell size={18} />
@@ -947,6 +947,49 @@ const ProductDetailPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* ── Mobile Sticky Purchase Bar (Always within thumb reach on phones) ── */}
+        <div className="fixed bottom-12 inset-x-0 z-30 md:hidden bg-white/95 backdrop-blur-xl border-t border-burgundy/15 p-2.5 px-4 shadow-[0_-4px_25px_rgba(75,29,63,0.12)] flex items-center justify-between gap-3 animate-fade-in">
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-bold text-lg text-burgundy leading-none truncate">
+              ৳{parseFloat(product.price).toLocaleString()}
+            </p>
+            <p className="font-body text-[10px] text-off-black/50 uppercase tracking-wider truncate mt-0.5">
+              {isInStock ? `${product.stock_quantity} left in stock` : 'Out of stock'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isInStock ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="p-2.5 rounded-lg border border-burgundy/30 bg-burgundy/10 text-burgundy hover:bg-burgundy hover:text-nude transition-colors"
+                  aria-label="Add to bag"
+                  title="Add to bag"
+                >
+                  <ShoppingBag size={18} />
+                </button>
+                <Link
+                  to="/checkout"
+                  onClick={handleAddToCart}
+                  className="bg-burgundy text-nude font-body text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg shadow-sm hover:bg-burgundy-light active:scale-95 transition-all text-center whitespace-nowrap"
+                >
+                  Order COD →
+                </Link>
+              </>
+            ) : (
+              <a
+                href="#restock-section"
+                className="bg-burgundy/10 text-burgundy border border-burgundy/30 font-body text-xs font-bold uppercase tracking-wider px-3.5 py-2 rounded-lg flex items-center gap-1.5"
+              >
+                <Bell size={13} />
+                <span>Restock Alert</span>
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </>
   );

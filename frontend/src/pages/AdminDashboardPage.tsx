@@ -7,7 +7,7 @@ import {
   ExternalLink, Plus, CheckCircle, ArrowUpRight, X,
   Upload, Trash2, Star, MessageSquare, ChevronDown,
   Eye, EyeOff, Award, AlertTriangle, Activity,
-  Pencil, MapPin, Printer, BellRing,
+  Pencil, MapPin, Printer, BellRing, Menu,
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -194,6 +194,7 @@ const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('dashboard');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [printingOrder, setPrintingOrder] = useState<any | null>(null);
 
   const [isCreateProductOpen,  setIsCreateProductOpen]  = useState(false);
@@ -293,8 +294,8 @@ const AdminDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex" style={{ background: '#f0ede8', fontFamily: "'Jost', system-ui, sans-serif" }}>
-      {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <aside className="w-60 flex-shrink-0 flex flex-col" style={{ background: 'linear-gradient(180deg,#17121c 0%,#1f1529 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.25)' }}>
+      {/* ── Desktop Sidebar ─────────────────────────────────────────────────── */}
+      <aside className="hidden md:flex md:w-60 flex-shrink-0 flex-col" style={{ background: 'linear-gradient(180deg,#17121c 0%,#1f1529 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.25)' }}>
         <div className="px-6 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <Link to="/" className="block">
             <span className="font-display text-xl tracking-widest" style={{ color: '#E8D9C1' }}>FLEMBE</span>
@@ -342,32 +343,106 @@ const AdminDashboardPage: React.FC = () => {
         </div>
       </aside>
 
+      {/* ── Mobile Sidebar Drawer ────────────────────────────────────────────── */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" onClick={() => setMobileNavOpen(false)} />
+          <aside className="relative w-64 max-w-[80vw] flex-shrink-0 flex flex-col z-10 h-full" style={{ background: 'linear-gradient(180deg,#17121c 0%,#1f1529 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.5)' }}>
+            <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div>
+                <span className="font-display text-lg tracking-widest" style={{ color: '#E8D9C1' }}>FLEMBE</span>
+                <span className="font-display text-lg tracking-widest" style={{ color: '#D8A7B1' }}> ESSENCE</span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="font-body text-[9px] tracking-widest uppercase" style={{ color: 'rgba(232,217,193,0.4)' }}>Admin Panel</span>
+                </div>
+              </div>
+              <button onClick={() => setMobileNavOpen(false)} className="p-1.5 rounded text-nude/60 hover:text-nude" aria-label="Close menu">
+                <X size={18} />
+              </button>
+            </div>
+
+            <nav className="flex-1 py-3 overflow-y-auto">
+              <p className="px-5 pt-2 pb-1 font-body text-[9px] uppercase tracking-widest" style={{ color: 'rgba(232,217,193,0.3)' }}>Menu</p>
+              {NAV.map(n => (
+                <button
+                  key={n.id}
+                  onClick={() => { setTab(n.id); setMobileNavOpen(false); }}
+                  className="w-full flex items-center gap-3 px-5 py-2.5 text-left transition-all duration-150"
+                  style={{
+                    background: tab === n.id ? 'rgba(216,167,177,0.12)' : 'transparent',
+                    color: tab === n.id ? '#D8A7B1' : 'rgba(232,217,193,0.5)',
+                    borderLeft: tab === n.id ? '3px solid #D8A7B1' : '3px solid transparent'
+                  }}
+                >
+                  <span style={{ opacity: tab === n.id ? 1 : 0.65 }}>{n.icon}</span>
+                  <span className="font-body text-[11px] tracking-wide uppercase font-medium">{n.label}</span>
+                </button>
+              ))}
+              <div className="mx-5 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                <p className="font-body text-[9px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(232,217,193,0.3)' }}>External</p>
+                <a href={`${DJANGO_ADMIN_URL}/`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between py-2 font-body text-[11px] transition-colors" style={{ color: 'rgba(232,217,193,0.4)' }}>
+                  <span>Django Admin</span><ExternalLink size={11} />
+                </a>
+                <Link to="/" target="_blank" className="flex items-center justify-between py-2 font-body text-[11px] transition-colors" style={{ color: 'rgba(232,217,193,0.4)' }}>
+                  <span>Visit Storefront</span><ArrowUpRight size={11} />
+                </Link>
+              </div>
+            </nav>
+
+            <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm" style={{ background: '#4B1D3F', color: '#D8A7B1' }}>
+                  {admin?.username?.[0]?.toUpperCase() ?? 'A'}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-body text-xs font-bold truncate" style={{ color: '#E8D9C1' }}>{admin?.username}</p>
+                  <p className="font-body text-[10px]" style={{ color: 'rgba(232,217,193,0.4)' }}>Administrator</p>
+                </div>
+              </div>
+              <button onClick={handleLogout} className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider transition-colors" style={{ color: 'rgba(216,167,177,0.55)' }}>
+                <LogOut size={12} /> Sign Out
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* ── Main ───────────────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-h-screen overflow-auto">
-        <header className="sticky top-0 z-20 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(240,237,232,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(75,29,63,0.1)', boxShadow: '0 1px 12px rgba(0,0,0,0.06)' }}>
-          <div>
-            <h1 className="font-display text-2xl" style={{ color: '#4B1D3F' }}>{NAV.find(n => n.id === tab)?.label ?? 'Dashboard'}</h1>
-            <p className="font-body text-[11px]" style={{ color: 'rgba(27,27,27,0.4)' }}>
-              {new Date().toLocaleDateString('en-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+        <header className="sticky top-0 z-20 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4" style={{ background: 'rgba(240,237,232,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(75,29,63,0.1)', boxShadow: '0 1px 12px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              className="md:hidden p-2 rounded-lg border border-burgundy/20 text-burgundy hover:bg-burgundy/10 transition-colors"
+              aria-label="Open Admin Menu"
+            >
+              <Menu size={18} />
+            </button>
+            <div>
+              <h1 className="font-display text-xl sm:text-2xl" style={{ color: '#4B1D3F' }}>{NAV.find(n => n.id === tab)?.label ?? 'Dashboard'}</h1>
+              <p className="font-body text-[10px] sm:text-[11px]" style={{ color: 'rgba(27,27,27,0.4)' }}>
+                {new Date().toLocaleDateString('en-BD', { weekday: 'short', day: 'numeric', month: 'short' })}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap justify-end">
             <Link
               to="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors border border-burgundy/20 bg-burgundy/5 text-burgundy hover:bg-burgundy hover:text-nude"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors border border-burgundy/20 bg-burgundy/5 text-burgundy hover:bg-burgundy hover:text-nude"
             >
-              <ExternalLink size={12} /> View Store
+              <ExternalLink size={12} /> <span className="hidden sm:inline">View Store</span>
             </Link>
-            <button onClick={handleRefresh} className="flex items-center gap-1.5 px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors" style={{ background: 'white', color: '#4B1D3F', border: '1px solid rgba(75,29,63,0.15)' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4B1D3F'; (e.currentTarget as HTMLButtonElement).style.color = '#E8D9C1'; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'white'; (e.currentTarget as HTMLButtonElement).style.color = '#4B1D3F'; }}>
-              <RefreshCw size={12} /> Refresh
+            <button onClick={handleRefresh} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 font-body text-[11px] rounded-lg transition-colors" style={{ background: 'white', color: '#4B1D3F', border: '1px solid rgba(75,29,63,0.15)' }}>
+              <RefreshCw size={12} /> <span className="hidden sm:inline">Refresh</span>
             </button>
-            {tab === 'products'   && <button onClick={() => setIsCreateProductOpen(true)}  className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Product</button>}
-            {tab === 'categories' && <button onClick={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Category</button>}
-            {tab === 'delivery'   && <button onClick={() => { setSelectedDeliveryZone(null); setIsDeliveryModalOpen(true); }} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Zone</button>}
+            {tab === 'products'   && <button onClick={() => setIsCreateProductOpen(true)}  className="btn-primary text-[10px] sm:text-[11px] py-1.5 px-2.5 sm:px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add <span className="hidden sm:inline">Product</span></button>}
+            {tab === 'categories' && <button onClick={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }} className="btn-primary text-[10px] sm:text-[11px] py-1.5 px-2.5 sm:px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add <span className="hidden sm:inline">Category</span></button>}
+            {tab === 'delivery'   && <button onClick={() => { setSelectedDeliveryZone(null); setIsDeliveryModalOpen(true); }} className="btn-primary text-[10px] sm:text-[11px] py-1.5 px-2.5 sm:px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add <span className="hidden sm:inline">Zone</span></button>}
           </div>
         </header>
 
-        <div className="p-6 flex-1 space-y-6">
+        <div className="p-3 sm:p-6 flex-1 space-y-4 sm:space-y-6">
           {tab === 'dashboard' && (
             statsLoading ? <LoadingSpinner /> : statsError ? <ErrorState onRetry={refetchStats} /> :
             stats ? <DashboardTab stats={stats} onTabChange={setTab} onRestock={setRestockProduct} /> : null

@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import MobileBottomNav from './components/MobileBottomNav';
 import { LoadingSpinner } from './components/UI';
 
 // Lazy-loaded pages
@@ -55,12 +56,13 @@ const NotFoundPage = () => (
   </div>
 );
 
-/** Storefront wrapper — includes Navbar + Footer */
+/** Storefront wrapper — includes Navbar + Footer + MobileBottomNav */
 const StorefrontLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen flex flex-col">
+  <div className="min-h-screen flex flex-col pb-16 md:pb-0">
     <Navbar />
     <main className="flex-1">{children}</main>
     <Footer />
+    <MobileBottomNav />
   </div>
 );
 

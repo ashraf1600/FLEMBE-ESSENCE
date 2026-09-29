@@ -23,6 +23,7 @@ const CheckoutPage: React.FC = () => {
     policy_accepted: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   const { data: zones, isLoading: zonesLoading } = useQuery({
     queryKey: ['delivery-zones'],
@@ -159,8 +160,44 @@ const CheckoutPage: React.FC = () => {
           </div>
         )}
 
+        {/* ── Mobile Order Summary Accordion (Thumb-accessible on phones) ── */}
+        <div className="lg:hidden mb-6 bg-white border border-burgundy/15 p-4 rounded-xl shadow-xs">
+          <button
+            type="button"
+            onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)}
+            className="w-full flex items-center justify-between font-body text-xs font-bold text-burgundy cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <ShoppingBag size={16} />
+              <span>{mobileSummaryOpen ? 'Hide' : 'Show'} Order Summary ({cart.length} {cart.length === 1 ? 'item' : 'items'})</span>
+            </div>
+            <span className="font-mono text-sm sm:text-base font-bold text-burgundy">৳{total.toLocaleString()}</span>
+          </button>
+          {mobileSummaryOpen && (
+            <div className="mt-3 pt-3 border-t border-burgundy/10 space-y-2.5 animate-fade-in">
+              {cart.map(item => (
+                <div key={item.product.id} className="flex justify-between items-center text-xs font-body">
+                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                    <span className="font-medium text-off-black truncate">{item.product.name}</span>
+                    <span className="text-off-black/50 text-[11px] flex-shrink-0">× {item.quantity}</span>
+                  </div>
+                  <span className="font-mono font-bold text-burgundy flex-shrink-0">
+                    ৳{(parseFloat(item.product.price) * item.quantity).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              <div className="pt-2 border-t border-burgundy/10 flex justify-between text-[11px] font-body text-off-black/70">
+                <span>Delivery:</span>
+                <span className="font-semibold text-off-black">
+                  {selectedZone ? (selectedZone.is_free ? 'FREE' : `৳${selectedZone.delivery_charge}`) : 'Select area below'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
             {/* ─── Left: Customer Form ───────────────────────────────── */}
             <div className="space-y-5">
               <div className="bg-white p-6 shadow-sm">

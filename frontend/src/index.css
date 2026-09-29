@@ -186,10 +186,13 @@
   background-color: #ffffff;
   padding: 0.75rem 1rem;
   font-family: 'Jost', sans-serif;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--color-off-black);
   border-radius: 2px;
   transition: border-color 0.2s, box-shadow 0.2s;
+  @media (min-width: 640px) {
+    font-size: 0.875rem;
+  }
   &::placeholder {
     color: rgba(46,46,46,0.45);
   }
@@ -198,6 +201,14 @@
     border-color: var(--color-burgundy);
     box-shadow: 0 0 0 2px rgba(75, 29, 63, 0.1);
   }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 @utility label {
