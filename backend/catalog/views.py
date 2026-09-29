@@ -17,18 +17,28 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+        # Support lookup by either numeric ID or string slug
+        if lookup_value and str(lookup_value).isdigit():
+            from django.shortcuts import get_object_or_404
+            return get_object_or_404(Category.objects.prefetch_related('children'), id=int(lookup_value))
+        return super().get_object()
+
     def get_queryset(self):
         # Detail / write actions need to reach any category (including children)
         # so child category slugs don't 404.
         if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             return Category.objects.prefetch_related('children').all()
-        if self.request.query_params.get('all'):
+        if self.request.query_params.get('all') or (self.request.user and self.request.user.is_staff):
             return Category.objects.prefetch_related('children').all()
         # List shows only active root categories; children are nested via serializer
         return (

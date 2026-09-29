@@ -195,7 +195,9 @@ const AdminDashboardPage: React.FC = () => {
   const [tab, setTab] = useState<Tab>('dashboard');
 
   const [isCreateProductOpen,  setIsCreateProductOpen]  = useState(false);
-  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+  const [isCategoryModalOpen,  setIsCategoryModalOpen]  = useState(false);
+  const [selectedCategory,     setSelectedCategory]     = useState<any | null>(null);
+  const [deletingCategory,     setDeletingCategory]     = useState<any | null>(null);
   const [isDeliveryModalOpen,  setIsDeliveryModalOpen]  = useState(false);
   const [selectedDeliveryZone, setSelectedDeliveryZone] = useState<any | null>(null);
   const [deletingDeliveryZone, setDeletingDeliveryZone] = useState<any | null>(null);
@@ -222,7 +224,7 @@ const AdminDashboardPage: React.FC = () => {
   const { data: categoriesData, isLoading: catsLoading, refetch: refetchCats } = useQuery({
     queryKey: ['admin-categories-list'],
     queryFn: fetchCategories,
-    enabled: tab === 'categories' || isCreateProductOpen,
+    enabled: tab === 'categories' || isCreateProductOpen || isCategoryModalOpen,
     staleTime: 30_000,
   });
   const { data: deliveryData, isLoading: deliveryLoading, refetch: refetchDelivery } = useQuery({
@@ -248,6 +250,16 @@ const AdminDashboardPage: React.FC = () => {
       toast.success(data.is_active ? `"${data.name}" is now Active` : `"${data.name}" is now Paused`);
     },
     onError: () => toast.error('Could not update zone status.'),
+  });
+  const toggleCategoryStatusMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) =>
+      (await api.patch(`/categories/${id}/`, { is_active })).data,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-categories-list'] });
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      toast.success(data.is_active ? `"${data.name}" is now Active` : `"${data.name}" is now Disabled`);
+    },
+    onError: () => toast.error('Could not update category status.'),
   });
   const approveMutation = useMutation({
     mutationFn: toggleApprove,
@@ -348,7 +360,7 @@ const AdminDashboardPage: React.FC = () => {
               <RefreshCw size={12} /> Refresh
             </button>
             {tab === 'products'   && <button onClick={() => setIsCreateProductOpen(true)}  className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Product</button>}
-            {tab === 'categories' && <button onClick={() => setIsCreateCategoryOpen(true)} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Category</button>}
+            {tab === 'categories' && <button onClick={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Category</button>}
             {tab === 'delivery'   && <button onClick={() => { setSelectedDeliveryZone(null); setIsDeliveryModalOpen(true); }} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={12} /> Add Zone</button>}
           </div>
         </header>
@@ -360,7 +372,16 @@ const AdminDashboardPage: React.FC = () => {
           )}
           {tab === 'orders' && <OrdersTab ordersData={ordersData} isLoading={ordersLoading} statusFilter={statusFilter} setStatusFilter={setStatusFilter} orderSearchInput={orderSearchInput} setOrderSearchInput={setOrderSearchInput} onSearch={(q) => setOrderSearch(q)} orderSearch={orderSearch} onUpdateStatus={(n, s) => statusMutation.mutate({ orderNumber: n, order_status: s })} />}
           {tab === 'products' && <ProductsTab products={productsData?.results || []} totalCount={productsData?.count || 0} isLoading={prodsLoading} search={prodSearch} setSearch={setProdSearch} onSearchSubmit={(q) => setProdSearchQuery(q)} onOpenCreateProduct={() => setIsCreateProductOpen(true)} onRestock={(p) => setRestockProduct(p)} />}
-          {tab === 'categories' && <CategoriesTab categories={cats} isLoading={catsLoading} onOpenCreateCategory={() => setIsCreateCategoryOpen(true)} />}
+          {tab === 'categories' && (
+            <CategoriesTab
+              categories={cats}
+              isLoading={catsLoading}
+              onOpenCreateCategory={() => { setSelectedCategory(null); setIsCategoryModalOpen(true); }}
+              onEditCategory={(c) => { setSelectedCategory(c); setIsCategoryModalOpen(true); }}
+              onDeleteCategory={(c) => setDeletingCategory(c)}
+              onToggleActive={(c) => toggleCategoryStatusMutation.mutate({ id: c.id, is_active: !c.is_active })}
+            />
+          )}
           {tab === 'delivery' && (
             <DeliveryTab
               zones={deliveryData?.results || deliveryData || []}
@@ -377,7 +398,18 @@ const AdminDashboardPage: React.FC = () => {
 
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
       <CreateProductModal isOpen={isCreateProductOpen} onClose={() => setIsCreateProductOpen(false)} categories={cats} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-products-list'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); qc.invalidateQueries({ queryKey: ['products'] }); }} />
-      <CreateCategoryModal isOpen={isCreateCategoryOpen} onClose={() => setIsCreateCategoryOpen(false)} categories={cats} onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-categories-list'] }); qc.invalidateQueries({ queryKey: ['categories'] }); }} />
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        category={selectedCategory}
+        categories={cats}
+        onClose={() => { setIsCategoryModalOpen(false); setSelectedCategory(null); }}
+        onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-categories-list'] }); qc.invalidateQueries({ queryKey: ['categories'] }); }}
+      />
+      <DeleteCategoryModal
+        category={deletingCategory}
+        onClose={() => setDeletingCategory(null)}
+        onSuccess={() => { qc.invalidateQueries({ queryKey: ['admin-categories-list'] }); qc.invalidateQueries({ queryKey: ['categories'] }); }}
+      />
       <DeliveryZoneModal
         isOpen={isDeliveryModalOpen}
         zone={selectedDeliveryZone}
@@ -839,41 +871,276 @@ const ProductsTab: React.FC<{
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CATEGORIES TAB
+// CATEGORIES TAB (FULL CRUD)
 // ─────────────────────────────────────────────────────────────────────────────
-const CategoriesTab: React.FC<{ categories: any[]; isLoading: boolean; onOpenCreateCategory: () => void }> = ({ categories, isLoading, onOpenCreateCategory }) => (
-  <div className="space-y-4">
-    <Card className="p-4 flex items-center justify-between">
-      <div>
-        <h2 className="font-display text-lg" style={{ color: '#4B1D3F' }}>Product Categories</h2>
-        <p className="font-body text-[11px]" style={{ color: 'rgba(27,27,27,0.4)' }}>Hierarchical taxonomy for your catalogue</p>
-      </div>
-      <button type="button" onClick={onOpenCreateCategory} className="btn-primary text-[11px] py-1.5 px-3 inline-flex items-center gap-1.5"><Plus size={13} /> Add Category</button>
-    </Card>
-    {isLoading ? <LoadingSpinner /> : (
-      <TableWrap>
-        <thead><tr><Th>Category</Th><Th>Slug</Th><Th>Description</Th><Th>Sub-categories</Th><Th>Status</Th><Th right>Actions</Th></tr></thead>
-        <tbody>
-          {categories.map((c: any) => (
-            <tr key={c.id} style={{ background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,217,193,0.15)')} onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
-              <Td><span className="font-bold" style={{ color: '#4B1D3F' }}>{c.name}</span></Td>
-              <Td><span className="font-mono text-[10px]" style={{ color: 'rgba(27,27,27,0.5)' }}>{c.slug}</span></Td>
-              <Td className="truncate" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.description || <span style={{ color: 'rgba(27,27,27,0.25)' }}>—</span>}</Td>
-              <Td>{(c.children || []).length > 0 ? <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold" style={{ background: '#E8D9C1', color: '#4B1D3F' }}>{c.children.length} sub</span> : <span style={{ color: 'rgba(27,27,27,0.3)' }}>—</span>}</Td>
-              <Td><span className={`text-[11px] font-semibold ${c.is_active ? 'text-emerald-600' : 'text-slate-400'}`}>{c.is_active ? '✓ Active' : '○ Disabled'}</span></Td>
-              <Td right>
-                <div className="flex items-center justify-end gap-2">
-                  <Link to={`/categories/${c.slug}`} target="_blank" className="text-[11px] flex items-center gap-0.5" style={{ color: 'rgba(27,27,27,0.4)' }}>View <ExternalLink size={10} /></Link>
-                  <a href={`${DJANGO_ADMIN_URL}/catalog/category/${c.id}/change/`} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold" style={{ color: '#4B1D3F' }}>Edit ↗</a>
-                </div>
-              </Td>
+const CategoriesTab: React.FC<{
+  categories: any[];
+  isLoading: boolean;
+  onOpenCreateCategory: () => void;
+  onEditCategory: (cat: any) => void;
+  onDeleteCategory: (cat: any) => void;
+  onToggleActive: (cat: any) => void;
+}> = ({ categories, isLoading, onOpenCreateCategory, onEditCategory, onDeleteCategory, onToggleActive }) => {
+  const [search, setSearch] = useState('');
+  const [levelFilter, setLevelFilter] = useState<'ALL' | 'ROOT' | 'SUB'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'DISABLED'>('ALL');
+
+  const filteredCategories = categories.filter((c: any) => {
+    if (levelFilter === 'ROOT' && c.parent) return false;
+    if (levelFilter === 'SUB' && !c.parent) return false;
+    if (statusFilter === 'ACTIVE' && !c.is_active) return false;
+    if (statusFilter === 'DISABLED' && c.is_active) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matchName = (c.name || '').toLowerCase().includes(q);
+      const matchSlug = (c.slug || '').toLowerCase().includes(q);
+      const matchDesc = (c.description || '').toLowerCase().includes(q);
+      if (!matchName && !matchSlug && !matchDesc) return false;
+    }
+    return true;
+  });
+
+  const totalCount = categories.length;
+  const rootCount = categories.filter((c: any) => !c.parent).length;
+  const subCount = categories.filter((c: any) => Boolean(c.parent)).length;
+  const activeCount = categories.filter((c: any) => c.is_active).length;
+
+  return (
+    <div className="space-y-4">
+      {/* Top Banner Card */}
+      <Card className="p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-display text-xl" style={{ color: '#4B1D3F' }}>Product Categories</h2>
+            <span className="font-body text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-burgundy/10 text-burgundy">
+              {totalCount} Total
+            </span>
+          </div>
+          <p className="font-body text-xs mt-0.5" style={{ color: 'rgba(27,27,27,0.5)' }}>
+            Organize jewelry, accessories, and future food/fashion collections into hierarchical categories
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-burgundy/5 text-burgundy border border-burgundy/10 font-medium">
+              📁 {rootCount} Main Collections
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-nude/40 text-off-black border border-burgundy/10 font-medium">
+              ↳ {subCount} Sub-categories
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+              ✓ {activeCount} Active
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenCreateCategory}
+            className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus size={14} /> Add Category
+          </button>
+        </div>
+      </Card>
+
+      {/* Filter and Search Bar */}
+      <Card className="p-4 space-y-3">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Search box */}
+          <div className="relative flex-1 max-w-md">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-off-black/40" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by category name, slug, or description..."
+              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs font-body border border-burgundy/15 focus:outline-none focus:border-burgundy focus:ring-1 focus:ring-burgundy transition-all bg-white"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-off-black/40 hover:text-off-black"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Hierarchy & Status Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1">
+              <span className="font-body text-[10px] uppercase tracking-wider text-off-black/40 mr-1">Level:</span>
+              {(['ALL', 'ROOT', 'SUB'] as const).map(lvl => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setLevelFilter(lvl)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    levelFilter === lvl
+                      ? 'bg-burgundy text-nude font-semibold shadow-sm'
+                      : 'bg-white text-off-black/60 hover:text-off-black border border-burgundy/10'
+                  }`}
+                >
+                  {lvl === 'ALL' ? 'All Levels' : lvl === 'ROOT' ? 'Main Only' : 'Sub-categories'}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1">
+              <span className="font-body text-[10px] uppercase tracking-wider text-off-black/40 mr-1">Status:</span>
+              {(['ALL', 'ACTIVE', 'DISABLED'] as const).map(st => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setStatusFilter(st)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    statusFilter === st
+                      ? 'bg-rose-smoke/30 text-burgundy font-bold border border-rose-smoke'
+                      : 'bg-white text-off-black/60 hover:text-off-black border border-burgundy/10'
+                  }`}
+                >
+                  {st === 'ALL' ? 'All Status' : st === 'ACTIVE' ? '✓ Active' : '○ Disabled'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Categories Table */}
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : filteredCategories.length === 0 ? (
+        <Card className="p-12 text-center">
+          <Package size={36} className="mx-auto mb-3" style={{ color: 'rgba(75,29,63,0.2)' }} />
+          <p className="font-body text-sm font-semibold text-off-black">No categories found</p>
+          <p className="font-body text-xs text-off-black/40 mt-1">
+            {search || levelFilter !== 'ALL' || statusFilter !== 'ALL'
+              ? 'Try adjusting your search query or filters above.'
+              : 'Add your first category to group your products.'}
+          </p>
+          <button
+            type="button"
+            onClick={onOpenCreateCategory}
+            className="btn-primary text-xs py-1.5 px-3 mt-4 inline-flex items-center gap-1"
+          >
+            <Plus size={12} /> Add Category Now
+          </button>
+        </Card>
+      ) : (
+        <TableWrap>
+          <thead>
+            <tr>
+              <Th>Category</Th>
+              <Th>Slug</Th>
+              <Th>Description</Th>
+              <Th>Sub-categories</Th>
+              <Th>Status</Th>
+              <Th right>Actions</Th>
             </tr>
-          ))}
-        </tbody>
-      </TableWrap>
-    )}
-  </div>
-);
+          </thead>
+          <tbody>
+            {filteredCategories.map((c: any) => (
+              <tr
+                key={c.id}
+                style={{ background: 'white', transition: 'background 0.1s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,217,193,0.15)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+              >
+                {/* Category Name */}
+                <Td>
+                  <div>
+                    <span className="font-bold text-burgundy block">{c.name}</span>
+                    {c.parent && (
+                      <span className="text-[10px] text-off-black/50 font-medium">↳ Sub-category</span>
+                    )}
+                  </div>
+                </Td>
+
+                {/* Slug */}
+                <Td>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-nude/30 border border-burgundy/10 text-off-black/70">
+                    {c.slug}
+                  </span>
+                </Td>
+
+                {/* Description */}
+                <Td className="truncate" style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span title={c.description || undefined}>
+                    {c.description || <span className="text-off-black/25 italic">—</span>}
+                  </span>
+                </Td>
+
+                {/* Sub-categories */}
+                <Td>
+                  {(c.children || []).length > 0 ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-nude text-burgundy border border-burgundy/10">
+                      {c.children.length} sub
+                    </span>
+                  ) : (
+                    <span className="text-off-black/30">—</span>
+                  )}
+                </Td>
+
+                {/* Status (Interactive Toggle) */}
+                <Td>
+                  <button
+                    type="button"
+                    onClick={() => onToggleActive(c)}
+                    title={`Click to switch to ${c.is_active ? 'Disabled' : 'Active'}`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
+                      c.is_active
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300'
+                        : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200 hover:text-slate-700'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                    {c.is_active ? '✓ Active' : '○ Disabled'}
+                  </button>
+                </Td>
+
+                {/* Actions */}
+                <Td right>
+                  <div className="flex items-center justify-end gap-1.5">
+                    {/* View on Store */}
+                    <Link
+                      to={`/categories/${c.slug}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] text-off-black/60 hover:text-off-black border border-burgundy/10 bg-white hover:bg-nude/20 transition-all"
+                      title="View public category page"
+                    >
+                      View <ExternalLink size={10} />
+                    </Link>
+
+                    {/* In-app Edit Button */}
+                    <button
+                      type="button"
+                      onClick={() => onEditCategory(c)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border border-burgundy/20 text-burgundy bg-burgundy/5 hover:bg-burgundy hover:text-nude shadow-2xs"
+                      title="Edit category"
+                    >
+                      <Pencil size={11} /> Edit
+                    </button>
+
+                    {/* Delete Category Button */}
+                    <button
+                      type="button"
+                      onClick={() => onDeleteCategory(c)}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-red-600 bg-red-50 hover:bg-red-600 hover:text-white border border-red-200 transition-all shadow-2xs"
+                      title="Delete category"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELIVERY TAB (FULL CRUD)
@@ -1352,36 +1619,211 @@ const CreateProductModal: React.FC<{ isOpen: boolean; onClose: () => void; categ
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CREATE CATEGORY MODAL
+// CATEGORY MODAL (CREATE & EDIT)
 // ─────────────────────────────────────────────────────────────────────────────
-const CreateCategoryModal: React.FC<{ isOpen: boolean; onClose: () => void; categories: any[]; onSuccess: () => void }> = ({ isOpen, onClose, categories, onSuccess }) => {
-  const [name, setName] = useState(''); const [description, setDescription] = useState(''); const [parentId, setParentId] = useState('');
-  const [loading, setLoading] = useState(false); const [error, setError] = useState('');
+const CategoryModal: React.FC<{
+  isOpen: boolean;
+  category: any | null; // null = Add, object = Edit
+  categories: any[];
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ isOpen, category, categories, onClose, onSuccess }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [parentId, setParentId] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (category) {
+      setName(category.name || '');
+      setDescription(category.description || '');
+      setParentId(category.parent ? String(category.parent) : '');
+      setIsActive(category.is_active !== undefined ? Boolean(category.is_active) : true);
+      setError('');
+    } else {
+      setName('');
+      setDescription('');
+      setParentId('');
+      setIsActive(true);
+      setError('');
+    }
+  }, [category, isOpen]);
+
   if (!isOpen) return null;
+
+  const isEditing = Boolean(category?.id);
+
+  // Exclude current category when editing so a category cannot be its own parent
+  const availableParents = categories.filter((c: any) => !isEditing || c.id !== category.id);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return setError('Category name required.');
-    setLoading(true); setError('');
+    if (!name.trim()) return setError('Category name is required.');
+    setLoading(true);
+    setError('');
+
+    const payload = {
+      name: name.trim(),
+      description: description.trim(),
+      parent: parentId ? Number(parentId) : null,
+      is_active: isActive,
+    };
+
     try {
-      await api.post('/categories/', { name: name.trim(), description: description.trim(), parent: parentId ? Number(parentId) : null, is_active: true });
-      toast.success('Category created!'); setName(''); setDescription(''); setParentId(''); onSuccess(); onClose();
-    } catch (err: any) { setError(err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to create category.'); }
-    finally { setLoading(false); }
+      if (isEditing) {
+        await api.patch(`/categories/${category.id}/`, payload);
+        toast.success(`Category "${name.trim()}" updated!`);
+      } else {
+        await api.post('/categories/', payload);
+        toast.success(`Category "${name.trim()}" created!`);
+      }
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.response?.data?.name?.[0] || 'Failed to save category.');
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <ModalBase title="Create Category" subtitle="Organise products into collections" onClose={onClose}>
+    <ModalBase
+      title={isEditing ? 'Edit Category' : 'Add Category'}
+      subtitle={isEditing ? 'Update collection details, parent category, and visibility' : 'Organise jewellery and fashion accessories into collections'}
+      onClose={onClose}
+    >
       {error && <div className="mb-4"><FormError msg={error} /></div>}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Category Name" required><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Bangles & Kadas" className="input-field" required /></FormField>
-        <FormField label="Parent Category (optional)">
-          <select value={parentId} onChange={e => setParentId(e.target.value)} className="input-field">
-            <option value="">None (Top-Level)</option>
-            {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+        <FormField label="Category Name" required>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g. Bangles & Kadas, Rings, Earrings"
+            className="input-field"
+            required
+          />
         </FormField>
-        <FormField label="Description"><textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Short description…" className="input-field" /></FormField>
-        <FormActions onClose={onClose} loading={loading} submitLabel="Save Category" />
+
+        <FormField label="Parent Category (Optional)">
+          <select
+            value={parentId}
+            onChange={e => setParentId(e.target.value)}
+            className="input-field"
+          >
+            <option value="">None (Top-Level Category)</option>
+            {availableParents.map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {c.name} {c.parent ? '(Sub-category)' : ''}
+              </option>
+            ))}
+          </select>
+          <p className="text-[10px] text-off-black/40 mt-1">
+            Leave as None if this is a primary department (e.g. Jewellery & Accessories).
+          </p>
+        </FormField>
+
+        <FormField label="Description">
+          <textarea
+            rows={3}
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            placeholder="Short description for collection header and search engines…"
+            className="input-field"
+          />
+        </FormField>
+
+        <div className="p-3 rounded-xl border border-burgundy/10 bg-white flex items-center justify-between">
+          <div>
+            <span className="font-body text-xs font-semibold text-off-black block">Active Status</span>
+            <span className="text-[11px] text-off-black/50">Visible to customers in navbar and catalog</span>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={e => setIsActive(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+
+        <FormActions onClose={onClose} loading={loading} submitLabel={isEditing ? 'Save Changes' : 'Create Category'} />
       </form>
+    </ModalBase>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE CATEGORY MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+const DeleteCategoryModal: React.FC<{
+  category: any | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ category, onClose, onSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  if (!category) return null;
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await api.delete(`/categories/${category.id}/`);
+      toast.success(`Category "${category.name}" deleted.`);
+      onSuccess();
+      onClose();
+    } catch {
+      toast.error('Could not delete category.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasChildren = (category.children || []).length > 0;
+
+  return (
+    <ModalBase title="Delete Category" subtitle="Confirm category removal" onClose={onClose}>
+      <div className="space-y-4">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-900">
+          <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div>
+            <h4 className="font-display text-sm font-bold text-red-800">Are you sure?</h4>
+            <p className="font-body text-xs text-red-700 mt-1 leading-relaxed">
+              You are about to delete <strong>{category.name}</strong> ({category.slug}).
+            </p>
+            {hasChildren && (
+              <p className="font-body text-xs text-red-800 mt-2 font-semibold">
+                ⚠️ This category has {category.children.length} sub-categories. They will become top-level categories.
+              </p>
+            )}
+            <p className="font-body text-[11px] text-red-600 mt-1">
+              Products assigned to this category will not be lost; they will simply be unassigned.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="btn-secondary text-xs py-2 px-4"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={loading}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors inline-flex items-center gap-1.5 shadow-sm"
+          >
+            {loading ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
+            {loading ? 'Deleting...' : 'Delete Category'}
+          </button>
+        </div>
+      </div>
     </ModalBase>
   );
 };
