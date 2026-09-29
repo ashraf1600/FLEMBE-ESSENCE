@@ -85,11 +85,17 @@ const STATUS_COLORS: Record<string, string> = {
 };
 const STATUS_LABELS: Record<string, string> = {
   PENDING: '⏳ Pending', CONFIRMED: '✅ Confirmed', PROCESSING: '⚙️ Processing',
-  SHIPPED: '🚚 Shipped', DELIVERED: '📦 Delivered', CANCELLED: '✕ Cancelled', FAILED_DELIVERY: '⚠️ Failed',
+  SHIPPED: '🚚 On the Way', DELIVERED: '📦 Delivered', CANCELLED: '✕ Cancelled', FAILED_DELIVERY: '⚠️ Failed',
 };
 const ALL_STATUSES = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'FAILED_DELIVERY'];
 const NEXT_STATUS: Record<string, string> = {
   PENDING: 'CONFIRMED', CONFIRMED: 'PROCESSING', PROCESSING: 'SHIPPED', SHIPPED: 'DELIVERED',
+};
+const NEXT_ACTION_LABELS: Record<string, string> = {
+  PENDING: '✓ Confirm Order',
+  CONFIRMED: '⚙️ Start Processing',
+  PROCESSING: '🚚 Mark On the Way',
+  SHIPPED: '📦 Mark Delivered',
 };
 
 type Tab = 'dashboard' | 'orders' | 'products' | 'categories' | 'delivery' | 'reviews';
@@ -506,25 +512,55 @@ const DashboardTab: React.FC<{ stats: Stats; onTabChange: (t: Tab) => void; onRe
 // ─────────────────────────────────────────────────────────────────────────────
 // ORDERS TAB
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDERS TAB
+// ─────────────────────────────────────────────────────────────────────────────
 const OrdersTab: React.FC<{
   ordersData: any; isLoading: boolean; statusFilter: string; setStatusFilter: (s: string) => void;
   orderSearchInput: string; setOrderSearchInput: (s: string) => void; onSearch: (q: string) => void;
   orderSearch: string; onUpdateStatus: (n: string, s: string) => void;
 }> = ({ ordersData, isLoading, statusFilter, setStatusFilter, orderSearchInput, setOrderSearchInput, onSearch, orderSearch, onUpdateStatus }) => (
   <div className="space-y-4">
+    {/* Quick Filter Pills */}
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
+      <button
+        onClick={() => setStatusFilter('')}
+        className={`px-3 py-1.5 rounded-full font-body font-semibold transition-all whitespace-nowrap ${
+          !statusFilter
+            ? 'bg-burgundy text-nude shadow-xs'
+            : 'bg-white text-off-black/60 hover:bg-nude/40 border border-burgundy/10'
+        }`}
+      >
+        All Orders ({ordersData?.count || (ordersData?.results || []).length || 0})
+      </button>
+      {ALL_STATUSES.map(s => (
+        <button
+          key={s}
+          onClick={() => setStatusFilter(s)}
+          className={`px-3 py-1.5 rounded-full font-body font-semibold whitespace-nowrap transition-all ${
+            statusFilter === s
+              ? 'bg-burgundy text-nude shadow-xs'
+              : 'bg-white text-off-black/60 hover:bg-nude/40 border border-burgundy/10'
+          }`}
+        >
+          {STATUS_LABELS[s]}
+        </button>
+      ))}
+    </div>
+
     <Card className="p-4 flex flex-wrap items-center gap-4">
       <form onSubmit={e => { e.preventDefault(); onSearch(orderSearchInput); }} className="flex gap-2 flex-1 min-w-[260px] max-w-sm">
         <input value={orderSearchInput} onChange={e => setOrderSearchInput(e.target.value)} placeholder="Search order #, customer, phone…" className="input-field text-sm flex-1" />
         <button type="submit" className="btn-primary px-4 py-2"><Search size={13} /></button>
       </form>
       <div className="flex items-center gap-2">
-        <span className="font-body text-[11px] uppercase tracking-wider font-semibold" style={{ color: 'rgba(27,27,27,0.45)' }}>Status:</span>
+        <span className="font-body text-[11px] uppercase tracking-wider font-semibold" style={{ color: 'rgba(27,27,27,0.45)' }}>Filter:</span>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-field text-xs" style={{ width: 'auto', minWidth: 140 }}>
           <option value="">All Statuses</option>
           {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
         </select>
         {(statusFilter || orderSearch) && (
-          <button onClick={() => { setStatusFilter(''); onSearch(''); setOrderSearchInput(''); }} className="font-body text-[11px]" style={{ color: '#D8A7B1' }}>✕ Clear</button>
+          <button onClick={() => { setStatusFilter(''); onSearch(''); setOrderSearchInput(''); }} className="font-body text-[11px] hover:underline" style={{ color: '#D8A7B1' }}>✕ Clear</button>
         )}
       </div>
     </Card>
@@ -546,70 +582,159 @@ const OrdersTab: React.FC<{
 const OrderCard: React.FC<{ order: any; onUpdateStatus: (n: string, s: string) => void }> = ({ order, onUpdateStatus }) => {
   const [expanded, setExpanded] = useState(false);
   const next = NEXT_STATUS[order.order_status];
+  const nextLabel = NEXT_ACTION_LABELS[order.order_status];
+
   return (
-    <Card className="transition-all duration-150 hover:shadow-md">
+    <Card className="transition-all duration-150 hover:shadow-md border border-burgundy/10">
       <div className="p-4 flex flex-wrap items-center gap-4 cursor-pointer select-none" onClick={() => setExpanded(!expanded)}>
-        <div className="w-40">
-          <p className="font-body text-xs font-bold" style={{ color: '#4B1D3F' }}>{order.order_number}</p>
-          <p className="font-body text-[10px]" style={{ color: 'rgba(27,27,27,0.4)' }}>{new Date(order.created_at).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+        <div className="w-36">
+          <p className="font-body text-xs font-bold text-burgundy">{order.order_number}</p>
+          <p className="font-body text-[10px] text-off-black/40">
+            {new Date(order.created_at).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          </p>
         </div>
-        <div className="flex-1 min-w-[160px]">
-          <p className="font-body text-sm font-bold" style={{ color: '#1B1B1B' }}>{order.customer_name}</p>
-          <a href={`tel:${order.customer_phone}`} className="font-body text-[11px]" style={{ color: '#4B1D3F' }} onClick={e => e.stopPropagation()}>📞 {order.customer_phone}</a>
+        <div className="flex-1 min-w-[150px]">
+          <p className="font-body text-sm font-bold text-off-black">{order.customer_name}</p>
+          <a href={`tel:${order.customer_phone}`} className="font-body text-[11px] text-burgundy hover:underline inline-flex items-center gap-1" onClick={e => e.stopPropagation()}>
+            📞 {order.customer_phone}
+          </a>
         </div>
-        <span className={`font-body text-[10px] font-bold px-2.5 py-1 rounded-lg ${STATUS_COLORS[order.order_status] || 'bg-slate-100 text-slate-500'}`}>{STATUS_LABELS[order.order_status] || order.order_status}</span>
-        <div className="text-right min-w-[90px]">
-          <p className="font-body text-sm font-bold" style={{ color: '#4B1D3F' }}>৳{Number(order.total_amount).toLocaleString()}</p>
-          <p className="font-body text-[10px] uppercase tracking-wider" style={{ color: 'rgba(27,27,27,0.4)' }}>COD</p>
+
+        {/* Quick One-Click Status Selector Directly on the Row */}
+        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+          <select
+            value={order.order_status}
+            onChange={e => onUpdateStatus(order.order_number, e.target.value)}
+            className={`font-body text-[11px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer outline-none transition-shadow ${
+              STATUS_COLORS[order.order_status] || 'bg-slate-100 text-slate-700'
+            }`}
+            title="Click to update order status"
+          >
+            {ALL_STATUSES.map(s => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+
+          {/* Quick Step-Forward Action Button */}
+          {next && (
+            <button
+              onClick={() => onUpdateStatus(order.order_number, next)}
+              className="hidden sm:inline-flex items-center gap-1 bg-burgundy hover:bg-burgundy-light text-nude font-body text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-transform active:scale-95 cursor-pointer"
+              title={`Advance to ${STATUS_LABELS[next]}`}
+            >
+              {nextLabel || `→ ${STATUS_LABELS[next]}`}
+            </button>
+          )}
         </div>
-        <ChevronDown size={16} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} style={{ color: 'rgba(27,27,27,0.3)' }} />
+
+        <div className="text-right min-w-[80px]">
+          <p className="font-body text-sm font-bold text-burgundy">৳{Number(order.total_amount).toLocaleString()}</p>
+          <p className="font-body text-[10px] uppercase tracking-wider text-off-black/40">COD</p>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          className="p-1 rounded hover:bg-burgundy/5 text-off-black/40 hover:text-burgundy transition-colors"
+        >
+          <ChevronDown size={16} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+        </button>
       </div>
+
       {expanded && (
         <div className="border-t px-5 pb-5 pt-4 space-y-4" style={{ borderColor: 'rgba(75,29,63,0.08)', background: 'rgba(232,217,193,0.08)' }}>
-          <div className="grid sm:grid-cols-2 gap-3 text-xs font-body">
-            <div className="p-3 rounded-xl" style={{ background: 'white', border: '1px solid rgba(75,29,63,0.08)' }}>
-              <p className="uppercase tracking-widest text-[10px] font-bold mb-1" style={{ color: 'rgba(27,27,27,0.4)' }}>Address</p>
-              <p style={{ color: '#1B1B1B' }}>{order.address}</p>
-              <p className="mt-0.5" style={{ color: 'rgba(27,27,27,0.6)' }}>Zone: <strong style={{ color: '#4B1D3F' }}>{order.delivery_zone_name}</strong></p>
+          {/* Visual Order Progress Stepper */}
+          <div className="bg-white p-4 rounded-xl border border-burgundy/10 shadow-2xs">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-off-black/40 mb-3 font-body">Order Progress Lifecycle</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-[10px] font-body">
+              {[
+                { key: 'PENDING', label: '1. Pending' },
+                { key: 'CONFIRMED', label: '2. Confirmed' },
+                { key: 'PROCESSING', label: '3. Processing' },
+                { key: 'SHIPPED', label: '4. On the Way' },
+                { key: 'DELIVERED', label: '5. Delivered' },
+              ].map((step, idx) => {
+                const stepOrder = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+                const curIdx = stepOrder.indexOf(order.order_status);
+                const isPassed = curIdx >= idx;
+                const isCurrent = order.order_status === step.key;
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    onClick={() => onUpdateStatus(order.order_number, step.key)}
+                    className={`p-2 rounded-lg border transition-all text-left sm:text-center cursor-pointer ${
+                      isCurrent
+                        ? 'border-burgundy bg-burgundy text-nude font-bold shadow-xs'
+                        : isPassed
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-800 font-semibold'
+                        : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="block truncate">{step.label}</span>
+                    <span className="text-[9px] opacity-75">{isCurrent ? '● Current' : isPassed ? '✓ Passed' : 'Upcoming'}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="p-3 rounded-xl" style={{ background: 'white', border: '1px solid rgba(75,29,63,0.08)' }}>
-              <p className="uppercase tracking-widest text-[10px] font-bold mb-2" style={{ color: 'rgba(27,27,27,0.4)' }}>Pricing</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3 text-xs font-body">
+            <div className="p-3 rounded-xl bg-white border border-burgundy/10">
+              <p className="uppercase tracking-widest text-[10px] font-bold mb-1 text-off-black/40">Delivery Details</p>
+              <p className="text-off-black font-medium">{order.address}</p>
+              <p className="mt-1 text-off-black/70">
+                Zone: <strong className="text-burgundy">{order.delivery_zone_name || order.delivery_zone_city}</strong>
+              </p>
+            </div>
+            <div className="p-3 rounded-xl bg-white border border-burgundy/10">
+              <p className="uppercase tracking-widest text-[10px] font-bold mb-2 text-off-black/40">Pricing Breakdown</p>
               <div className="space-y-1">
-                <div className="flex justify-between"><span>Subtotal</span><strong>৳{Number(order.subtotal).toLocaleString()}</strong></div>
-                <div className="flex justify-between"><span>Delivery</span><strong>৳{Number(order.delivery_charge).toLocaleString()}</strong></div>
-                <div className="flex justify-between pt-1 font-bold text-sm" style={{ color: '#4B1D3F', borderTop: '1px solid rgba(75,29,63,0.1)' }}>
-                  <span>Total</span><span>৳{Number(order.total_amount).toLocaleString()}</span>
+                <div className="flex justify-between text-off-black/70"><span>Subtotal</span><strong>৳{Number(order.subtotal).toLocaleString()}</strong></div>
+                <div className="flex justify-between text-off-black/70"><span>Delivery Charge</span><strong>৳{Number(order.delivery_charge).toLocaleString()}</strong></div>
+                <div className="flex justify-between pt-1 font-bold text-sm text-burgundy border-t border-burgundy/10">
+                  <span>Total (Cash on Delivery)</span><span>৳{Number(order.total_amount).toLocaleString()}</span>
                 </div>
               </div>
             </div>
           </div>
+
           {order.customer_note && (
-            <div className="p-3 rounded-xl text-xs font-body" style={{ background: 'white', borderLeft: '3px solid #4B1D3F', border: '1px solid rgba(75,29,63,0.1)' }}>
-              <span className="uppercase tracking-widest text-[10px] font-bold block mb-1" style={{ color: 'rgba(27,27,27,0.4)' }}>Note</span>
-              <p className="italic" style={{ color: '#1B1B1B' }}>"{order.customer_note}"</p>
+            <div className="p-3 rounded-xl text-xs font-body bg-white border-l-4 border-burgundy border border-burgundy/10">
+              <span className="uppercase tracking-widest text-[10px] font-bold block mb-1 text-off-black/40">Customer Note</span>
+              <p className="italic text-off-black">"{order.customer_note}"</p>
             </div>
           )}
-          <div className="p-3 rounded-xl" style={{ background: 'white', border: '1px solid rgba(75,29,63,0.08)' }}>
-            <p className="uppercase tracking-widest text-[10px] font-bold font-body mb-2" style={{ color: 'rgba(27,27,27,0.4)' }}>Items</p>
+
+          <div className="p-3 rounded-xl bg-white border border-burgundy/10">
+            <p className="uppercase tracking-widest text-[10px] font-bold font-body mb-2 text-off-black/40">Ordered Items</p>
             {(order.items || []).map((item: any) => (
-              <div key={item.id} className="flex justify-between text-xs font-body py-1.5" style={{ borderBottom: '1px solid rgba(75,29,63,0.06)' }}>
-                <span>{item.product_name} <span style={{ color: 'rgba(27,27,27,0.4)' }}>× {item.quantity}</span></span>
-                <span className="font-bold" style={{ color: '#4B1D3F' }}>৳{Number(item.subtotal).toLocaleString()}</span>
+              <div key={item.id} className="flex justify-between text-xs font-body py-1.5 border-b border-burgundy/5 last:border-0">
+                <span className="text-off-black font-medium">{item.product_name} <span className="text-off-black/50 font-normal">× {item.quantity}</span></span>
+                <span className="font-bold text-burgundy">৳{Number(item.subtotal).toLocaleString()}</span>
               </div>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-body text-[10px] uppercase tracking-wider font-bold" style={{ color: 'rgba(27,27,27,0.4)' }}>Update Status:</span>
-            {next && (
-              <button onClick={() => onUpdateStatus(order.order_number, next)} className="font-body text-[11px] px-3 py-1.5 rounded-lg font-bold" style={{ background: '#4B1D3F', color: '#E8D9C1' }}>
-                → {STATUS_LABELS[next]}
-              </button>
-            )}
-            {ALL_STATUSES.filter(s => s !== order.order_status && s !== next).map(s => (
-              <button key={s} onClick={() => onUpdateStatus(order.order_number, s)} className="font-body text-[11px] px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'white', color: 'rgba(27,27,27,0.6)', border: '1px solid rgba(75,29,63,0.15)' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#4B1D3F'; (e.currentTarget as HTMLButtonElement).style.color = '#4B1D3F'; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(75,29,63,0.15)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(27,27,27,0.6)'; }}>
-                {STATUS_LABELS[s]}
-              </button>
-            ))}
+
+          {/* Quick Actions at Bottom of Card */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-body text-[10px] uppercase tracking-wider font-bold text-off-black/40 mr-1">Quick Set:</span>
+              {ALL_STATUSES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => onUpdateStatus(order.order_number, s)}
+                  className={`font-body text-[10px] font-semibold px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    order.order_status === s
+                      ? 'bg-burgundy text-nude font-bold shadow-2xs'
+                      : 'bg-white text-off-black/70 border border-burgundy/15 hover:border-burgundy hover:text-burgundy'
+                  }`}
+                >
+                  {STATUS_LABELS[s]}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
