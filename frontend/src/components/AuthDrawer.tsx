@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Phone, ShieldCheck, User, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import FlembeLogo from './FlembeLogo';
 import toast from 'react-hot-toast';
 
 type AuthMode = 'login' | 'register';
@@ -82,10 +83,10 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ mode, onClose, onModeChange }) 
         <div className="min-h-full px-6 py-6 sm:px-10 sm:py-8">
           <div className="flex items-center justify-between border-b border-burgundy/15 pb-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-rose-smoke bg-burgundy text-rose-smoke font-display text-lg">F</div>
+              <FlembeLogo variant="crest" size={46} animated />
               <div>
-                <p className="font-display text-xl tracking-[0.12em] text-burgundy">FLEMBE</p>
-                <p className="font-body text-[9px] uppercase tracking-[0.28em] text-rose-smoke">Essence</p>
+                <p className="font-display text-xl tracking-[0.12em] text-burgundy font-bold">FLEMBE</p>
+                <p className="font-body text-[9px] uppercase tracking-[0.28em] text-rose-smoke font-semibold">Essence</p>
               </div>
             </div>
             <button type="button" onClick={onClose} aria-label="Close account panel" className="flex h-10 w-10 items-center justify-center rounded-full border border-burgundy/15 text-burgundy transition-colors hover:bg-burgundy hover:text-nude">

@@ -8,6 +8,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchCategories } from '../lib/queries';
 import AuthDrawer from './AuthDrawer';
+import FlembeLogo from './FlembeLogo';
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -90,11 +91,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center justify-between min-h-16 sm:min-h-20 py-2.5 sm:py-3 gap-1">
             {/* Logo */}
 <Link to="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 mr-2 sm:mr-6 md:mr-10 min-w-0">
-  <img
-    src="/images/logo.png"
-    alt="Flembe Essence icon"
-    className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-rose-smoke/50 group-hover:border-rose-smoke group-hover:scale-105 transition-all duration-300 flex-shrink-0"
-  />
+  <FlembeLogo variant="crest" size={46} animated className="flex-shrink-0" />
   <div className="flex flex-col min-w-0">
     <span className="font-display font-bold text-2xl sm:text-4xl text-nude tracking-wide leading-none group-hover:text-rose-smoke transition-colors duration-300 truncate">
       Flembe Essence

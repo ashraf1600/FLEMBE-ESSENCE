@@ -180,6 +180,22 @@
   }
 }
 
+@keyframes feSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes feTwinkle {
+  0%   { opacity: 0.25; transform: scale(0.7) rotate(0deg); }
+  50%  { opacity: 1; transform: scale(1.18) rotate(45deg); filter: drop-shadow(0 0 6px #fff); }
+  100% { opacity: 0.35; transform: scale(0.85) rotate(90deg); }
+}
+
+@keyframes feBreath {
+  0%   { opacity: 0.25; transform: scale(0.95); }
+  100% { opacity: 0.7; transform: scale(1.05); }
+}
+
 @utility input-field {
   width: 100%;
   border: 1px solid var(--color-nude-dark);

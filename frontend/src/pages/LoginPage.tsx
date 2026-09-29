@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import FlembeLogo from '../components/FlembeLogo';
 import toast from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
@@ -92,13 +93,20 @@ const LoginPage: React.FC = () => {
           <div className="bg-transparent">
             {/* Header */}
             <div className="mb-8">
+              <div className="flex items-center gap-3.5 mb-4">
+                <Link to="/" title="Flembe Essence Home">
+                  <FlembeLogo variant="crest" size={62} animated />
+                </Link>
+                <div>
+                  <span className="font-display text-2xl text-burgundy tracking-[0.14em] font-bold block leading-none">FLEMBE</span>
+                  <span className="font-display text-[11px] tracking-[0.25em] text-rose-smoke font-semibold uppercase block mt-1">
+                    ESSENCE
+                  </span>
+                </div>
+              </div>
               <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-rose-smoke">Welcome back</p>
-              <span className="font-display text-3xl text-burgundy tracking-[0.12em] block mt-3">FLEMBE</span>
-              <span className="font-display text-xs tracking-[0.25em] text-rose-smoke uppercase block mt-0.5">
-                ESSENCE
-              </span>
-              <h1 className="font-display text-4xl text-burgundy mt-4 leading-none">Sign in to your edit.</h1>
-              <p className="font-body text-sm text-off-black/60 mt-3 leading-relaxed">
+              <h1 className="font-display text-3xl sm:text-4xl text-burgundy mt-2 leading-none">Sign in to your edit.</h1>
+              <p className="font-body text-sm text-off-black/60 mt-2.5 leading-relaxed">
                 Keep your favourites close and checkout with ease.
               </p>
             </div>

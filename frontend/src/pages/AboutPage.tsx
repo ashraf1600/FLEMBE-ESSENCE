@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, MapPin, Users } from 'lucide-react';
+import FlembeLogo from '../components/FlembeLogo';
 
 const AboutPage: React.FC = () => (
   <>
@@ -36,10 +37,8 @@ const AboutPage: React.FC = () => (
             className="relative z-10 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
             title="Flembe Essence — Home"
           >
-            {/* The circular crest with 'F' */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-rose-smoke/60 flex items-center justify-center bg-burgundy/80 shadow-[0_0_35px_rgba(216,167,177,0.2)] mb-5 group-hover:border-rose-smoke transition-colors">
-              <span className="font-display text-rose-smoke text-4xl sm:text-5xl font-bold">F</span>
-            </div>
+            {/* The animated brand crest */}
+            <FlembeLogo variant="crest" size={105} animated className="mb-5" />
 
             {/* FLEMBE ESSENCE Logo typography */}
             <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">
