@@ -93,9 +93,9 @@ const LoginPage: React.FC = () => {
           <div className="bg-transparent">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center gap-3.5 mb-4">
-                <Link to="/" title="Flembe Essence Home">
-                  <FlembeLogo variant="crest" size={62} animated />
+              <div className="flex items-center gap-4 mb-4">
+                <Link to="/" title="Flembe Essence Home" className="flex-shrink-0">
+                  <FlembeLogo variant="full" size={105} />
                 </Link>
                 <div>
                   <span className="font-display text-2xl text-burgundy tracking-[0.14em] font-bold block leading-none">FLEMBE</span>

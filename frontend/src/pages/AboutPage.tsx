@@ -37,8 +37,8 @@ const AboutPage: React.FC = () => (
             className="relative z-10 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
             title="Flembe Essence — Home"
           >
-            {/* The animated brand crest */}
-            <FlembeLogo variant="crest" size={105} animated className="mb-5" />
+            {/* The animated brand SVG */}
+            <FlembeLogo variant="full" size={160} className="mb-3" />
 
             {/* FLEMBE ESSENCE Logo typography */}
             <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">

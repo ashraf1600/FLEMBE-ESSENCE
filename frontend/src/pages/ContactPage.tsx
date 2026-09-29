@@ -21,7 +21,7 @@ const ContactPage: React.FC = () => (
     <title>Contact Us — Flembe Essence</title>
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
-        <FlembeLogo variant="crest" size={76} animated className="mx-auto mb-4" />
+        <FlembeLogo variant="full" size={110} className="mx-auto mb-4" />
         <p className="section-subtitle">Get in Touch</p>
         <h1 className="section-title">Contact Us</h1>
         <p className="font-body text-sm text-off-black/60 mt-4">
@@ -92,7 +92,7 @@ const ContactPage: React.FC = () => (
         {/* Map / Info */}
         <div className="bg-burgundy p-8 sm:p-10 text-nude flex flex-col justify-center rounded-2xl shadow-lg border border-rose-smoke/20">
           <div className="flex items-center gap-4 mb-6">
-            <FlembeLogo variant="crest" size={68} animated />
+            <FlembeLogo variant="full" size={85} className="flex-shrink-0" />
             <div>
               <h2 className="font-display text-2xl text-nude leading-tight">Flembe Essence</h2>
               <p className="font-body text-[10px] text-rose-smoke uppercase tracking-[0.25em] font-medium">Cox's Bazar · Dhaka</p>
