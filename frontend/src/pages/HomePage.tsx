@@ -78,32 +78,32 @@ const HomePage: React.FC = () => {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
           <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-center">
             <div className="md:col-span-7 space-y-6 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-smoke/15 border border-rose-smoke/30 text-rose-smoke text-xs font-body uppercase tracking-[0.18em]">
-                <Sparkles size={12} className="animate-pulse" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-rose-smoke/35 text-rose-smoke text-[11px] font-body uppercase tracking-[0.22em] shadow-sm">
+                <Sparkles size={12} className="animate-pulse text-rose-smoke" />
                 <span>Affordable & Stylish Jewellery</span>
               </div>
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-nude leading-[1.12] tracking-tight">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-nude leading-[1.1] tracking-tight font-normal">
                 Affordable Style,<br />
-                <span className="text-rose-smoke font-medium italic">Made for You</span>
+                <span className="text-rose-smoke font-light italic">Made for You</span>
               </h1>
 
-              <p className="font-body text-nude/80 text-sm sm:text-base leading-relaxed max-w-xl mx-auto md:mx-0">
+              <p className="font-body text-nude/80 text-sm sm:text-base leading-relaxed max-w-xl mx-auto md:mx-0 font-light">
                 Discover handpicked rings, necklaces, earrings, and fashion accessories crafted for everyday glamour.
                 Real products, honest service, and genuine satisfaction.
               </p>
 
-              <div className="flex flex-wrap justify-center md:justify-start gap-3.5 pt-2">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-3">
                 <Link
                   to="/shop"
-                  className="btn-primary bg-nude text-burgundy hover:bg-nude-dark font-semibold shadow-md px-7 py-3 text-xs tracking-widest rounded-xs"
+                  className="inline-flex items-center justify-center gap-2 bg-nude text-burgundy hover:bg-white hover:shadow-[0_8px_30px_rgba(232,217,193,0.35)] font-body text-xs font-semibold tracking-[0.16em] uppercase px-8 py-3.5 rounded-full transition-all duration-300 active:scale-95"
                 >
                   <span>Shop Collection</span>
                   <ArrowRight size={15} />
                 </Link>
                 <Link
                   to="/categories"
-                  className="btn-outline border-nude/40 text-nude hover:bg-nude/15 hover:border-nude px-6 py-3 text-xs tracking-widest rounded-xs"
+                  className="inline-flex items-center justify-center gap-2 border border-nude/45 text-nude hover:bg-white/10 hover:border-nude font-body text-xs font-medium tracking-[0.16em] uppercase px-7 py-3.5 rounded-full backdrop-blur-xs transition-all duration-300 active:scale-95"
                 >
                   Browse Categories
                 </Link>
@@ -111,30 +111,30 @@ const HomePage: React.FC = () => {
 
               <div className="pt-6 border-t border-nude/15 grid grid-cols-3 gap-4 max-w-md mx-auto md:mx-0">
                 <div>
-                  <p className="font-display text-2xl sm:text-3xl text-nude font-semibold">50+</p>
-                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-wider mt-0.5">Designs</p>
+                  <p className="font-display text-2xl sm:text-3xl text-nude font-normal">50+</p>
+                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-[0.18em] mt-0.5 font-medium">Designs</p>
                 </div>
                 <div className="border-l border-nude/15 pl-4">
-                  <p className="font-display text-2xl sm:text-3xl text-nude font-semibold">COD</p>
-                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-wider mt-0.5">Payment</p>
+                  <p className="font-display text-2xl sm:text-3xl text-nude font-normal">COD</p>
+                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-[0.18em] mt-0.5 font-medium">Payment</p>
                 </div>
                 <div className="border-l border-nude/15 pl-4">
-                  <p className="font-display text-2xl sm:text-3xl text-nude font-semibold">Free*</p>
-                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-wider mt-0.5">Campus Delivery</p>
+                  <p className="font-display text-2xl sm:text-3xl text-nude font-normal">Free*</p>
+                  <p className="font-body text-[10px] sm:text-xs text-rose-smoke uppercase tracking-[0.18em] mt-0.5 font-medium">Campus Delivery</p>
                 </div>
               </div>
             </div>
 
             <div className="md:col-span-5 flex justify-center md:justify-end">
               <div className="relative w-full max-w-xs sm:max-w-sm animate-float-slow">
-                <div className="mx-auto md:ml-auto md:mr-0 w-full max-w-[250px] bg-off-black/35 backdrop-blur-xl border border-nude/25 p-5 sm:p-6 shadow-2xl">
+                <div className="mx-auto md:ml-auto md:mr-0 w-full max-w-[270px] bg-off-black/45 backdrop-blur-xl border border-nude/30 p-6 sm:p-7 rounded-2xl shadow-[0_24px_50px_rgba(0,0,0,0.5)]">
                   <div className="flex items-center gap-2 mb-5">
                     <span className="w-2 h-2 rounded-full bg-rose-smoke shadow-[0_0_12px_rgba(216,167,177,0.8)]" />
-                    <span className="font-body text-[10px] uppercase tracking-[0.2em] text-nude/80">The Flembe edit</span>
+                    <span className="font-body text-[10px] uppercase tracking-[0.24em] text-nude/80 font-medium">The Flembe Edit</span>
                   </div>
-                  <p className="font-display text-2xl sm:text-3xl text-nude leading-tight">Little details.<br /><em className="text-rose-smoke">Big feeling.</em></p>
-                  <p className="font-body text-xs text-nude/70 leading-relaxed mt-4">Everyday jewellery, thoughtfully chosen for your next chapter.</p>
-                  <Link to="/shop" className="inline-flex items-center gap-2 mt-6 font-body text-[10px] uppercase tracking-[0.18em] text-nude border-b border-rose-smoke pb-1 hover:text-rose-smoke transition-colors">
+                  <p className="font-display text-2xl sm:text-3xl text-nude leading-tight font-light">Little details.<br /><em className="text-rose-smoke font-normal">Big feeling.</em></p>
+                  <p className="font-body text-xs text-nude/75 leading-relaxed mt-4 font-light">Everyday jewellery, thoughtfully chosen for your next chapter.</p>
+                  <Link to="/shop" className="inline-flex items-center gap-2 mt-6 font-body text-[10px] uppercase tracking-[0.2em] text-nude border-b border-rose-smoke/80 pb-1 hover:text-rose-smoke transition-colors">
                     Explore the edit <ArrowRight size={13} />
                   </Link>
                 </div>
@@ -149,46 +149,47 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="relative bg-white border-b border-nude-dark/40 py-8">
+      {/* Floating Luxury Value Pillars */}
+      <section className="relative bg-gradient-to-b from-white via-nude/15 to-white border-b border-nude-dark/30 py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
-            <div className="flex flex-col md:flex-row items-center gap-3 p-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 p-4 rounded-xl bg-white/80 border border-nude-dark/35 shadow-xs hover:shadow-md hover:border-rose-smoke/60 transition-all duration-300 text-center sm:text-left">
               <div className="w-11 h-11 rounded-full bg-burgundy/10 text-burgundy flex items-center justify-center flex-shrink-0">
                 <Truck size={20} />
               </div>
               <div>
-                <h4 className="font-body text-xs font-semibold uppercase tracking-wider text-off-black">Cash on Delivery</h4>
-                <p className="font-body text-xs text-off-black/60 mt-0.5">Pay only when you receive your order</p>
+                <h4 className="font-body text-xs font-semibold uppercase tracking-[0.14em] text-off-black">Cash on Delivery</h4>
+                <p className="font-body text-xs text-off-black/60 mt-1 font-light leading-relaxed">Pay only when you inspect and receive</p>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 p-3">
-              <div className="w-11 h-11 rounded-full bg-rose-smoke/30 text-burgundy flex items-center justify-center flex-shrink-0">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 p-4 rounded-xl bg-white/80 border border-nude-dark/35 shadow-xs hover:shadow-md hover:border-rose-smoke/60 transition-all duration-300 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-full bg-rose-smoke/25 text-burgundy flex items-center justify-center flex-shrink-0">
                 <Sparkles size={20} />
               </div>
               <div>
-                <h4 className="font-body text-xs font-semibold uppercase tracking-wider text-off-black">Campus Free Delivery</h4>
-                <p className="font-body text-xs text-off-black/60 mt-0.5">DIU, Prime Univ, Mirpur 1 & more</p>
+                <h4 className="font-body text-xs font-semibold uppercase tracking-[0.14em] text-off-black">Campus Free Delivery</h4>
+                <p className="font-body text-xs text-off-black/60 mt-1 font-light leading-relaxed">DIU, Prime Univ, Mirpur 1 & more</p>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 p-3">
-              <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 p-4 rounded-xl bg-white/80 border border-nude-dark/35 shadow-xs hover:shadow-md hover:border-rose-smoke/60 transition-all duration-300 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center flex-shrink-0">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h4 className="font-body text-xs font-semibold uppercase tracking-wider text-off-black">Transparent Service</h4>
-                <p className="font-body text-xs text-off-black/60 mt-0.5">Inspect parcel right at delivery</p>
+                <h4 className="font-body text-xs font-semibold uppercase tracking-[0.14em] text-off-black">Open Parcel Check</h4>
+                <p className="font-body text-xs text-off-black/60 mt-1 font-light leading-relaxed">Inspect parcel right at doorstep</p>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 p-3">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 p-4 rounded-xl bg-white/80 border border-nude-dark/35 shadow-xs hover:shadow-md hover:border-rose-smoke/60 transition-all duration-300 text-center sm:text-left">
               <div className="w-11 h-11 rounded-full bg-burgundy/10 text-burgundy flex items-center justify-center flex-shrink-0">
                 <HeartHandshake size={20} />
               </div>
               <div>
-                <h4 className="font-body text-xs font-semibold uppercase tracking-wider text-off-black">Direct Support</h4>
-                <p className="font-body text-xs text-off-black/60 mt-0.5">Phone or WhatsApp: 01865330801</p>
+                <h4 className="font-body text-xs font-semibold uppercase tracking-[0.14em] text-off-black">Concierge Support</h4>
+                <p className="font-body text-xs text-off-black/60 mt-1 font-light leading-relaxed">Phone & WhatsApp: 01865330801</p>
               </div>
             </div>
           </div>
@@ -261,37 +262,44 @@ const HomePage: React.FC = () => {
             subtitle="Find your signature style."
           />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
             {catsLoading ? (
               [0, 1, 2, 3].map(i => (
-                <div key={i} className="skeleton aspect-[4/3] rounded-xl" aria-hidden="true" />
+                <div key={i} className="skeleton aspect-[4/3] rounded-2xl" aria-hidden="true" />
               ))
             ) : (
               subCategories.slice(0, 4).map(cat => (
               <Link
                 key={cat.id}
                 to={`/categories/${cat.slug}`}
-                className="group relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-burgundy/20 transition-all duration-500"
+                className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-nude-dark/40 shadow-xs hover:shadow-[0_20px_40px_-10px_rgba(75,29,63,0.22)] hover:border-rose-smoke/70 transition-all duration-700 hover:-translate-y-1.5"
               >
                 {cat.image ? (
                   <img
                     src={cat.image}
                     alt={cat.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-burgundy via-burgundy-light to-rose-smoke/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
-                    <span className="font-display text-nude/25 text-7xl select-none">{cat.name.charAt(0)}</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-burgundy via-burgundy-light to-rose-smoke/40 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
+                    <span className="font-display text-nude/20 text-7xl font-light select-none">{cat.name.charAt(0)}</span>
                   </div>
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-off-black/85 via-off-black/15 to-transparent group-hover:from-off-black/95 transition-all duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-off-black/90 via-off-black/25 to-transparent group-hover:from-off-black/95 transition-all duration-500" />
 
-                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                  <h3 className="font-display text-xl sm:text-2xl text-nude leading-tight">
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 flex flex-col justify-end">
+                  <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.22em] text-rose-smoke font-body font-semibold mb-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                    Collection
+                  </span>
+                  <h3 className="font-display text-xl sm:text-2xl text-nude font-normal leading-tight">
                     {cat.name}
                   </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-rose-smoke mt-2 font-body font-medium tracking-wider uppercase text-[10px] opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                    <span>Explore</span>
+                    <ArrowRight size={12} />
+                  </div>
                 </div>
               </Link>
               ))
@@ -328,49 +336,51 @@ const HomePage: React.FC = () => {
 
       <Testimonials />
 
-      <section className="py-16 sm:py-20 bg-gradient-to-b from-nude/30 to-nude/70">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-nude/25 via-white to-nude/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg p-8 sm:p-12 shadow-sm border border-nude-dark/40 grid md:grid-cols-12 gap-8 items-center">
-            <div className="md:col-span-7 space-y-4">
-              <span className="font-body text-xs uppercase tracking-[0.2em] text-rose-smoke font-semibold">
+          <div className="bg-white/95 backdrop-blur-md rounded-3xl p-8 sm:p-12 shadow-[0_16px_40px_-10px_rgba(75,29,63,0.08)] border border-nude-dark/40 grid md:grid-cols-12 gap-10 items-center">
+            <div className="md:col-span-7 space-y-5">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-smoke/15 text-rose-smoke font-body text-[10px] uppercase tracking-[0.24em] font-semibold border border-rose-smoke/30">
                 Our Story & Mission
               </span>
-              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl text-burgundy leading-snug">
+              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl text-burgundy font-normal leading-snug">
                 "Real products. Honest service. Your satisfaction matters."
               </h3>
-              <p className="font-body text-sm text-off-black/70 leading-relaxed">
+              <p className="font-body text-sm text-off-black/70 leading-relaxed font-light">
                 Flembe Essence was born with a passion to bring chic, premium-feeling jewellery and accessories to students and fashion lovers without the luxury markup.
                 From pop-up stalls at Daffodil International University to deliveries across Dhaka and Cox's Bazar, every order is packed with love and genuine care.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="flex items-center gap-2 font-body text-xs text-off-black/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                <div className="flex items-center gap-2.5 font-body text-xs text-off-black/80">
                   <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0" />
                   <span>Honest product photos & accurate materials</span>
                 </div>
-                <div className="flex items-center gap-2 font-body text-xs text-off-black/80">
+                <div className="flex items-center gap-2.5 font-body text-xs text-off-black/80">
                   <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0" />
                   <span>Open parcel verification at doorstep</span>
                 </div>
-                <div className="flex items-center gap-2 font-body text-xs text-off-black/80">
+                <div className="flex items-center gap-2.5 font-body text-xs text-off-black/80">
                   <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0" />
                   <span>Free delivery to select student hubs</span>
                 </div>
-                <div className="flex items-center gap-2 font-body text-xs text-off-black/80">
+                <div className="flex items-center gap-2.5 font-body text-xs text-off-black/80">
                   <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0" />
                   <span>Friendly customer support on phone & WhatsApp</span>
                 </div>
               </div>
             </div>
 
-            <div className="md:col-span-5 bg-burgundy text-nude p-6 sm:p-8 rounded-sm text-center space-y-4 shadow-md">
-              <Truck size={32} className="mx-auto text-rose-smoke" />
-              <h4 className="font-display text-2xl text-nude">Cash on Delivery Available</h4>
-              <p className="font-body text-xs text-nude/80 leading-relaxed">
+            <div className="md:col-span-5 bg-gradient-to-br from-burgundy via-burgundy to-burgundy-dark text-nude p-8 sm:p-10 rounded-2xl text-center space-y-4 shadow-xl border border-rose-smoke/25">
+              <div className="w-14 h-14 rounded-full bg-white/10 mx-auto flex items-center justify-center text-rose-smoke border border-rose-smoke/30">
+                <Truck size={28} />
+              </div>
+              <h4 className="font-display text-2xl text-nude font-normal">Cash on Delivery Available</h4>
+              <p className="font-body text-xs text-nude/80 leading-relaxed font-light">
                 We deliver throughout Dhaka and Cox's Bazar. Check out our free delivery locations or calculate your zone rates instantly.
               </p>
               <Link
                 to="/delivery"
-                className="btn-outline border-nude text-nude hover:bg-nude hover:text-burgundy w-full py-2.5 text-xs rounded-xs font-semibold"
+                className="inline-flex items-center justify-center border border-nude/60 text-nude hover:bg-nude hover:text-burgundy w-full py-3 text-xs rounded-full font-body font-semibold tracking-[0.16em] uppercase transition-all duration-300"
               >
                 View Delivery Zones
               </Link>

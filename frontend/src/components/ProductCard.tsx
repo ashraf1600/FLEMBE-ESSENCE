@@ -68,55 +68,61 @@ const ProductCard: React.FC<Props> = ({ product }) => {
 
   return (
     <>
-      <article className="group relative h-full bg-white rounded-xl overflow-hidden border border-nude-dark/35 shadow-sm hover:shadow-2xl hover:shadow-burgundy/12 transition-all duration-500 flex flex-col hover:-translate-y-1.5">
-        {/* Image Container */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-nude/30">
+      <article className="group relative h-full bg-white/95 rounded-2xl overflow-hidden border border-nude-dark/45 shadow-[0_4px_24px_-6px_rgba(75,29,63,0.06)] hover:shadow-[0_24px_48px_-12px_rgba(75,29,63,0.18)] hover:border-rose-smoke/80 transition-all duration-500 flex flex-col hover:-translate-y-2">
+        {/* Image Container with Luxury Framed Look */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-nude/25 to-nude/45">
           <Link to={detailUrl} aria-label={`View ${product.name}`} className="absolute inset-0">
             {imageUrl && !imgError ? (
               <img
                 src={imageUrl}
                 alt={product.primary_image?.alt_text || product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                 loading="lazy"
                 onError={() => setImgError(true)}
               />
             ) : (
-              <span className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-nude/40 to-nude/80">
-                <span className="font-display text-burgundy/30 text-5xl">FE</span>
-                <span className="text-[10px] tracking-widest uppercase text-burgundy/40 mt-1 font-body">Flembe Essence</span>
+              <span className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-nude/40 via-rose-smoke/10 to-nude/80">
+                <span className="font-display text-burgundy/30 text-5xl font-light">FE</span>
+                <span className="text-[9px] tracking-[0.25em] uppercase text-burgundy/50 mt-1 font-body">Flembe Essence</span>
               </span>
             )}
           </Link>
 
-          {/* Soft gradient overlay on hover for legibility of icons */}
-          <div className="absolute inset-0 bg-gradient-to-t from-off-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          {/* Soft ambient gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-off-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-          {/* Stock badge */}
-          {/* Stock badge */}
-          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
+          {/* Luxury Floating Stock / Urgency Badge */}
+          <div className="absolute top-2.5 left-2.5 sm:top-3.5 sm:left-3.5 z-10">
             {isInStock ? (
-              <span className="badge-in-stock shadow-xs text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                In Stock
-              </span>
+              lowStock ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-rose-300/70 text-burgundy text-[9px] sm:text-[10px] font-body font-semibold tracking-wider uppercase shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-smoke animate-ping" />
+                  Only {product.stock_quantity} left
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-emerald-400/30 text-emerald-800 text-[9px] sm:text-[10px] font-body font-medium tracking-wider uppercase shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  In Stock
+                </span>
+              )
             ) : (
-              <span className="badge-out-of-stock shadow-xs text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                Out of Stock
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-red-300/50 text-red-700 text-[9px] sm:text-[10px] font-body font-medium tracking-wider uppercase shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                Sold Out
               </span>
             )}
           </div>
 
-          {/* Wishlist + Quick View — always visible on mobile, fade-in on desktop hover */}
-          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex flex-col gap-1.5 sm:gap-2 sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300">
+          {/* Floating Glassmorphic Wishlist + Quick View */}
+          <div className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 z-10 flex flex-col gap-1.5 sm:gap-2 sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300">
             <button
               onClick={handleWishlistToggle}
               aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
               aria-pressed={isWishlisted}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200 ${
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md border border-white/70 transition-all duration-200 ${
                 isWishlisted
-                  ? 'bg-rose-smoke text-off-black'
-                  : 'bg-white/90 text-off-black hover:bg-rose-smoke hover:text-off-black'
+                  ? 'bg-rose-smoke text-burgundy border-rose-smoke scale-105'
+                  : 'bg-white/85 text-off-black hover:bg-rose-smoke hover:text-burgundy hover:scale-105'
               }`}
             >
               <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-current' : ''}`} />
@@ -124,53 +130,58 @@ const ProductCard: React.FC<Props> = ({ product }) => {
             <button
               onClick={handleQuickView}
               aria-label={`Quick view ${product.name}`}
-              className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/90 text-off-black hover:bg-burgundy hover:text-nude flex items-center justify-center shadow-md backdrop-blur-sm transition-all duration-200"
+              className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/85 text-off-black hover:bg-burgundy hover:text-nude hover:scale-105 flex items-center justify-center shadow-lg backdrop-blur-md border border-white/70 transition-all duration-200"
             >
               <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
-          {/* Material pill */}
+          {/* Material Capsule */}
           {product.material && (
-            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <span className="text-[9px] uppercase tracking-wider font-body bg-off-black/80 text-nude px-2 py-0.5 rounded-full backdrop-blur-xs">
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3.5 sm:left-3.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <span className="text-[9px] uppercase tracking-[0.16em] font-body bg-off-black/85 text-nude px-2.5 py-0.5 rounded-full backdrop-blur-md border border-nude/20">
                 {product.material}
               </span>
             </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between">
+        {/* Editorial Product Details */}
+        <div className="p-3.5 sm:p-5 flex flex-col flex-1 justify-between bg-gradient-to-b from-white to-nude/10">
           <div>
             {product.category && (
-              <p className="font-body text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rose-smoke font-bold mb-1">
-                {product.category.name}
-              </p>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-1 h-1 rounded-full bg-rose-smoke" />
+                <p className="font-body text-[9px] sm:text-[10px] tracking-[0.22em] uppercase text-rose-smoke font-bold">
+                  {product.category.name}
+                </p>
+              </div>
             )}
-            <h3 className="font-body text-xs sm:text-[15px] font-semibold tracking-[-0.01em] text-off-black leading-[1.3] mb-1 line-clamp-2 group-hover:text-burgundy transition-colors duration-200">
+            <h3 className="font-display text-[15px] sm:text-[18px] font-medium tracking-normal text-off-black leading-[1.3] mb-1 line-clamp-2 group-hover:text-burgundy transition-colors duration-300">
               <Link to={detailUrl}>{product.name}</Link>
             </h3>
           </div>
 
-          <div className="pt-2 sm:pt-3">
-            <div className="flex items-baseline justify-between mb-0.5 sm:mb-1">
-              <span className="font-body text-burgundy font-bold text-base sm:text-xl">
-                ৳{parseFloat(product.price).toLocaleString()}
+          <div className="pt-2 sm:pt-3 border-t border-nude/40 mt-2">
+            <div className="flex items-baseline justify-between mb-2">
+              <div className="flex items-baseline gap-1">
+                <span className="font-display text-xs text-burgundy/80 font-light">BDT</span>
+                <span className="font-display text-burgundy font-semibold text-lg sm:text-2xl tracking-tight">
+                  {parseFloat(product.price).toLocaleString()}
+                </span>
+              </div>
+              <span className="text-[9px] tracking-[0.16em] uppercase text-off-black/45 font-body font-medium bg-nude/40 px-2 py-0.5 rounded-xs">
+                COD
               </span>
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-off-black/40 font-body">COD</span>
             </div>
-            <p className={`font-body text-[10px] sm:text-[11px] font-semibold mb-2 sm:mb-2.5 ${lowStock ? 'text-burgundy' : 'text-transparent'} select-none`} aria-live="polite">
-              {lowStock ? `Only ${product.stock_quantity} left` : '·'}
-            </p>
 
             <button
               onClick={handleOrderNow}
               disabled={!isInStock}
-              className={`w-full flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg font-body text-[10px] sm:text-[11px] font-bold tracking-[0.14em] uppercase transition-all duration-200 shadow-xs ${
+              className={`w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-3 rounded-full font-body text-[10px] sm:text-[11px] font-semibold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm ${
                 isInStock
-                  ? 'bg-burgundy text-nude hover:bg-burgundy-light hover:shadow-md'
-                  : 'bg-nude-dark text-off-black/40 cursor-not-allowed'
+                  ? 'bg-burgundy text-nude hover:bg-burgundy-light hover:shadow-lg hover:shadow-burgundy/20 active:scale-[0.98]'
+                  : 'bg-nude-dark/60 text-off-black/40 cursor-not-allowed'
               }`}
             >
               <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

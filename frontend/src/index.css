@@ -142,8 +142,48 @@
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px -5px rgba(75, 29, 63, 0.08), 0 8px 10px -6px rgba(75, 29, 63, 0.04);
+    box-shadow: 0 16px 32px -8px rgba(75, 29, 63, 0.12), 0 8px 16px -6px rgba(75, 29, 63, 0.06);
   }
+}
+
+/* Luxury Editorial Glassmorphism */
+@utility glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 217, 193, 0.55);
+}
+
+@utility glass-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(216, 167, 177, 0.7);
+    box-shadow: 0 20px 40px -12px rgba(75, 29, 63, 0.15), 0 0 25px -5px rgba(216, 167, 177, 0.3);
+    transform: translateY(-3px);
+  }
+}
+
+@utility glass-dark {
+  background: rgba(46, 17, 39, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(216, 167, 177, 0.25);
+}
+
+@utility editorial-kicker {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-burgundy);
+}
+
+@utility gold-shimmer-text {
+  background: linear-gradient(135deg, #4B1D3F 0%, #873663 40%, #c98a96 70%, #4B1D3F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Hide scrollbars while keeping scrollability (e.g. pill bars, thumbnail strips) */
