@@ -61,8 +61,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_class = ProductFilter
     search_fields = ['name', 'description', 'material', 'sku']
     ordering_fields = ['price', 'created_at', 'name', 'stock_quantity']
-    ordering = ['-created_at']
     lookup_field = 'slug'
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+        # Support lookup by either numeric ID or string slug
+        if lookup_value and str(lookup_value).isdigit():
+            from django.shortcuts import get_object_or_404
+            queryset = self.filter_queryset(self.get_queryset())
+            return get_object_or_404(queryset, id=int(lookup_value))
+        return super().get_object()
 
     def perform_create(self, serializer):
         # Let the model's save() method generate and deduplicate the slug.

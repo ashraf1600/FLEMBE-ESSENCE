@@ -64,6 +64,46 @@ class Order(models.Model):
     def __str__(self):
         return self.order_number
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_order = Order.objects.filter(pk=self.pk).only('order_status').first()
+            if old_order and old_order.order_status != self.order_status:
+                self._handle_stock_transition(old_order.order_status, self.order_status)
+        super().save(*args, **kwargs)
+
+    def _handle_stock_transition(self, old_status, new_status):
+        active_statuses = {
+            self.OrderStatus.PENDING,
+            self.OrderStatus.CONFIRMED,
+            self.OrderStatus.PROCESSING,
+            self.OrderStatus.SHIPPED,
+            self.OrderStatus.DELIVERED,
+        }
+        releasing_statuses = {
+            self.OrderStatus.CANCELLED,
+            self.OrderStatus.FAILED_DELIVERY,
+        }
+
+        # Transition from active to cancelled/failed: replenish product stock
+        if old_status in active_statuses and new_status in releasing_statuses:
+            for item in self.items.select_related('product').all():
+                if item.product_id:
+                    Product.objects.filter(pk=item.product_id).update(
+                        stock_quantity=models.F('stock_quantity') + item.quantity
+                    )
+
+        # Transition from cancelled/failed back to active: re-deduct stock
+        elif old_status in releasing_statuses and new_status in active_statuses:
+            for item in self.items.select_related('product').all():
+                if item.product_id:
+                    Product.objects.filter(pk=item.product_id).update(
+                        stock_quantity=models.Case(
+                            models.When(stock_quantity__gte=item.quantity, then=models.F('stock_quantity') - item.quantity),
+                            default=0,
+                            output_field=models.PositiveIntegerField(),
+                        )
+                    )
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

@@ -949,7 +949,10 @@ const ProductDetailPage: React.FC = () => {
         )}
 
         {/* ── Mobile Sticky Purchase Bar (Always within thumb reach on phones) ── */}
-        <div className="fixed bottom-12 inset-x-0 z-30 md:hidden bg-white/95 backdrop-blur-xl border-t border-burgundy/15 p-2.5 px-4 shadow-[0_-4px_25px_rgba(75,29,63,0.12)] flex items-center justify-between gap-3 animate-fade-in">
+        <div
+          className="fixed inset-x-0 z-30 md:hidden bg-white/95 backdrop-blur-xl border-t border-burgundy/15 p-2.5 px-4 shadow-[0_-4px_25px_rgba(75,29,63,0.12)] flex items-center justify-between gap-3 animate-fade-in"
+          style={{ bottom: 'calc(52px + max(0.375rem, env(safe-area-inset-bottom)))' }}
+        >
           <div className="min-w-0 flex-1">
             <p className="font-display font-bold text-lg text-burgundy leading-none truncate">
               ৳{parseFloat(product.price).toLocaleString()}

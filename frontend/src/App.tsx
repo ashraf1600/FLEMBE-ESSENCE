@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
+import WhatsAppConcierge from './components/WhatsAppConcierge';
 import { LoadingSpinner } from './components/UI';
 
 // Lazy-loaded pages
@@ -62,6 +63,7 @@ const StorefrontLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <Navbar />
     <main className="flex-1">{children}</main>
     <Footer />
+    <WhatsAppConcierge />
     <MobileBottomNav />
   </div>
 );

@@ -90,7 +90,14 @@ const MyOrdersPage: React.FC = () => {
       const res = await api.get('/orders/my-orders/');
       return Array.isArray(res.data) ? res.data : (res.data?.results || []);
     },
-    refetchInterval: 5000, // Live poll every 5 seconds for real-time status updates!
+    refetchInterval: (query) => {
+      const orders: Order[] = Array.isArray(query.state.data) ? query.state.data : [];
+      // Only poll if there are active (in-transit) orders
+      const hasActive = orders.some((o: Order) =>
+        ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED'].includes(o.order_status)
+      );
+      return hasActive ? 15000 : false;
+    },
   });
 
   const orders: Order[] = data || [];

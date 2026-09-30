@@ -25,7 +25,8 @@ class CategorySerializer(serializers.ModelSerializer):
         # Keep category cards visual even when a category image has not been uploaded.
         product = obj.products.filter(is_active=True).prefetch_related('images').first()
         if product:
-            product_image = product.images.filter(is_primary=True).first() or product.images.first()
+            product_images = list(product.images.all())
+            product_image = next((img for img in product_images if img.is_primary), None) or (product_images[0] if product_images else None)
             if product_image:
                 return ProductImageSerializer(product_image, context=self.context).data['url']
         return None
@@ -85,9 +86,9 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'slug', 'sku', 'stock_status', 'created_at', 'updated_at']
 
     def get_primary_image(self, obj):
-        primary = obj.images.filter(is_primary=True).first()
-        if not primary:
-            primary = obj.images.first()
+        # Use prefetched images cache to eliminate N+1 queries per product
+        images = list(obj.images.all())
+        primary = next((img for img in images if img.is_primary), None) or (images[0] if images else None)
         if primary:
             return ProductImageSerializer(primary, context=self.context).data
         return None
@@ -107,9 +108,9 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     def get_primary_image(self, obj):
-        primary = obj.images.filter(is_primary=True).first()
-        if not primary:
-            primary = obj.images.first()
+        # Use prefetched images cache to eliminate N+1 queries per product
+        images = list(obj.images.all())
+        primary = next((img for img in images if img.is_primary), None) or (images[0] if images else None)
         if primary:
             return ProductImageSerializer(primary, context=self.context).data
         return None

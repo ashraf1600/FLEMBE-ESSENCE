@@ -84,6 +84,12 @@ class ProductAPITest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['name'], self.product.name)
 
+    def test_product_detail_by_numeric_id(self):
+        resp = self.client.get(f'/api/v1/products/{self.product.id}/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['name'], self.product.name)
+        self.assertEqual(resp.data['slug'], self.product.slug)
+
     def test_product_stock_status(self):
         self.assertEqual(self.product.stock_status, 'IN_STOCK')
         self.product.stock_quantity = 0
@@ -208,6 +214,19 @@ class OrderAPITest(TestCase):
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(resp2.data['order_number'], order_number)
 
+    def test_public_order_lookup_privacy_masking(self):
+        resp = self.client.post('/api/v1/orders/', self._order_payload(), format='json')
+        order_number = resp.data['order_number']
+        anon_client = APIClient()
+        resp_anon = anon_client.get(f'/api/v1/orders/{order_number}/')
+        self.assertEqual(resp_anon.status_code, 200)
+        self.assertIn('*****', resp_anon.data['customer_phone'])
+
+        # With phone verification, unmasked
+        resp_verified = anon_client.get(f'/api/v1/orders/{order_number}/?phone=01800000001')
+        self.assertEqual(resp_verified.status_code, 200)
+        self.assertEqual(resp_verified.data['customer_phone'], '01800000001')
+
     def test_invalid_delivery_zone_rejected(self):
         payload = self._order_payload()
         payload['delivery_zone_id'] = 9999
@@ -268,6 +287,34 @@ class AdminOrderAPITest(TestCase):
         self.assertEqual(resp.status_code, 200)
         order = Order.objects.get(order_number=self.order_number)
         self.assertEqual(order.order_status, 'CONFIRMED')
+
+    def test_order_cancellation_restores_stock(self):
+        self.product.refresh_from_db()
+        stock_before = self.product.stock_quantity  # was 20, 1 deducted -> 19
+        self.assertEqual(stock_before, 19)
+
+        self._login_admin()
+        # Cancel order
+        resp = self.client.patch(
+            f'/api/v1/admin/orders/{self.order_number}/status/',
+            {'order_status': 'CANCELLED'},
+            format='json'
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.product.refresh_from_db()
+        # Stock should be restored to 20
+        self.assertEqual(self.product.stock_quantity, 20)
+
+        # Move back to CONFIRMED
+        resp2 = self.client.patch(
+            f'/api/v1/admin/orders/{self.order_number}/status/',
+            {'order_status': 'CONFIRMED'},
+            format='json'
+        )
+        self.assertEqual(resp2.status_code, 200)
+        self.product.refresh_from_db()
+        # Stock should be re-deducted to 19
+        self.assertEqual(self.product.stock_quantity, 19)
 
     def test_admin_stats_unauthorized(self):
         resp = self.client.get('/api/v1/admin/stats/')

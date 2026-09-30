@@ -6,7 +6,7 @@ import { ShoppingBag, Menu, X, Search, LayoutDashboard, Package, LogOut, User, P
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
-import { fetchCategories } from '../lib/queries';
+import { fetchCategories, fetchProducts } from '../lib/queries';
 import AuthDrawer from './AuthDrawer';
 import FlembeLogo from './FlembeLogo';
 
@@ -15,12 +15,39 @@ const Navbar: React.FC = () => {
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
   const { totalItems } = useCart();
   const { totalWishlist } = useWishlist();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const megaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
+    queryKey: ['navbar-search', debouncedQuery],
+    queryFn: () => fetchProducts({ search: debouncedQuery, page: 1 }),
+    enabled: debouncedQuery.length >= 2,
+    staleTime: 1000 * 60,
+  });
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -221,23 +248,103 @@ const Navbar: React.FC = () => {
             {/* Right actions */}
             <div className="flex items-center gap-0.5 sm:gap-3 flex-shrink-0">
               {/* Desktop search */}
-              <form onSubmit={handleSearch} className="hidden lg:flex items-center relative w-44 xl:w-48 focus-within:w-56 transition-[width] duration-300 shrink-0 ml-3 xl:ml-5">
-                <Search size={15} className="absolute left-3.5 text-rose-smoke/70 pointer-events-none" />
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search jewellery..."
-                  className="w-full bg-white/[0.07] border border-rose-smoke/35 rounded-full text-nude placeholder-nude/45 text-xs pl-10 pr-10 py-2.5 outline-none focus:bg-white/10 focus:border-rose-smoke focus:shadow-[0_0_0_3px_rgba(216,167,177,0.12)] transition-all duration-300"
-                />
-                <button
-                  type="submit"
-                  aria-label="Search"
-                  className="absolute right-2.5 w-7 h-7 rounded-full flex items-center justify-center text-nude/60 hover:text-off-black hover:bg-rose-smoke transition-colors"
+              <div ref={searchContainerRef} className="hidden lg:block relative shrink-0 ml-3 xl:ml-5">
+                <form
+                  onSubmit={handleSearch}
+                  className="flex items-center relative w-44 xl:w-48 focus-within:w-60 transition-[width] duration-300"
                 >
-                  <ArrowRight size={14} />
-                </button>
-              </form>
+                  <Search size={15} className="absolute left-3.5 text-rose-smoke/70 pointer-events-none" />
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    placeholder="Search jewellery..."
+                    className="w-full bg-white/[0.07] border border-rose-smoke/35 rounded-full text-nude placeholder-nude/45 text-xs pl-10 pr-9 py-2.5 outline-none focus:bg-white/10 focus:border-rose-smoke focus:shadow-[0_0_0_3px_rgba(216,167,177,0.12)] transition-all duration-300"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-8 text-nude/40 hover:text-nude p-0.5"
+                      aria-label="Clear search"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    aria-label="Search"
+                    className="absolute right-2 w-6 h-6 rounded-full flex items-center justify-center text-nude/60 hover:text-off-black hover:bg-rose-smoke transition-colors"
+                  >
+                    <ArrowRight size={13} />
+                  </button>
+                </form>
+
+                {/* Instant Search Dropdown */}
+                {searchFocused && searchQuery.trim().length >= 2 && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-off-black/95 backdrop-blur-xl border border-rose-smoke/25 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in text-left">
+                    <div className="p-2.5 border-b border-rose-smoke/15 flex items-center justify-between text-[11px] text-nude/60 font-body">
+                      <span>Instant Results</span>
+                      {searchLoading && <span className="text-rose-smoke animate-pulse">Searching...</span>}
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto divide-y divide-rose-smoke/10">
+                      {searchResults?.results && searchResults.results.length > 0 ? (
+                        searchResults.results.slice(0, 5).map(item => {
+                          const imgUrl = item.primary_image?.url || item.primary_image?.image_url;
+                          return (
+                            <Link
+                              key={item.id}
+                              to={`/products/${item.slug}`}
+                              onClick={() => {
+                                setSearchFocused(false);
+                                setSearchQuery('');
+                              }}
+                              className="flex items-center gap-3 p-2.5 hover:bg-white/10 transition-colors group"
+                            >
+                              <div className="w-10 h-10 rounded-sm overflow-hidden bg-nude/20 border border-rose-smoke/20 flex-shrink-0">
+                                {imgUrl ? (
+                                  <img src={imgUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-rose-smoke/40 text-xs font-display">FE</div>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-body text-xs font-medium text-nude truncate group-hover:text-rose-smoke transition-colors">
+                                  {item.name}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="font-body text-xs font-bold text-rose-smoke">
+                                    ৳{parseFloat(item.price).toLocaleString()}
+                                  </span>
+                                  {item.category && (
+                                    <span className="text-[9px] uppercase tracking-wider text-nude/40">
+                                      {item.category.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })
+                      ) : !searchLoading ? (
+                        <div className="p-4 text-center text-xs text-nude/50 font-body">
+                          No jewellery found matching &ldquo;{searchQuery}&rdquo;
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <button
+                      onClick={handleSearch}
+                      className="w-full py-2.5 px-3 bg-burgundy/60 hover:bg-burgundy text-nude font-body text-xs font-medium text-center flex items-center justify-center gap-1.5 transition-colors border-t border-rose-smoke/15"
+                    >
+                      <span>View all results in shop</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Wishlist */}
               <Link
@@ -354,10 +461,62 @@ const Navbar: React.FC = () => {
               placeholder="Search products..."
               className="flex-1 bg-off-black-light border border-nude/20 rounded text-nude placeholder-nude/40 text-base sm:text-sm px-3 py-2.5 focus:outline-none focus:border-rose-smoke"
             />
-            <button type="submit" className="text-nude bg-burgundy px-3.5 py-2 rounded">
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-nude/50 hover:text-nude p-1"
+                aria-label="Clear search"
+              >
+                <X size={15} />
+              </button>
+            )}
+            <button type="submit" className="text-nude bg-burgundy px-3.5 py-2.5 rounded">
               <Search size={15} />
             </button>
           </form>
+
+          {/* Mobile Instant Results */}
+          {searchQuery.trim().length >= 2 && (
+            <div className="py-2 border-b border-nude/10 max-h-60 overflow-y-auto">
+              {searchLoading && <p className="text-xs text-rose-smoke px-2 py-1 animate-pulse">Searching...</p>}
+              {searchResults?.results && searchResults.results.length > 0 ? (
+                <div className="space-y-1.5">
+                  {searchResults.results.slice(0, 4).map(item => {
+                    const imgUrl = item.primary_image?.url || item.primary_image?.image_url;
+                    return (
+                      <Link
+                        key={item.id}
+                        to={`/products/${item.slug}`}
+                        onClick={() => { setOpen(false); setSearchQuery(''); }}
+                        className="flex items-center gap-2.5 p-2 rounded bg-white/5 hover:bg-white/10"
+                      >
+                        <div className="w-10 h-10 rounded bg-nude/20 overflow-hidden flex-shrink-0">
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs font-display text-rose-smoke">FE</div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-body text-xs text-nude font-medium truncate">{item.name}</p>
+                          <p className="font-body text-[11px] text-rose-smoke font-bold">৳{parseFloat(item.price).toLocaleString()}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  <button
+                    onClick={handleSearch}
+                    className="w-full text-center py-2 text-xs font-body text-rose-smoke hover:underline block"
+                  >
+                    View all {searchResults.count} results &rarr;
+                  </button>
+                </div>
+              ) : !searchLoading ? (
+                <p className="text-xs text-nude/50 px-2 py-1">No products found for &ldquo;{searchQuery}&rdquo;</p>
+              ) : null}
+            </div>
+          )}
 
           <nav className="flex flex-col gap-1 pt-3">
             <NavLink

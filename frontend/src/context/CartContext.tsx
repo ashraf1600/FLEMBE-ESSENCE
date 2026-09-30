@@ -54,11 +54,35 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // User logged in: load their user-specific cart
+      // User logged in: load their user-specific cart and merge any guest cart items
       const newKey = getCartKey(currentId);
       const userCart = loadCartFromStorage(newKey);
-      setCart(userCart);
-      localStorage.removeItem('flembe_cart_guest');
+      const guestCart = loadCartFromStorage('flembe_cart_guest');
+
+      let mergedCart = [...userCart];
+      if (guestCart.length > 0) {
+        guestCart.forEach(gItem => {
+          const idx = mergedCart.findIndex(uItem => uItem.product.id === gItem.product.id);
+          if (idx >= 0) {
+            mergedCart[idx] = {
+              ...mergedCart[idx],
+              quantity: mergedCart[idx].quantity + gItem.quantity,
+            };
+          } else {
+            mergedCart.push(gItem);
+          }
+        });
+        localStorage.removeItem('flembe_cart_guest');
+      }
+
+      setCart(mergedCart);
+      try {
+        if (mergedCart.length > 0) {
+          localStorage.setItem(newKey, JSON.stringify(mergedCart));
+        }
+      } catch {
+        // ignore
+      }
       localStorage.removeItem('flembe_cart');
     }
   }, [user?.id]);

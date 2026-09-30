@@ -43,8 +43,13 @@ const OrderSuccessPage: React.FC = () => {
     queryKey: ['order', orderNumber],
     queryFn: () => fetchOrder(orderNumber),
     enabled: !!orderNumber,
-    retry: 2,
-    refetchInterval: 5000, // Live poll every 5s for dynamic status updates!
+    refetchInterval: (query) => {
+      const status = query.state.data?.order_status;
+      if (status === 'DELIVERED' || status === 'CANCELLED' || status === 'FAILED_DELIVERY') {
+        return false;
+      }
+      return 15000;
+    },
   });
 
   const currentStatus = order?.order_status || 'PENDING';

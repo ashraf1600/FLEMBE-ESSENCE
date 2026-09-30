@@ -187,6 +187,33 @@ class OrderSerializer(serializers.ModelSerializer):
             'items', 'created_at', 'updated_at',
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        is_owner = (
+            request and request.user.is_authenticated and instance.user_id == request.user.id
+        )
+        is_staff = request and request.user.is_authenticated and request.user.is_staff
+        phone_param = request.query_params.get('phone', '').strip() if request and hasattr(request, 'query_params') else ''
+        phone_matches = False
+        if phone_param:
+            import re
+            cleaned_param = re.sub(r'\D', '', phone_param)
+            cust_phone = re.sub(r'\D', '', instance.customer.phone or '')
+            phone_matches = bool(cleaned_param and cust_phone and (cleaned_param == cust_phone or cust_phone.endswith(cleaned_param)))
+
+        # Mask sensitive personal data if request is unauthenticated guest and didn't provide matching phone verification
+        if not (is_owner or is_staff or phone_matches):
+            raw_phone = data.get('customer_phone') or ''
+            if len(raw_phone) >= 7:
+                data['customer_phone'] = raw_phone[:3] + '*****' + raw_phone[-3:]
+            raw_address = data.get('address') or ''
+            if len(raw_address) > 10:
+                parts = raw_address.split(',')
+                if len(parts) > 1:
+                    data['address'] = '***, ' + ','.join(parts[1:]).strip()
+        return data
+
 
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
